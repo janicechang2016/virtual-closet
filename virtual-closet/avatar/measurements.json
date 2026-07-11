@@ -1,31 +1,28 @@
 {
-  "_instructions": "Fill every field you can. null = unknown/skip. Units: cm and kg (or set units to 'imperial' and use inches/lbs). This file drives the body description in every avatar prompt — more precision here = fewer correction rounds in Phase 2.",
-  "units": "metric",
-  "height": null,
-  "weight": null,
-  "bust_chest": null,
-  "waist": null,
-  "hip": null,
+  "units": "imperial",
+  "height": "5'3\" (160 cm)",
+  "weight": "110 lbs (50 kg)",
+  "bust_chest": "34A bra size (~34 in over bust)",
+  "waist": "25 in",
+  "hip": "36 in",
   "shoulder_width": null,
   "inseam": null,
   "usual_sizes": {
-    "tops": null,
-    "bottoms": null,
-    "dress": null,
-    "shoes": null
+    "tops": "XS-S",
+    "bottoms": "0 / 25 in",
+    "dress": "XS",
+    "shoes": "US women's 7"
   },
-  "body_shape_self_description": null,
+  "body_shape_self_description": "average Asian female build, not very curvy; petite, with longer legs for her proportions",
   "hair": {
-    "color": null,
-    "length": null,
-    "texture": null,
-    "usual_style": null
+    "color": "black",
+    "length": "past shoulders by ~4 inches",
+    "texture": "slightly wavy",
+    "usual_style": "worn down, long"
   },
   "eyes": {
-    "color_exact_shade": null,
-    "_note": "Be specific (e.g. 'dark brown, nearly black') — eye color drift is a known avatar risk; this exact string goes into every prompt."
+    "color_exact_shade": "dark brown, nearly black"
   },
-  "skin_tone_self_description": null,
-  "distinctive_features": [],
-  "_distinctive_features_note": "Moles, freckle patterns, asymmetries, glasses, piercings — anything the model must preserve rather than average away."
+  "skin_tone_self_description": "pale",
+  "distinctive_features": []
 }
