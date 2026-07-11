@@ -1,5 +1,11 @@
 # Decision log
 
+## 2026-07-11 — Avatar lock DEFERRED; flow-first, credit-conscious
+
+**Decision (user):** Stop spending fal credits on avatar perfection for now. Build the closet app flow (Phase 4, $0) first; lock avatar-v1 later. Round-2 candidates (`avatar/versions/r2_candidate_*.png`) are all QA-clean and retained; `r2_candidate_2` (best persona face) serves as **provisional draft avatar** for UI development — it is NOT locked, and no renders against it are canon.
+
+**Standing rule from this decision:** API-spending actions (any fal call) happen only in explicit, user-approved batches. The app's generate path ships **disabled by default** (`ENABLE_GENERATION` env flag) with copy-prompt mode as the $0 fallback.
+
 ## 2026-07-11 — Avatar identity: AI persona face + real body proportions
 
 **Decision (user):** The three face reference photos are AI-generated persona images (not photos of Janice, not a real third party). Build the avatar **as-is** on this persona face, combined with Janice's real measurements and full-body proportions reference.

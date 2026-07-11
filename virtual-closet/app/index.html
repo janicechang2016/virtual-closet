@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Virtual Closet</title>
+<link rel="stylesheet" href="/app/style.css">
+</head>
+<body>
+<div id="hud">
+  <div class="hud-title">VIRTUAL CLOSET <span class="hud-sub">fitting room</span></div>
+  <div class="hud-right">
+    <span id="avatar-status" class="chip"></span>
+    <span id="cost-meter" class="chip chip-cost"></span>
+    <span id="gen-mode" class="chip"></span>
+  </div>
+</div>
+
+<main>
+  <section id="outfit-panel">
+    <h2>Outfit</h2>
+    <div id="outfit-slots"></div>
+    <button id="save-outfit" class="btn">Save outfit</button>
+    <div id="saved-outfits"></div>
+  </section>
+
+  <section id="stage">
+    <div id="stage-frame">
+      <img id="stage-img" alt="avatar">
+      <div id="stage-caption"></div>
+    </div>
+    <div id="feedback-bar" hidden>
+      <span class="fb-label">feedback:</span>
+      <button class="fb" data-b="wrong fit">wrong fit</button>
+      <button class="fb" data-b="fabric off">fabric off</button>
+      <button class="fb" data-b="face drifted">face drifted</button>
+      <button class="fb" data-b="artifact">artifact</button>
+      <button class="fb" data-b="pattern wrong">pattern wrong</button>
+    </div>
+  </section>
+
+  <section id="closet-panel">
+    <h2>Closet</h2>
+    <div id="filters"></div>
+    <div id="garment-grid"></div>
+  </section>
+</main>
+
+<dialog id="prompt-modal">
+  <h3>Try-on prompt (copy mode)</h3>
+  <p class="modal-note">Generation spending is gated off. Paste this into the fal playground
+     (nano-banana-pro) with the avatar draft as Image 1 and the garment photo as Image 2,
+     then drop the result into <code>renders/</code> named <code>&lt;garment-id&gt;_*.png</code>.</p>
+  <textarea id="prompt-text" rows="9" readonly></textarea>
+  <div class="modal-row">
+    <button id="copy-prompt" class="btn">Copy prompt</button>
+    <button id="close-modal" class="btn btn-ghost">Close</button>
+  </div>
+</dialog>
+
+<script src="/app/app.js"></script>
+</body>
+</html>
