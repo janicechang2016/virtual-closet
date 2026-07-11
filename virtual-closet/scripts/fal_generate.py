@@ -41,13 +41,25 @@ def load_key():
     return key
 
 
-def _req(url, key, data=None, method=None):
+def _req(url, key, data=None, method=None, retries=3):
     body = json.dumps(data).encode() if data is not None else None
-    r = urllib.request.Request(url, data=body, method=method or ("POST" if body else "GET"))
-    r.add_header("Authorization", f"Key {key}")
-    r.add_header("Content-Type", "application/json")
-    with urllib.request.urlopen(r, timeout=120) as resp:
-        return json.loads(resp.read().decode())
+    last_err = None
+    for attempt in range(retries):
+        r = urllib.request.Request(url, data=body, method=method or ("POST" if body else "GET"))
+        r.add_header("Authorization", f"Key {key}")
+        r.add_header("Content-Type", "application/json")
+        try:
+            with urllib.request.urlopen(r, timeout=120) as resp:
+                return json.loads(resp.read().decode())
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode()[:300]
+            # fal intermittently 403s valid requests; a locked account 403 won't recover
+            if e.code == 403 and "locked" not in detail.lower() and attempt < retries - 1:
+                time.sleep(2 * (attempt + 1))
+                last_err = f"HTTP {e.code}: {detail}"
+                continue
+            raise SystemExit(f"HTTP {e.code} from {url}: {detail}")
+    raise SystemExit(f"Retries exhausted: {last_err}")
 
 
 def image_to_data_uri(path):
