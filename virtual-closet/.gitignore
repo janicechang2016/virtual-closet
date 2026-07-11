@@ -1,0 +1,5 @@
+.env
+avatar/reference-photos/
+.DS_Store
+__pycache__/
+node_modules/

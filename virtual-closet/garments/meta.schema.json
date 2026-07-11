@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Garment metadata",
+  "description": "One meta.json per garment folder: garments/<slug>/{raw/, clean/, meta.json}. Auto-tagged by Claude vision in Phase 5; hand-filled for the 5 benchmark items.",
+  "type": "object",
+  "required": ["id", "name", "category", "color", "fabric", "difficulty"],
+  "properties": {
+    "id": { "type": "string", "description": "Folder slug, e.g. 'plain-white-tee'" },
+    "name": { "type": "string" },
+    "category": { "type": "string", "enum": ["top", "bottom", "dress", "outerwear", "layer", "shoes", "accessory"] },
+    "subcategory": { "type": "string", "description": "e.g. 'blazer', 'jeans', 'wrap dress'" },
+    "color": { "type": "string" },
+    "pattern": { "type": "string", "description": "'solid' | description of print/pattern incl. placement notes" },
+    "fabric": { "type": "string", "description": "Drives drape language in the try-on prompt, e.g. 'heavyweight cotton', 'chiffon', 'structured wool'" },
+    "fit": { "type": "string", "description": "e.g. 'oversized', 'fitted', 'straight-leg'" },
+    "layer_order": { "type": "integer", "minimum": 0, "description": "0=base (worn against skin), 1=mid, 2=outer. Drives Phase 5 sequential layering." },
+    "difficulty": { "type": "integer", "minimum": 1, "maximum": 5, "description": "1=solid tee … 5=sheer/lace/heavy print/layered" },
+    "details_to_preserve": { "type": "array", "items": { "type": "string" }, "description": "Logos, text, button count, neckline shape — checked by auto-QA" },
+    "size_owned": { "type": "string" },
+    "source_photo_type": { "type": "string", "enum": ["flat-lay", "on-hanger", "on-model", "product-page"] },
+    "notes": { "type": "string" }
+  }
+}

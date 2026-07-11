@@ -1,0 +1,31 @@
+{
+  "_instructions": "Fill every field you can. null = unknown/skip. Units: cm and kg (or set units to 'imperial' and use inches/lbs). This file drives the body description in every avatar prompt — more precision here = fewer correction rounds in Phase 2.",
+  "units": "metric",
+  "height": null,
+  "weight": null,
+  "bust_chest": null,
+  "waist": null,
+  "hip": null,
+  "shoulder_width": null,
+  "inseam": null,
+  "usual_sizes": {
+    "tops": null,
+    "bottoms": null,
+    "dress": null,
+    "shoes": null
+  },
+  "body_shape_self_description": null,
+  "hair": {
+    "color": null,
+    "length": null,
+    "texture": null,
+    "usual_style": null
+  },
+  "eyes": {
+    "color_exact_shade": null,
+    "_note": "Be specific (e.g. 'dark brown, nearly black') — eye color drift is a known avatar risk; this exact string goes into every prompt."
+  },
+  "skin_tone_self_description": null,
+  "distinctive_features": [],
+  "_distinctive_features_note": "Moles, freckle patterns, asymmetries, glasses, piercings — anything the model must preserve rather than average away."
+}
