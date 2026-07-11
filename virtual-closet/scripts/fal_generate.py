@@ -34,7 +34,8 @@ def load_key():
         if env.exists():
             for line in env.read_text().splitlines():
                 if line.strip().startswith("FAL_KEY="):
-                    key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    val = line.split("=", 1)[1].split("#", 1)[0].strip()
+                    key = val.strip('"').strip("'") or None
     if not key:
         sys.exit("FAL_KEY not found in environment or .env — see .env.example")
     return key
