@@ -155,15 +155,55 @@ $("#close-modal").addEventListener("click", () => $("#prompt-modal").close());
 document.querySelectorAll(".fb").forEach((b) =>
   b.addEventListener("click", async () => {
     const note = prompt(`"${b.dataset.b}" — optional note:`, "") ?? "";
-    await fetch("/api/feedback", {
+    const live = M.generation_enabled && currentGarment;
+    if (live) $("#stage-caption").textContent = `applying correction… (~1 min, billed)`;
+    const r = await fetch("/api/feedback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         render: currentRender, garment: currentGarment?.id, button: b.dataset.b, note,
+        regenerate: live,
       }),
     });
-    toast(`logged: ${b.dataset.b}`);
+    const j = await r.json();
+    if (j.render) {
+      M = await (await fetch("/api/manifest")).json();
+      $("#cost-meter").textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
+      currentRender = j.render;
+      $("#stage-img").src = j.render;
+      $("#stage-caption").textContent = `${currentGarment.name} — corrected (${b.dataset.b})`;
+    } else {
+      if (j.error) toast(j.error);
+      else toast(`logged: ${b.dataset.b}`);
+      if (live) $("#stage-caption").textContent = `${currentGarment.name}`;
+    }
   }));
+
+$("#render-outfit").addEventListener("click", async () => {
+  const ids = [...new Set(Object.values(outfit))].filter(Boolean);
+  if (ids.length < 2) { toast("equip at least 2 items first"); return; }
+  $("#stage-caption").textContent = `rendering outfit (${ids.length} items)… (~1 min, billed)`;
+  $("#feedback-bar").hidden = true;
+  try {
+    const r = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ outfit: ids }),
+    });
+    const j = await r.json();
+    if (!r.ok) { toast(j.error || "generation failed"); showAvatar(); return; }
+    M = await (await fetch("/api/manifest")).json();
+    $("#cost-meter").textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
+    currentRender = j.render;
+    currentGarment = null;
+    $("#stage-img").src = j.render;
+    $("#stage-caption").textContent = `outfit — ${ids.join(" + ")}`;
+    $("#feedback-bar").hidden = false;
+  } catch (e) {
+    toast("generation failed: " + e.message);
+    showAvatar();
+  }
+});
 
 function toast(msg) {
   const t = document.createElement("div");

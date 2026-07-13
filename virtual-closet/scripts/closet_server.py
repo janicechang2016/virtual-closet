@@ -149,7 +149,17 @@ class Handler(SimpleHTTPRequestHandler):
             fb = ROOT / "logs" / "feedback.jsonl"
             with fb.open("a") as f:
                 f.write(json.dumps(entry) + "\n")
-            return self._json({"ok": True})
+            result = {"ok": True}
+            # live mode: one tap = one targeted corrective edit (plan §Phase 4)
+            if data.get("regenerate") and GENERATION_ENABLED and data.get("garment"):
+                try:
+                    from tryon import correct
+                    out = correct(data["garment"], data.get("button", ""),
+                                  data.get("note", ""), render=data.get("render"))
+                    result["render"] = f"/assets/renders/{out.name}"
+                except Exception as e:
+                    result["error"] = f"{type(e).__name__}: {e}"
+            return self._json(result)
         if url.path == "/api/generate":
             if not GENERATION_ENABLED:
                 return self._json({
@@ -157,6 +167,13 @@ class Handler(SimpleHTTPRequestHandler):
                     "detail": "Credit guard is on. Start the server with ENABLE_GENERATION=1 "
                               "to allow fal spending, or use Copy Prompt mode.",
                 }, 403)
+            if data.get("outfit"):
+                try:
+                    from tryon import tryon_outfit
+                    out = tryon_outfit(data["outfit"])
+                    return self._json({"ok": True, "render": f"/assets/renders/{out.name}"})
+                except Exception as e:
+                    return self._json({"error": f"{type(e).__name__}: {e}"}, 500)
             gid = data.get("garment")
             if not gid or not (ROOT / "garments" / gid / "meta.json").is_file():
                 return self._json({"error": "unknown garment"}, 404)

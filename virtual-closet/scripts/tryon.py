@@ -152,13 +152,125 @@ def tryon(gid, arm="nb-pro", suffix="1"):
     return out
 
 
+# feedback button -> canned corrective edit (plan §Phase 4); the user's note is appended
+CORRECTIVE = {
+    "wrong fit": "correct the garment's fit, cut and construction to exactly match the "
+                 "garment reference in Image 2",
+    "fabric off": "correct the garment's fabric texture, weight and sheen to exactly match "
+                  "the garment reference in Image 2",
+    "artifact": "remove the visual artifact",
+    "pattern wrong": "correct the garment's pattern and its placement to exactly match the "
+                     "garment reference in Image 2",
+    "face drifted": None,  # face-swap only, no generation
+}
+
+
+def next_suffix(stem_prefix):
+    return str(1 + len([p for p in (ROOT / "renders").glob(f"{stem_prefix}_*.png")
+                        if not p.stem.endswith("_raw")]))
+
+
+def correct(gid, button, note="", render=None):
+    """Targeted corrective edit of a render (edit, don't regenerate)."""
+    if render is None:  # newest final nb2 render for this garment
+        cands = [p for p in sorted((ROOT / "renders").glob(f"{gid}_*_v1_*.png"))
+                 if not p.stem.endswith("_raw")]
+        if not cands:
+            raise FileNotFoundError(f"no render to correct for {gid}")
+        render = cands[-1]
+    render = ROOT / "renders" / Path(render).name
+    out = ROOT / "renders" / f"{gid}_nb2_v1_{next_suffix(f'{gid}_nb2_v1')}.png"
+
+    if CORRECTIVE.get(button, "x") is None:  # face drifted -> swap only
+        face_swap(render, out)
+        print(f"done {out.name} (face-swap only)")
+        return out
+
+    correction = CORRECTIVE.get(button, "apply this correction")
+    if note:
+        correction += f". Specifically: {note.strip()}"
+    prompt = (
+        f"Edit Image 1, changing ONLY this: {correction}. Image 2 is the garment product "
+        "photo and is the ground truth for how the garment must look. Keep the person, "
+        "face, hair, pose, body, lighting, background and everything else in Image 1 "
+        "exactly unchanged. One single image, one single figure, photorealistic."
+    )
+    raw = out.with_name(out.stem + "_raw.png")
+    generate("fal-ai/nano-banana-2/edit", prompt, [str(render), str(garment_asset(gid))],
+             purpose="tryon-corrective", out=str(raw))
+    face_swap(raw, out)
+    print(f"done {out.name}")
+    return out
+
+
+LAYER_HINTS = {
+    "outerwear": "worn OPEN as the outermost layer",
+    "layer": "worn OPEN as the outermost layer",
+    "top": "worn over the bottom garment",
+    "bottom": "worn as the base lower-body garment",
+    "dress": "worn as the base garment",
+    "shoes": "worn on the feet",
+}
+
+
+def tryon_outfit(gids, suffix=None):
+    """Single-shot multi-garment compose: avatar + one image per garment."""
+    metas = []
+    for gid in gids:
+        metas.append(json.loads((ROOT / "garments" / gid / "meta.json").read_text()))
+    # dress the avatar inside-out: base layers first in the description
+    order = {"dress": 0, "bottom": 1, "top": 2, "layer": 3, "outerwear": 3, "shoes": 4}
+    pairs = sorted(zip(gids, metas), key=lambda p: order.get(p[1].get("category"), 2))
+
+    lines, images = [], [str(AVATAR)]
+    for i, (gid, meta) in enumerate(pairs):
+        images.append(str(garment_asset(gid)))
+        hint = LAYER_HINTS.get(meta.get("category", ""), "")
+        details = "; ".join(meta.get("details_to_preserve", [])[:3])
+        lines.append(f"Image {i + 2}: {meta.get('name', gid)} ({meta.get('color','')}, "
+                     f"{hint}). Key details: {details}")
+
+    prompt = (
+        "Virtual try-on: show the person from Image 1 wearing ALL of the following garments "
+        "together as one complete outfit, layered naturally: " + " | ".join(lines) + ". "
+        "Keep the person EXACTLY as in Image 1: same face, same hair, same body proportions, "
+        "same standing pose, same light-gray seamless studio background and soft even "
+        "lighting. One single figure, not a collage. Reproduce every garment exactly as in "
+        "its reference image: colors, patterns, necklines, lengths, construction. The "
+        "garment reference images are isolated product shots; any small gaps or ragged "
+        "edges are extraction artifacts - render each garment complete. Full-body, "
+        "front-facing, photorealistic."
+    )
+    slug = "outfit_" + "+".join(g.split("-")[0] for g in sorted(gids))
+    n = suffix or next_suffix(slug)
+    out = ROOT / "renders" / f"{slug}_{n}.png"
+    raw = out.with_name(out.stem + "_raw.png")
+    generate("fal-ai/nano-banana-2/edit", prompt, images, purpose="tryon-outfit", out=str(raw))
+    face_swap(raw, out)
+    print(f"done {out.name}")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("garment", nargs="?")
     ap.add_argument("--arm", default="nb2", choices=ARMS)  # Phase 3 winner (docs/phase3-benchmark.md)
     ap.add_argument("--suffix", default="1")
     ap.add_argument("--benchmark", action="store_true")
+    ap.add_argument("--correct", metavar="BUTTON", help="corrective edit; pass the feedback button text")
+    ap.add_argument("--note", default="", help="freeform correction note (with --correct)")
+    ap.add_argument("--outfit", nargs="+", metavar="GID", help="compose several garments in one render")
     args = ap.parse_args()
+
+    if args.outfit:
+        tryon_outfit(args.outfit)
+        return
+
+    if args.correct:
+        if not args.garment:
+            ap.error("--correct needs a garment id")
+        correct(args.garment, args.correct, args.note)
+        return
 
     if args.benchmark:
         gids = sorted(p.parent.name for p in (ROOT / "garments").glob("*/meta.json"))
