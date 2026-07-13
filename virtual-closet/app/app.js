@@ -25,7 +25,8 @@ function showAvatar() {
   currentGarment = null;
   if (M.avatar.draft) {
     $("#stage-img").src = M.avatar.draft;
-    $("#stage-caption").textContent = "base avatar (draft) — click a garment to try on";
+    const v = M.avatar.locked_version || "draft";
+    $("#stage-caption").textContent = `base avatar (${v}) — click a garment to try on`;
   } else {
     $("#stage-caption").textContent = "no avatar yet — Phase 2 pending";
   }
@@ -132,6 +133,14 @@ function renderSaved() {
       toast("outfit loaded");
     }));
 }
+
+$("#clear-outfit").addEventListener("click", () => {
+  SLOTS.forEach((s) => delete outfit[s]);
+  localStorage.setItem("outfit", JSON.stringify(outfit));
+  renderSlots();
+  showAvatar(); // undressed base avatar back on the stage
+  toast("cleared — base avatar");
+});
 
 $("#save-outfit").addEventListener("click", () => {
   const name = prompt("name this outfit:", `outfit ${savedOutfits.length + 1}`);
