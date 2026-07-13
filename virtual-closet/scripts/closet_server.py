@@ -56,13 +56,24 @@ def garment_list():
 
 
 def manifest():
-    draft = ROOT / "avatar" / "avatar-draft.png"
-    return {
-        "avatar": {
-            "draft": "/assets/avatar/avatar-draft.png" if draft.exists() else None,
-            "locked_version": None,  # set when avatar-v1 is locked
+    locked = ROOT / "avatar" / "avatar-v1" / "front.png"
+    if locked.exists():
+        avatar = {
+            "draft": "/assets/avatar/avatar-v1/front.png",
+            "locked_version": "avatar-v1",
+            "status": "avatar-v1 locked 2026-07-13 (4-view sheet in avatar/avatar-v1/)",
+        }
+    else:
+        # newest avatar-draft*.png is the working base
+        drafts = sorted((ROOT / "avatar").glob("avatar-draft*.png"), key=lambda p: p.stat().st_mtime)
+        draft = drafts[-1] if drafts else None
+        avatar = {
+            "draft": f"/assets/avatar/{draft.name}" if draft else None,
+            "locked_version": None,
             "status": "draft — lock deferred (see docs/decisions.md)",
-        },
+        }
+    return {
+        "avatar": avatar,
         "garments": garment_list(),
         "spend": spend_summary(),
         "generation_enabled": GENERATION_ENABLED,
@@ -110,6 +121,10 @@ class Handler(SimpleHTTPRequestHandler):
             prompt = TRYON_TEMPLATE.format(fabric=meta.get("fabric") or "the garment's fabric")
             if meta.get("details_to_preserve"):
                 prompt += " Pay particular attention to: " + ", ".join(meta["details_to_preserve"]) + "."
+            if sorted((ROOT / "garments" / gid / "clean").glob("*_onwhite.png")):
+                prompt += (" Image 2 is a garment cutout extracted from a worn photo; any small "
+                           "gaps, notches, or ragged edges are extraction artifacts, not part of "
+                           "the design - render the garment complete and intact.")
             return self._json({"prompt": prompt, "garment": gid})
         if url.path.startswith("/assets/"):
             target = (ROOT / url.path[len("/assets/"):]).resolve()

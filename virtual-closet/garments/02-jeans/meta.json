@@ -1,14 +1,20 @@
 {
   "id": "02-jeans",
-  "name": "02-jeans",
+  "name": "black wide-leg trousers",
   "category": "bottom",
-  "color": "",
-  "pattern": "",
-  "fabric": "",
-  "fit": "",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "lightweight suiting (wool/poly blend feel), fluid drape",
+  "fit": "low-to-mid rise, relaxed wide straight leg, full length, pooling slightly at the floor",
   "layer_order": 0,
   "difficulty": 2,
-  "details_to_preserve": [],
-  "source_photo_type": "flat-lay",
-  "notes": "jeans or solid trousers — drop photo(s) into raw/"
+  "details_to_preserve": [
+    "clean flat front with standard fly and button closure",
+    "slash side pockets",
+    "straight uninterrupted wide leg line from hip to hem",
+    "soft trouser drape, not a sharp press",
+    "hem breaks over the foot (model is 5'9\" in 3\" heels wearing LARGE/TALL - length will differ on a 5'3\" frame)"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "slot was 'jeans' but actual item is black suiting wide-leg trousers; on-model photo, tube top and bag in photo are NOT part of this garment"
 }

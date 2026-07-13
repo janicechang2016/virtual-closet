@@ -101,8 +101,19 @@ def generate(model, prompt, image_paths=(), purpose="tryon", out=None, extra_arg
         url = img["url"] if isinstance(img, dict) else img
         dest = Path(out) if out and len(images) == 1 else ROOT / "renders" / f"{req_id}_{i}.png"
         dest.parent.mkdir(parents=True, exist_ok=True)
-        urllib.request.urlretrieve(url, dest)
-        saved.append(str(dest))
+        for attempt in range(4):  # transient DNS/network failures happen after billing
+            try:
+                urllib.request.urlretrieve(url, dest)
+                saved.append(str(dest))
+                break
+            except OSError as e:
+                if attempt == 3:
+                    # already billed: log it with the URL so the image is recoverable
+                    log_generation(model, prompt, purpose, ref_images=list(image_paths),
+                                   request_id=req_id, cost_usd=estimate_cost(model),
+                                   outcome=f"completed-download-failed: {url}")
+                    sys.exit(f"Download failed after retries ({e}); result URL logged: {url}")
+                time.sleep(3 * (attempt + 1))
 
     gen_id = log_generation(model, prompt, purpose, ref_images=list(image_paths),
                             output_path=saved[0] if saved else None,

@@ -1,14 +1,20 @@
 {
   "id": "05-hardest-item",
-  "name": "05-hardest-item",
-  "category": "top",
-  "color": "",
-  "pattern": "",
-  "fabric": "",
-  "fit": "",
+  "name": "draped jersey maxi dress",
+  "category": "dress",
+  "color": "charcoal slate grey",
+  "pattern": "solid",
+  "fabric": "slinky viscose jersey, heavy fluid drape, subtle matte sheen",
+  "fit": "scoop neck with thin straps, fitted bodice, draped sarong-style ruched panel wrapping the hips, bias-flowing skirt to the ankle",
   "layer_order": 0,
   "difficulty": 5,
-  "details_to_preserve": [],
-  "source_photo_type": "flat-lay",
-  "notes": "your hardest item (sheer/lace/heavy print/layered) — drop photo(s) into raw/"
+  "details_to_preserve": [
+    "thin spaghetti straps and deep scoop neckline",
+    "asymmetric draped wrap panel across the hips with soft gathered ruching",
+    "diagonal drape folds crossing the front below the waist",
+    "skirt falls straight and fluid to the ankle with a slight flare",
+    "fabric clings through the bodice and releases below the hip drape"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "hardest item: bias drape + hip ruching on slinky jersey must read as one continuous garment; on-model photo, tan heels NOT part of garment"
 }

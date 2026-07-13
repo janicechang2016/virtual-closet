@@ -6,9 +6,9 @@ Photorealistic virtual try-on with a persistent personal avatar. Full plan: `doc
 
 - ✅ Phase 0 — environment verified (local machine, all API routes open)
 - ✅ Phase 1 — scaffold + data layer (this repo)
-- ⏸ Phase 2 — avatar calibration — **blocked on: FAL_KEY, face photos, measurements.json**
-- ⏸ Phase 3 — try-on benchmark — blocked on: Phase 2 + 5 benchmark garment photos
-- ⏸ Phase 4 — closet app
+- ✅ Phase 2 — avatar calibration — **avatar-v1 LOCKED** (4-view sheet in `avatar/avatar-v1/`; face-swap finishing pass is standing policy, see docs/decisions.md)
+- ⏸ Phase 3 — try-on benchmark — unblocked (avatar locked, garments clean), awaiting user-approved spend envelope
+- ✅ Phase 4 — closet app — local server + fitting-room UI, "The Boutique" design (313NY tokens); generation gated behind `ENABLE_GENERATION=1`, copy-prompt mode default
 - ⏸ Phase 5 — full closet ingestion
 
 ## Layout

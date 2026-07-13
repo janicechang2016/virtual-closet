@@ -1,14 +1,20 @@
 {
   "id": "01-plain-tee",
-  "name": "01-plain-tee",
+  "name": "draped mock-neck top",
   "category": "top",
-  "color": "",
-  "pattern": "",
-  "fabric": "",
-  "fit": "",
+  "color": "washed black / charcoal",
+  "pattern": "solid",
+  "fabric": "slinky matte jersey (cupro/modal feel), soft drape",
+  "fit": "fitted through waist, draped asymmetric bodice, cap sleeves",
   "layer_order": 0,
-  "difficulty": 1,
-  "details_to_preserve": [],
-  "source_photo_type": "flat-lay",
-  "notes": "solid tee, easiest benchmark — drop photo(s) into raw/"
+  "difficulty": 2,
+  "details_to_preserve": [
+    "high mock/funnel neck with asymmetric drape folds across the collarbone",
+    "cap sleeves cut in one with the shoulder",
+    "row of 5 small fabric buttons down the left side waist seam",
+    "gentle ruching where the drape gathers at the side seam",
+    "matte, slightly washed black finish - not shiny"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "slot was 'plain solid tee' but actual item is a draped mock-neck cap-sleeve top; photo is on-model (worn with matching mini skirt - skirt is NOT part of this garment)"
 }

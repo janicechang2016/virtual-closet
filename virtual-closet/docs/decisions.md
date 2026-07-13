@@ -1,5 +1,69 @@
 # Decision log
 
+## 2026-07-13 — avatar-v1 LOCKED (user gate 2 passed)
+
+**Decision (user):** `avatar/avatar-v1/` is the locked character sheet: front.png (the
+user-supplied `avatar-draft-2.png`), 34left.png / 34right.png (NB Pro turnaround views with
+the face identity-swapped back via `fal-ai/face-swap`), back.png. All try-on renders
+reference avatar-v1 only.
+
+**Pipeline learning that got us here (the identity bridge):** prompt-only generation tops
+out at "close cousin" likeness — NB Pro re-imagines faces rather than copying them, and a
+full-body frame gives the face too few pixels for identity anyway. The working recipe:
+(1) generate base/view with the right framing, hair, lighting; (2) finish with an
+embedding-based face swap (`fal-ai/face-swap`, ~$0.02: `base_image_url` = image to fix,
+`swap_image_url` = identity source). **Standing rule: every render where the avatar's face
+is visible gets a face-swap finishing pass** (source: avatar-v1/front.png). User-tuned face
+notes: soft OVAL chin (never sharp), visible winged eyeliner, wispy sheer bangs, straight
+hair, slim nose.
+
+## 2026-07-13 — Face-exact avatar round + generative garment extraction (approved batch)
+
+**User requirement:** avatar face must match the persona reference photos EXACTLY.
+
+**Learned (the hard way, 4 failed edits):** NB Pro *edits* on the avatar are unreliable —
+three face edits returned before/after collages despite explicit single-figure instructions,
+and a "bangs only" edit rebuilt the whole head and regressed the face. Rule: **do not edit
+the avatar's head region; regenerate instead.** Fresh generation with reference roles
+explicitly decoupled ("Images 1–3 define ONLY the face; Image 4 defines ONLY the body; her
+body is slender even though her face has soft cheeks") produced the best result:
+`avatar/versions/r3_faceexact_2.png` — face close-match, correct petite body, single figure.
+Known deviation: bangs render wispy/parted vs the reference's full straight bangs.
+Also: face-softness adjectives leak into body build unless explicitly firewalled.
+
+**Garments:** 01 + 04 re-extracted generatively (NB Pro ghost-mannequin on white) →
+`garments/{01-plain-tee,04-structured-blazer}/clean/*_extracted.png`; superseded rembg
+cutouts deleted (regenerable via scripts/extract_garment.py). Segmentation cutouts kept
+for 02/03/05 where they were clean.
+
+**Status:** avatar lock (user gate 2) PENDING — user to judge r3_faceexact_2 before the
+4-view character sheet is generated. Batch spend ≈ $1.21 (one blazer extraction was billed
+but lost to a transient download failure before logging; fal_generate.py now retries
+downloads and logs the result URL on failure).
+
+## 2026-07-12 — App design direction: "The Boutique" (313NY)
+
+**Decision (user):** The closet app follows the locked design direction from
+`~/liminal-wardrobe/spec/design/design-tokens.md` and its moodboard (313NY archival store):
+cool industrial bones + warm directional light + sparing amber/green accents, gallery restraint.
+Fonts: Bodoni Moda (display) / Spline Sans Mono (technical labels, the only uppercase voice) /
+Archivo (body). Zone mapping: stage = fitting room (dim, backlit-mirror glow);
+closet panel = the racks (tile-white, grout grid); outfit rail = charcoal instrument panel.
+A first pass in feminine violet/rose ("dressing room at night") was rejected — wrong universe.
+
+**Accent amendment (user, same day):** amber reads too masculine. The active/selected voice is
+**soft chrome** (brushed-silver gradients, cool mirror-white LED light — the galvanized-steel /
+light-wall side of 313NY), not the warm amber lamp side. Oxblood stays as the rare alert voice.
+Warm-light tokens are reserved for photo content, not UI chrome.
+
+## 2026-07-12 — Benchmark garments are on-model photos
+
+All 5 raw photos show garments worn by models (not flat-lays). Try-on prompts must extract
+the garment from a worn photo and ignore the model's other clothing (noted per item in each
+`meta.json`). Two slots differ from their folder names: 01 is a draped mock-neck top (not a
+plain tee), 02 is black wide-leg suiting trousers (not jeans). Folder ids kept; `name` fields
+carry the real descriptions.
+
 ## 2026-07-11 — Avatar lock DEFERRED; flow-first, credit-conscious
 
 **Decision (user):** Stop spending fal credits on avatar perfection for now. Build the closet app flow (Phase 4, $0) first; lock avatar-v1 later. Round-2 candidates (`avatar/versions/r2_candidate_*.png`) are all QA-clean and retained; `r2_candidate_2` (best persona face) serves as **provisional draft avatar** for UI development — it is NOT locked, and no renders against it are canon.

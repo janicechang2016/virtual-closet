@@ -1,14 +1,20 @@
 {
   "id": "04-structured-blazer",
-  "name": "04-structured-blazer",
+  "name": "black tailored blazer",
   "category": "outerwear",
-  "color": "",
-  "pattern": "",
-  "fabric": "",
-  "fit": "",
-  "layer_order": 0,
-  "difficulty": 4,
-  "details_to_preserve": [],
-  "source_photo_type": "flat-lay",
-  "notes": "structured blazer — drop photo(s) into raw/"
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "matte suiting wool, structured with soft shoulder padding",
+  "fit": "slightly oversized boxy tailored fit, straight through the body, hits at the hip",
+  "layer_order": 1,
+  "difficulty": 3,
+  "details_to_preserve": [
+    "notch lapels, medium width",
+    "single-breasted 2-button front with round black buttons",
+    "welt chest pocket on the left, jetted hip pockets",
+    "clean structured shoulder line, slightly extended",
+    "sleeves full length, hitting past the wrist"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "worn open over a white tee in the photo - tee, belt, and trousers NOT part of this garment; renders should layer it open over the outfit's top"
 }

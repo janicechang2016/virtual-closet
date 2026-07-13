@@ -1,14 +1,20 @@
 {
   "id": "03-patterned-dress",
-  "name": "03-patterned-dress",
+  "name": "printed plisse midi dress",
   "category": "dress",
-  "color": "",
-  "pattern": "",
-  "fabric": "",
-  "fit": "",
+  "color": "black with crimson red and cobalt/violet blue",
+  "pattern": "large abstract organic print - red brushstroke shapes on black upper body, glowing blue and red blooms concentrated at the lower half",
+  "fabric": "crinkle plisse / micro-pleated polyester, vertical wavy pleat texture throughout, slight sheerness",
+  "fit": "sleeveless, high mock neck, column silhouette skimming the body, midi length, side slits at hem",
   "layer_order": 0,
-  "difficulty": 3,
-  "details_to_preserve": [],
-  "source_photo_type": "flat-lay",
-  "notes": "patterned dress — drop photo(s) into raw/"
+  "difficulty": 4,
+  "details_to_preserve": [
+    "vertical crinkle-pleat texture visible across the entire dress",
+    "print placement: mostly black with red abstract shapes on the torso, blue glow enters at the hips and dominates near the hem",
+    "high collar folds over slightly",
+    "cut-in sleeveless shoulders",
+    "small side slits at the hem"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "hard combo: exact print placement + pleat texture must both survive; on-model photo, black sandals NOT part of garment"
 }
