@@ -50,8 +50,25 @@ def garment_list():
                   for p in sorted((folder / sub).glob("*")) if p.suffix.lower() in IMG_EXT]
         renders = [f"/assets/renders/{p.name}" for p in sorted((ROOT / "renders").glob(f"{folder.name}_*"))
                    if p.suffix.lower() in IMG_EXT and not p.stem.endswith("_raw")]
-        meta.update({"photos": photos, "renders": renders})
+        cuts = sorted((ROOT / "renders" / "cutouts").glob(f"{folder.name}_*_cut.png"))
+        meta.update({"photos": photos, "renders": renders,
+                     "cutout": f"/assets/renders/cutouts/{cuts[-1].name}" if cuts else None})
         out.append(meta)
+    return out
+
+
+def outfit_list():
+    out = []
+    for p in sorted((ROOT / "renders").glob("outfit_*.png")):
+        if p.stem.endswith("_raw"):
+            continue
+        cut = ROOT / "renders" / "cutouts" / f"{p.stem}_cut.png"
+        out.append({
+            "id": p.stem,                       # e.g. outfit_01+02+04_1
+            "items": p.stem.split("_")[1].split("+"),  # ["01","02","04"]
+            "render": f"/assets/renders/{p.name}",
+            "cutout": f"/assets/renders/cutouts/{cut.name}" if cut.exists() else None,
+        })
     return out
 
 
@@ -75,6 +92,7 @@ def manifest():
     return {
         "avatar": avatar,
         "garments": garment_list(),
+        "outfits": outfit_list(),
         "spend": spend_summary(),
         "generation_enabled": GENERATION_ENABLED,
     }
@@ -107,6 +125,9 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         url = urlparse(self.path)
         if url.path == "/" or url.path == "/index.html":
+            carousel = ROOT / "app" / "carousel.html"
+            return self._file(carousel if carousel.exists() else ROOT / "app" / "index.html")
+        if url.path == "/classic":
             return self._file(ROOT / "app" / "index.html")
         if url.path.startswith("/app/"):
             return self._file((ROOT / url.path.lstrip("/")).resolve())
