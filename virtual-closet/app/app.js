@@ -66,10 +66,38 @@ function tryOn(id) {
     equip(g);
   } else if (!g.photos.length) {
     toast(`add a photo first: garments/${g.id}/raw/`);
+  } else if (M.generation_enabled) {
+    generateRender(g);
+    equip(g);
   } else {
-    // no render yet -> copy-prompt mode (or live generate later)
+    // no render yet -> copy-prompt mode
     openPromptModal(g);
     equip(g);
+  }
+}
+
+async function generateRender(g) {
+  $("#stage-caption").textContent = `rendering ${g.name}… (~1 min, billed)`;
+  $("#feedback-bar").hidden = true;
+  try {
+    const r = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ garment: g.id }),
+    });
+    const j = await r.json();
+    if (!r.ok) { toast(j.error || "generation failed"); showAvatar(); return; }
+    M = await (await fetch("/api/manifest")).json();
+    $("#cost-meter").textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
+    renderGrid();
+    currentGarment = M.garments.find((x) => x.id === g.id);
+    currentRender = j.render;
+    $("#stage-img").src = j.render;
+    $("#stage-caption").textContent = `${g.name} — fresh render`;
+    $("#feedback-bar").hidden = false;
+  } catch (e) {
+    toast("generation failed: " + e.message);
+    showAvatar();
   }
 }
 

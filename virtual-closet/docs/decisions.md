@@ -1,5 +1,16 @@
 # Decision log
 
+## 2026-07-13 — Phase 3 verdict: nb2/edit + face-swap is the default try-on pipeline
+
+Benchmark (docs/phase3-benchmark.md): `fal-ai/nano-banana-2/edit` + face-swap finish swept
+5/5 garments at $0.059/render. NB Pro is *worse* at try-on despite 3.4x the price — it
+re-stages the scene (collages, removes base clothing, drifts colors) where nb2/edit behaves
+like an editor. IDM-VTON needs its `category` param wired before it's a fair arm (3/5
+failures were ours). nb2 caveats: slight garment slimming; stricter content checker —
+try-on prompts must stay neutrally worded ("virtual try-on: show the person wearing…",
+never "dress the woman…", no body-size adjectives). Live generation wired: app
+`/api/generate` → tryon.py → render + swap + budget log.
+
 ## 2026-07-13 — avatar-v1 LOCKED (user gate 2 passed)
 
 **Decision (user):** `avatar/avatar-v1/` is the locked character sheet: front.png (the

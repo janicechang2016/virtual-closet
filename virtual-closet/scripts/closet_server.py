@@ -49,7 +49,7 @@ def garment_list():
                   for sub in ("clean", "raw")
                   for p in sorted((folder / sub).glob("*")) if p.suffix.lower() in IMG_EXT]
         renders = [f"/assets/renders/{p.name}" for p in sorted((ROOT / "renders").glob(f"{folder.name}_*"))
-                   if p.suffix.lower() in IMG_EXT]
+                   if p.suffix.lower() in IMG_EXT and not p.stem.endswith("_raw")]
         meta.update({"photos": photos, "renders": renders})
         out.append(meta)
     return out
@@ -157,7 +157,18 @@ class Handler(SimpleHTTPRequestHandler):
                     "detail": "Credit guard is on. Start the server with ENABLE_GENERATION=1 "
                               "to allow fal spending, or use Copy Prompt mode.",
                 }, 403)
-            return self._json({"error": "generate endpoint not wired yet (Phase 4.5)"}, 501)
+            gid = data.get("garment")
+            if not gid or not (ROOT / "garments" / gid / "meta.json").is_file():
+                return self._json({"error": "unknown garment"}, 404)
+            arm = data.get("arm", os.environ.get("TRYON_ARM", "nb2"))  # Phase 3 winner
+            n = 1 + len([p for p in (ROOT / "renders").glob(f"{gid}_{arm}_v1_*.png")
+                         if not p.stem.endswith("_raw")])
+            try:
+                from tryon import tryon as run_tryon
+                out = run_tryon(gid, arm, suffix=str(n))
+                return self._json({"ok": True, "render": f"/assets/renders/{out.name}"})
+            except Exception as e:
+                return self._json({"error": f"{type(e).__name__}: {e}"}, 500)
         self.send_error(404)
 
 

@@ -25,8 +25,10 @@ BUDGET = ROOT / "logs" / "budget.json"
 COST_TABLE = {
     "fal-ai/nano-banana-pro": 0.134,
     "fal-ai/nano-banana-2": 0.039,
+    "fal-ai/nano-banana-2/edit": 0.039,
     "fal-ai/flux-2-pro": 0.06,
     "fal-ai/idm-vton": 0.03,
+    "fal-ai/face-swap": 0.02,
     "default": 0.134,  # assume worst case for unknown models
 }
 
