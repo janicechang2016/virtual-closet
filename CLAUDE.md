@@ -4,18 +4,29 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-13)
+## Current state (2026-07-13, evening)
 
 - Phases 0–4 complete. **avatar-v1 LOCKED**: 4-view sheet in `avatar/avatar-v1/`.
 - Phase 3 benchmark done (`docs/phase3-benchmark.md`): default try-on pipeline is
   **fal-ai/nano-banana-2/edit + fal-ai/face-swap finish** ($0.059/render). NB Pro is worse
   at try-on (re-stages scenes); IDM-VTON needs its `category` param wired.
-- App: server `scripts/closet_server.py` → http://localhost:8765 (run with
+- Server `scripts/closet_server.py` → http://localhost:8765 (run with
   `ENABLE_GENERATION=1` for live spending). Single-item try-on, multi-item outfit compose,
   feedback→corrective-edit loop, clear-to-base — all working from the UI.
-- Design: "The Boutique" v3 (git tag `boutique-v3`) — 313NY tokens from
-  `~/liminal-wardrobe/spec/design/design-tokens.md`, soft-chrome accent variant
-  (amber rejected as masculine; violet/rose rejected outright).
+- **Two designs coexist:**
+  - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): white void, figure
+    cutouts (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
+    interpolation + infinite wrap + 80px snap/dwell, italic lowercase wordmark, TRY ON
+    wired to the live pipeline. Spec: `virtual-closet/design-inspo/` (docx + reel).
+  - `/classic` — **"The Boutique" v3** (git tag `boutique-v3`; revert:
+    `git checkout boutique-v3 -- virtual-closet/app/`): 313NY tokens from
+    `~/liminal-wardrobe/spec/design/design-tokens.md`, soft-chrome accent
+    (amber rejected as masculine; violet/rose rejected outright).
+- **Janice's architectural intent (2026-07-13, to flesh out later — do not build yet):**
+  the SYVE carousel likely becomes the **OUTFIT ARCHIVE** view (browsing saved looks),
+  while the Boutique app remains the **FITTING ROOM** (composing/trying-on). How the two
+  connect (navigation, shared state, which is home) is an open design question she wants
+  to work through together. Dovetails with the queued look-cards feature.
 - Spend: ~$5.41 of $25 cap (`python3 scripts/genlog.py summary`).
 
 ## Standing rules
