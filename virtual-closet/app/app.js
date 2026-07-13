@@ -8,6 +8,14 @@ const savedOutfits = JSON.parse(localStorage.getItem("savedOutfits") || "[]");
 
 const $ = (s) => document.querySelector(s);
 
+// crossfade the mirror whenever its image changes
+window.addEventListener("DOMContentLoaded", () => {
+  const img = $("#stage-img");
+  new MutationObserver(() => img.classList.add("loading"))
+    .observe(img, { attributes: true, attributeFilter: ["src"] });
+  img.addEventListener("load", () => img.classList.remove("loading"));
+});
+
 async function boot() {
   M = await (await fetch("/api/manifest")).json();
   $("#avatar-status").textContent = "avatar: " + (M.avatar.locked_version || "draft (unlocked)");
@@ -48,7 +56,8 @@ function renderGrid() {
     const img = g.photos[0]
       ? `<img class="thumb" src="${g.photos[0]}" alt="${g.name}">`
       : `<div class="thumb-empty">no photo yet<br>drop into<br>garments/${g.id}/raw/</div>`;
-    return `<div class="card" data-id="${g.id}">${img}
+    const num = /^\d+/.exec(g.id)?.[0] ?? "";
+    return `<div class="card" data-id="${g.id}"><span class="card-num">${num}</span>${img}
       <div class="label">${g.name} <span class="diff">${"◆".repeat(g.difficulty)}</span></div></div>`;
   }).join("");
   document.querySelectorAll(".card").forEach((c) =>

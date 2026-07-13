@@ -6,16 +6,24 @@
 <title>Virtual Closet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Archivo:wght@300;400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Archivo:wght@300;400;500;600&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/app/style.css">
 </head>
 <body>
 <div id="hud">
-  <div class="hud-title">Virtual&nbsp;Closet <span class="hud-sub">· the fitting room ·</span></div>
-  <div class="hud-right">
-    <span id="avatar-status" class="chip"></span>
-    <span id="cost-meter" class="chip chip-cost"></span>
-    <span id="gen-mode" class="chip"></span>
+  <div class="hud-strip">
+    <span class="strip-left">Fitting room · N<sup>o</sup> 313</span>
+    <span class="strip-right">
+      <span id="avatar-status"></span>
+      <span class="strip-dot">·</span>
+      <span id="gen-mode"></span>
+      <span class="strip-dot">·</span>
+      <span id="cost-meter" class="chip-cost"></span>
+    </span>
+  </div>
+  <div class="hud-main">
+    <div class="hud-title">Virtual&nbsp;Closet</div>
+    <div class="hud-sub">the fitting room</div>
   </div>
 </div>
 
