@@ -27,20 +27,6 @@
     "created": "2026-07-14"
   },
   {
-    "id": "look-003",
-    "title": "look 003",
-    "items": [
-      "02-jeans",
-      "04-structured-blazer",
-      "05-hardest-item"
-    ],
-    "pose": null,
-    "state": "draft",
-    "render": null,
-    "cutout": null,
-    "created": "2026-07-13"
-  },
-  {
     "id": "look-004",
     "title": "outfit 1",
     "items": [
