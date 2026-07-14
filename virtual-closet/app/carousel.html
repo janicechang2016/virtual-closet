@@ -140,10 +140,11 @@ function buildItems() {
 function buildSlots() {
   var vw = window.innerWidth, vh = window.innerHeight;
   var sx = vw / REF_W, sy = vh / REF_H;
-  var heroH = (835 - 40) * sy;
+  var fullH = (835 - 40) * sy;
+  var heroH = fullH * 0.85;          // 15% smaller than spec; same visual center
   var heroTop = 58 * sy;
-  var heroCy = heroTop + heroH / 2;
-  var heroW = 620 * sx;
+  var heroCy = heroTop + fullH / 2;
+  var heroW = 620 * sx * 0.85;
   var thumbH = (194 - 40 * (194 / 835)) * sy;
   var thumbW = 144 * sx;
   var thumbCy = vh * 0.5;
