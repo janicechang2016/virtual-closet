@@ -2,15 +2,23 @@
 """Virtual Closet local server. Zero dependencies (stdlib only).
 
 Serves the app UI, repo assets, and a small JSON API:
-  GET  /api/manifest   garments + renders + avatar + spend
-  GET  /api/prompt?g=  try-on prompt for a garment (copy-paste mode)
-  POST /api/feedback   {render, button, note} -> logs/feedback.jsonl
-  POST /api/generate   REFUSED unless ENABLE_GENERATION=1 (credit guard)
+  GET  /api/manifest      garments + looks + avatar + spend
+  GET  /api/prompt?g=     try-on prompt for a garment (copy-paste mode)
+  POST /api/feedback      {render, button, note} -> logs/feedback.jsonl
+  POST /api/generate      REFUSED unless ENABLE_GENERATION=1 (credit guard)
+  POST /api/looks         {title, items} -> save a draft look (free, looks.json)
+  POST /api/looks/delete  {id} -> remove a look entry (render files stay on disk)
+  POST /api/publish       {id, pose} -> render + cutout + publish (spend-gated)
+
+Looks live in looks.json (draft -> published lifecycle); the carousel shows
+published looks, the fitting room lists and manages all of them.
 
 Run:  python3 scripts/closet_server.py   ->  http://localhost:8765
 """
 import json
 import os
+import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -76,19 +84,30 @@ def garment_list():
     return out
 
 
-def outfit_list():
+LOOKS_PATH = ROOT / "looks.json"
+
+
+def load_looks():
+    try:
+        return json.loads(LOOKS_PATH.read_text())
+    except (OSError, ValueError):
+        return []
+
+
+def save_looks(looks):
+    LOOKS_PATH.write_text(json.dumps(looks, indent=2) + "\n")
+
+
+def looks_list():
+    """looks.json entries with render/cutout resolved to asset URLs (or None)."""
     out = []
-    hidden = hidden_stems()
-    for p in sorted((ROOT / "renders").glob("outfit_*.png")):
-        if p.stem.endswith("_raw") or p.stem in hidden:
-            continue
-        cut = ROOT / "renders" / "cutouts" / f"{p.stem}_cut.png"
-        out.append({
-            "id": p.stem,                       # e.g. outfit_01+02+04_1
-            "items": p.stem.split("_")[1].split("+"),  # ["01","02","04"]
-            "render": f"/assets/renders/{p.name}",
-            "cutout": f"/assets/renders/cutouts/{cut.name}" if cut.exists() else None,
-        })
+    for lk in load_looks():
+        d = dict(lk)
+        r = ROOT / "renders" / (lk.get("render") or "_")
+        c = ROOT / "renders" / "cutouts" / (lk.get("cutout") or "_")
+        d["render"] = f"/assets/renders/{r.name}" if r.is_file() else None
+        d["cutout"] = f"/assets/renders/cutouts/{c.name}" if c.is_file() else None
+        out.append(d)
     return out
 
 
@@ -112,7 +131,7 @@ def manifest():
     return {
         "avatar": avatar,
         "garments": garment_list(),
-        "outfits": outfit_list(),
+        "looks": looks_list(),
         "spend": spend_summary(),
         "generation_enabled": GENERATION_ENABLED,
     }
@@ -147,7 +166,7 @@ class Handler(SimpleHTTPRequestHandler):
         if url.path == "/" or url.path == "/index.html":
             carousel = ROOT / "app" / "carousel.html"
             return self._file(carousel if carousel.exists() else ROOT / "app" / "index.html")
-        if url.path == "/classic":
+        if url.path in ("/fitting-room", "/classic"):  # /classic kept as legacy alias
             return self._file(ROOT / "app" / "index.html")
         if url.path.startswith("/app/"):
             return self._file((ROOT / url.path.lstrip("/")).resolve())
@@ -201,6 +220,57 @@ class Handler(SimpleHTTPRequestHandler):
                 except Exception as e:
                     result["error"] = f"{type(e).__name__}: {e}"
             return self._json(result)
+        if url.path == "/api/looks":
+            items = [g for g in data.get("items", [])
+                     if (ROOT / "garments" / g / "meta.json").is_file()]
+            if not items:
+                return self._json({"error": "a look needs at least one garment"}, 400)
+            looks = load_looks()
+            n = 1 + max([int(l["id"].rsplit("-", 1)[1]) for l in looks] + [0])
+            lk = {"id": f"look-{n:03d}",
+                  "title": (data.get("title") or "").strip() or f"look {n:03d}",
+                  "items": items, "pose": None, "state": "draft",
+                  "render": None, "cutout": None,
+                  "created": datetime.now(timezone.utc).date().isoformat()}
+            looks.append(lk)
+            save_looks(looks)
+            return self._json({"ok": True, "look": lk})
+        if url.path == "/api/looks/delete":
+            looks = load_looks()
+            keep = [l for l in looks if l["id"] != data.get("id")]
+            if len(keep) == len(looks):
+                return self._json({"error": "unknown look"}, 404)
+            save_looks(keep)   # render files stay on disk
+            return self._json({"ok": True})
+        if url.path == "/api/publish":
+            if not GENERATION_ENABLED:
+                return self._json({"error": "generation disabled",
+                                   "detail": "Start the server with ENABLE_GENERATION=1 "
+                                             "to allow fal spending."}, 403)
+            looks = load_looks()
+            lk = next((l for l in looks if l["id"] == data.get("id")), None)
+            if not lk:
+                return self._json({"error": "unknown look"}, 404)
+            from tryon import tryon_outfit, POSES
+            pose = data.get("pose", "front")
+            if pose not in POSES:
+                return self._json({"error": f"unknown pose (one of {', '.join(POSES)})"}, 400)
+            try:
+                out = tryon_outfit(lk["items"], pose=pose)
+            except Exception as e:
+                return self._json({"error": f"{type(e).__name__}: {e}"}, 500)
+            lk.update({"state": "published", "pose": pose, "render": out.name})
+            venv = Path("/Users/janice.chang/liminal-wardrobe/.venv/bin/python")
+            if venv.exists():   # cutout pass (rembg lives in the liminal venv, not here)
+                try:
+                    subprocess.run([str(venv), str(ROOT / "scripts" / "cutout_render.py")],
+                                   cwd=str(ROOT), capture_output=True, timeout=300)
+                except Exception:
+                    pass
+            if (ROOT / "renders" / "cutouts" / f"{out.stem}_cut.png").is_file():
+                lk["cutout"] = f"{out.stem}_cut.png"
+            save_looks(looks)
+            return self._json({"ok": True, "look": lk})
         if url.path == "/api/generate":
             if not GENERATION_ENABLED:
                 return self._json({
@@ -219,8 +289,10 @@ class Handler(SimpleHTTPRequestHandler):
             if not gid or not (ROOT / "garments" / gid / "meta.json").is_file():
                 return self._json({"error": "unknown garment"}, 404)
             arm = data.get("arm", os.environ.get("TRYON_ARM", "nb2"))  # Phase 3 winner
-            n = 1 + len([p for p in (ROOT / "renders").glob(f"{gid}_{arm}_v1_*.png")
-                         if not p.stem.endswith("_raw")])
+            # next free suffix among this garment's front v3 renders (poses live elsewhere)
+            taken = [int(m.group(1)) for p in (ROOT / "renders").glob(f"{gid}_{arm}_v3_*.png")
+                     if (m := re.fullmatch(rf"{re.escape(gid)}_{re.escape(arm)}_v3_(\d+)", p.stem))]
+            n = 1 + max(taken + [0])
             try:
                 from tryon import tryon as run_tryon
                 out = run_tryon(gid, arm, suffix=str(n))

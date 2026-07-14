@@ -29,8 +29,9 @@
     <h2>Outfit</h2>
     <div id="outfit-slots"></div>
     <button id="render-outfit" class="btn">Render outfit</button>
-    <button id="save-outfit" class="btn btn-ghost">Save outfit</button>
+    <button id="save-outfit" class="btn btn-ghost">Save look</button>
     <button id="clear-outfit" class="btn btn-ghost">Clear — back to base</button>
+    <div id="saved-head">Looks</div>
     <div id="saved-outfits"></div>
   </section>
 
@@ -65,6 +66,16 @@
   <div class="modal-row">
     <button id="copy-prompt" class="btn">Copy prompt</button>
     <button id="close-modal" class="btn btn-ghost">Close</button>
+  </div>
+</dialog>
+
+<dialog id="publish-modal">
+  <h3>Publish to the archive</h3>
+  <p class="modal-note" id="publish-note"></p>
+  <div id="pose-picker"></div>
+  <div class="modal-row">
+    <button id="publish-go" class="btn">Publish — $0.06</button>
+    <button id="publish-cancel" class="btn btn-ghost">Cancel</button>
   </div>
 </dialog>
 

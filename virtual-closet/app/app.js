@@ -2,9 +2,9 @@ let M = null;                 // manifest
 let currentGarment = null;    // garment shown on stage
 let currentRender = null;     // render path shown on stage
 let filter = "all";
+const POSES = ["front", "contrapposto", "hand-on-hip", "34turn"];
 const SLOTS = ["top", "bottom", "layer", "shoes"];
 const outfit = JSON.parse(localStorage.getItem("outfit") || "{}");
-const savedOutfits = JSON.parse(localStorage.getItem("savedOutfits") || "[]");
 
 const $ = (s) => document.querySelector(s);
 
@@ -16,16 +16,57 @@ window.addEventListener("DOMContentLoaded", () => {
   img.addEventListener("load", () => img.classList.remove("loading"));
 });
 
-async function boot() {
+async function refreshManifest() {
   M = await (await fetch("/api/manifest")).json();
-  $("#avatar-status").textContent = "avatar: " + (M.avatar.locked_version || "draft (unlocked)");
   $("#cost-meter").textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
+}
+
+async function boot() {
+  await refreshManifest();
+  $("#avatar-status").textContent = "avatar: " + (M.avatar.locked_version || "draft (unlocked)");
   $("#gen-mode").textContent = M.generation_enabled ? "generation: LIVE" : "generation: copy-prompt mode";
+  await migrateLegacySaves();
   showAvatar();
   renderFilters();
   renderGrid();
   renderSlots();
   renderSaved();
+  consumeIncomingLook();
+}
+
+// pre-looks.json saves lived in localStorage; move them to server drafts once
+async function migrateLegacySaves() {
+  const legacy = JSON.parse(localStorage.getItem("savedOutfits") || "[]");
+  if (!legacy.length) return;
+  for (const o of legacy) {
+    const items = [...new Set(Object.values(o.slots || {}))].filter(Boolean);
+    if (!items.length) continue;
+    await fetch("/api/looks", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: o.name, items }),
+    });
+  }
+  localStorage.removeItem("savedOutfits");
+  await refreshManifest();
+  toast(`migrated ${legacy.length} saved outfit(s) to looks`);
+}
+
+// the archive's "open in fitting room" door
+function consumeIncomingLook() {
+  const raw = localStorage.getItem("incomingLook");
+  if (!raw) return;
+  localStorage.removeItem("incomingLook");
+  try {
+    const { title, items } = JSON.parse(raw);
+    SLOTS.forEach((s) => delete outfit[s]);
+    items.forEach((gid) => {
+      const g = M.garments.find((x) => x.id === gid);
+      if (g) equip(g);
+    });
+    localStorage.setItem("outfit", JSON.stringify(outfit));
+    renderSlots();
+    toast(`from the archive: ${title}`);
+  } catch { /* stale handoff — ignore */ }
 }
 
 function showAvatar() {
@@ -132,16 +173,89 @@ function renderSlots() {
 }
 
 function renderSaved() {
-  $("#saved-outfits").innerHTML = savedOutfits
-    .map((o, i) => `<div class="saved" data-i="${i}">${o.name}</div>`).join("");
+  const looks = M.looks || [];
+  $("#saved-outfits").innerHTML = looks.map((l) => `
+    <div class="saved" data-id="${l.id}">
+      <span class="saved-title">${l.title}</span>
+      <span class="saved-tags">
+        ${l.state === "draft"
+          ? `<button class="pub" data-id="${l.id}">publish</button>`
+          : `<span class="badge">in archive</span>`}
+        <button class="del" data-id="${l.id}" title="remove look">×</button>
+      </span>
+    </div>`).join("");
   document.querySelectorAll(".saved").forEach((el) =>
-    el.addEventListener("click", () => {
-      Object.assign(outfit, savedOutfits[el.dataset.i].slots);
-      localStorage.setItem("outfit", JSON.stringify(outfit));
-      renderSlots();
-      toast("outfit loaded");
+    el.addEventListener("click", () => loadLook(el.dataset.id)));
+  document.querySelectorAll(".pub").forEach((b) =>
+    b.addEventListener("click", (e) => { e.stopPropagation(); openPublishModal(b.dataset.id); }));
+  document.querySelectorAll(".del").forEach((b) =>
+    b.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const l = (M.looks || []).find((x) => x.id === b.dataset.id);
+      if (!l || !confirm(`remove "${l.title}"? (render files stay on disk)`)) return;
+      await fetch("/api/looks/delete", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: l.id }),
+      });
+      await refreshManifest();
+      renderSaved();
+      toast("look removed");
     }));
 }
+
+function loadLook(id) {
+  const l = (M.looks || []).find((x) => x.id === id);
+  if (!l) return;
+  SLOTS.forEach((s) => delete outfit[s]);
+  l.items.forEach((gid) => {
+    const g = M.garments.find((x) => x.id === gid);
+    if (g) equip(g);
+  });
+  localStorage.setItem("outfit", JSON.stringify(outfit));
+  renderSlots();
+  toast(`look loaded: ${l.title}`);
+}
+
+/* ── publish: draft -> rendered look in the archive (billed, pose-aware) ── */
+let publishId = null;
+function openPublishModal(id) {
+  const l = (M.looks || []).find((x) => x.id === id);
+  if (!l) return;
+  if (!M.generation_enabled) { toast("generation is gated off (ENABLE_GENERATION=1)"); return; }
+  publishId = id;
+  const hard = l.items.some((gid) =>
+    (M.garments.find((x) => x.id === gid)?.difficulty ?? 0) >= 4);
+  $("#publish-note").textContent =
+    `"${l.title}" gets one render in the chosen pose + a cutout, then appears in the archive.` +
+    (hard ? " contains a difficulty-4+ garment — front pose recommended." : "");
+  $("#pose-picker").innerHTML = POSES.map((p, i) => `
+    <label class="pose-opt"><input type="radio" name="pose" value="${p}"
+      ${(hard ? p === "front" : i === 0) ? "checked" : ""}> ${p}</label>`).join("");
+  $("#publish-modal").showModal();
+}
+$("#publish-cancel").addEventListener("click", () => $("#publish-modal").close());
+$("#publish-go").addEventListener("click", async () => {
+  const pose = document.querySelector('input[name="pose"]:checked')?.value || "front";
+  const l = (M.looks || []).find((x) => x.id === publishId);
+  $("#publish-modal").close();
+  if (!l) return;
+  $("#stage-caption").textContent = `publishing "${l.title}"… (~1 min, billed)`;
+  try {
+    const r = await fetch("/api/publish", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: l.id, pose }),
+    });
+    const j = await r.json();
+    if (!r.ok) { toast(j.error || "publish failed"); return; }
+    await refreshManifest();
+    renderSaved();
+    toast(`published to the archive: ${l.title} (${pose})`);
+  } catch (e) {
+    toast("publish failed: " + e.message);
+  } finally {
+    if (!currentRender) showAvatar();   // stage stays front-only; posed render lives in the archive
+  }
+});
 
 $("#clear-outfit").addEventListener("click", () => {
   SLOTS.forEach((s) => delete outfit[s]);
@@ -151,12 +265,20 @@ $("#clear-outfit").addEventListener("click", () => {
   toast("cleared — base avatar");
 });
 
-$("#save-outfit").addEventListener("click", () => {
-  const name = prompt("name this outfit:", `outfit ${savedOutfits.length + 1}`);
+$("#save-outfit").addEventListener("click", async () => {
+  const items = [...new Set(Object.values(outfit))].filter(Boolean);
+  if (!items.length) { toast("equip at least one item first"); return; }
+  const n = (M.looks || []).length + 1;
+  const name = prompt("name this look:", `look ${String(n).padStart(3, "0")}`);
   if (!name) return;
-  savedOutfits.push({ name, slots: { ...outfit } });
-  localStorage.setItem("savedOutfits", JSON.stringify(savedOutfits));
+  const r = await fetch("/api/looks", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: name, items }),
+  });
+  if (!r.ok) { toast("save failed"); return; }
+  await refreshManifest();
   renderSaved();
+  toast(`saved as a draft — publish it to appear in the archive`);
 });
 
 async function openPromptModal(g) {

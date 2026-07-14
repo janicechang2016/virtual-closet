@@ -54,6 +54,36 @@
     cursor: pointer; font-size: 11px; letter-spacing: 0.04em;
   }
   #cta:disabled { opacity: 0.4; cursor: wait; }
+
+  /* hero detail state */
+  #detail {
+    position: fixed; inset: 0; z-index: 20;
+    background: rgba(255, 255, 255, 0.92);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #detail[hidden] { display: none; }
+  #detail-box {
+    display: flex; gap: 24px; background: #fff; border: 1px solid #000;
+    padding: 24px; max-width: 860px; max-height: 84vh;
+  }
+  #detail-img { max-height: calc(84vh - 48px); max-width: 440px; object-fit: contain; }
+  #detail-side { width: 280px; display: flex; flex-direction: column; }
+  #detail-title { font-weight: 800; margin-bottom: 16px; }
+  .d-row { border-top: 1px solid #000; padding: 8px 0; }
+  #detail-items .d-row:last-child { border-bottom: 1px solid #000; }
+  #detail-meta { margin-top: 12px; font-size: 11px; }
+  #detail-actions { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+  #detail-actions button {
+    height: 32px; border: 1px solid #000; background: #fff; cursor: pointer;
+    font-size: 11px; letter-spacing: 0.04em;
+  }
+  #detail-actions button:hover { background: #000; color: #fff; }
+  #detail-actions #detail-tryon { background: #000; color: #fff; }
+  #detail-actions #detail-tryon:hover { opacity: 0.8; }
+  #detail-actions button:disabled { opacity: 0.4; cursor: wait; }
+
+  /* the hero morphs into the fitting-room stage on navigation */
+  @view-transition { navigation: auto; }
 </style>
 </head>
 <body>
@@ -68,7 +98,7 @@
     <span class="filter" data-f="outerwear">Outerwear</span>
     <span class="filter" data-f="outfit">Outfits</span>
     <div class="spacer"></div>
-    <a href="/classic">Fitting room</a>
+    <a href="/fitting-room">Fitting room</a>
   </nav>
   <nav id="nav-right">
     <span class="quiet" id="nav-avatar"></span>
@@ -81,6 +111,21 @@
   <div id="controls">
     <div class="ctrl-row"><div id="sizes"></div><div id="colors"></div></div>
     <div class="ctrl-row"><div id="price"></div><button id="cta">Try on</button></div>
+  </div>
+  <div id="detail" hidden>
+    <div id="detail-box">
+      <img id="detail-img" alt="">
+      <div id="detail-side">
+        <div id="detail-title"></div>
+        <div id="detail-items"></div>
+        <div id="detail-meta"></div>
+        <div id="detail-actions">
+          <button id="detail-tryon">Try on</button>
+          <button id="detail-open">Open in fitting room</button>
+          <button id="detail-close">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -111,10 +156,8 @@ function swatches(color) {
 }
 
 function buildItems() {
-  const byNum = {};
   ALL_ITEMS = [];
   M.garments.forEach((g) => {
-    byNum[g.id.slice(0, 2)] = g;
     ALL_ITEMS.push({
       kind: 'garment', cat: g.category, gid: g.id,
       title: g.name, desc: [g.fabric, g.fit].filter(Boolean).join('. '),
@@ -123,16 +166,17 @@ function buildItems() {
       size: g.size_owned || null,
     });
   });
-  M.outfits.forEach((o) => {
-    const names = o.items.map((n) => {
-      const g = byNum[n];
-      if (!g) return n;
+  (M.looks || []).forEach((l) => {
+    if (l.state !== 'published') return;   // drafts live in the fitting room
+    const names = l.items.map((gid) => {
+      const g = M.garments.find((x) => x.id === gid);
+      if (!g) return gid;
       return g.size_owned ? `${g.name} (${g.size_owned})` : g.name;
     });
     ALL_ITEMS.push({
-      kind: 'outfit', cat: 'outfit', ids: o.items.map((n) => byNum[n] && byNum[n].id).filter(Boolean),
-      title: 'Look — ' + o.items.join(' + '), desc: names.join('. '),
-      src: o.cutout || o.render, colors: ['#141414'],
+      kind: 'look', cat: 'outfit', lookId: l.id, items: l.items, pose: l.pose,
+      title: l.title, desc: names.join('. '),
+      src: l.cutout || l.render, colors: ['#141414'],
     });
   });
 }
@@ -193,7 +237,10 @@ function mount(filter) {
     img.src = it.src || PLACEHOLDER;
     img.onerror = () => { img.src = PLACEHOLDER; };
     d.appendChild(img);
-    d.addEventListener('click', () => centerOn(i));
+    d.addEventListener('click', () => {
+      if (Math.round(Math.abs(normalizeOffset(i - scrollPos))) === 0) openDetail(items[i]);
+      else centerOn(i);
+    });
     host.appendChild(d);
     return d;
   });
@@ -213,6 +260,8 @@ function layout() {
     el.style.opacity = s.opacity;
     el.style.zIndex = s.z;
     el.style.transform = `translate(${s.cx - s.w / 2}px, ${s.cy - s.h / 2}px)`;
+    // only the hero carries the cross-page transition name (must be unique)
+    el.style.viewTransitionName = Math.abs(off) < 0.5 ? 'figure' : 'none';
   });
 }
 
@@ -232,7 +281,7 @@ function updateInfo() {
     `<span class="${s === it.size ? 'on' : ''}">${s}</span>`).join('');
   $('#colors').innerHTML = it.colors.map((c) => `<div style="background:${c}"></div>`).join('');
   $('#price').textContent = M.generation_enabled ? '$0.06 / render' : 'copy-prompt mode';
-  $('#cta').textContent = it.kind === 'outfit' ? 'Re-render look' : 'Try on';
+  $('#cta').textContent = it.kind === 'look' ? 'Re-render look' : 'Try on';
 }
 
 function moveCarousel(dir) {
@@ -291,27 +340,69 @@ document.addEventListener('click', (e) => {
   mount(f.dataset.f);
 });
 
-$('#cta').addEventListener('click', async () => {
+async function renderHero() {
   const it = items[centeredIndex()];
   if (!it || !M.generation_enabled) return;
-  const btn = $('#cta');
-  btn.disabled = true; btn.textContent = 'Rendering…';
+  const btns = [$('#cta'), $('#detail-tryon')];
+  btns.forEach((b) => { b.disabled = true; b.textContent = 'Rendering…'; });
   try {
-    const body = it.kind === 'outfit' ? { outfit: it.ids } : { garment: it.gid };
-    const r = await fetch('/api/generate', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const j = await r.json();
-    if (r.ok && j.render) {
-      it.src = j.render;                       // fresh render (boxed until cutout pass)
-      els[items.indexOf(it)].querySelector('img').src = j.render;
+    let src = null;
+    if (it.kind === 'look') {   // re-publish with its assigned pose; updates looks.json
+      const r = await fetch('/api/publish', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: it.lookId, pose: it.pose || 'front' }),
+      });
+      const j = await r.json();
+      if (r.ok && j.look) { src = j.look.cutout || j.look.render; it.pose = j.look.pose; }
+    } else {
+      const r = await fetch('/api/generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ garment: it.gid }),
+      });
+      const j = await r.json();
+      if (r.ok && j.render) src = j.render;   // boxed until the next cutout pass
+    }
+    if (src) {
+      it.src = src;
+      els[items.indexOf(it)].querySelector('img').src = src;
+      if (!$('#detail').hidden) $('#detail-img').src = src;
       M = await (await fetch('/api/manifest')).json();
       $('#nav-cost').textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
     }
   } finally {
-    btn.disabled = false; updateInfo();
+    btns.forEach((b) => { b.disabled = false; });
+    updateInfo();
+    if (detailItem) $('#detail-tryon').textContent = detailItem.kind === 'look' ? 'Re-render look' : 'Try on';
   }
+}
+$('#cta').addEventListener('click', renderHero);
+
+/* ── hero detail state (the junction between archive and fitting room) ── */
+let detailItem = null;
+function openDetail(it) {
+  detailItem = it;
+  $('#detail-img').src = it.src || PLACEHOLDER;
+  $('#detail-title').textContent = it.title;
+  const gids = it.kind === 'look' ? it.items : [it.gid];
+  $('#detail-items').innerHTML = gids.map((gid) => {
+    const g = M.garments.find((x) => x.id === gid);
+    const label = g ? (g.size_owned ? `${g.name} — ${g.size_owned}` : g.name) : gid;
+    return `<div class="d-row">${label}</div>`;
+  }).join('');
+  $('#detail-meta').textContent = it.kind === 'look'
+    ? `pose: ${it.pose || 'front'}` : (it.desc || '');
+  $('#detail-tryon').textContent = it.kind === 'look' ? 'Re-render look' : 'Try on';
+  $('#detail').hidden = false;
+}
+$('#detail-close').addEventListener('click', () => { $('#detail').hidden = true; });
+$('#detail').addEventListener('click', (e) => { if (e.target.id === 'detail') $('#detail').hidden = true; });
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#detail').hidden = true; });
+$('#detail-tryon').addEventListener('click', renderHero);
+$('#detail-open').addEventListener('click', () => {
+  if (!detailItem) return;
+  const items_ = detailItem.kind === 'look' ? detailItem.items : [detailItem.gid];
+  localStorage.setItem('incomingLook', JSON.stringify({ title: detailItem.title, items: items_ }));
+  location.href = '/fitting-room';
 });
 
 async function boot() {

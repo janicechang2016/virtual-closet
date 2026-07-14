@@ -1,0 +1,43 @@
+[
+  {
+    "id": "look-001",
+    "title": "look 001",
+    "items": [
+      "01-plain-tee",
+      "02-jeans"
+    ],
+    "pose": "34turn",
+    "state": "published",
+    "render": "outfit_01+02_34turn_1.png",
+    "cutout": "outfit_01+02_34turn_1_cut.png",
+    "created": "2026-07-14"
+  },
+  {
+    "id": "look-002",
+    "title": "look 002",
+    "items": [
+      "01-plain-tee",
+      "02-jeans",
+      "04-structured-blazer"
+    ],
+    "pose": "hand-on-hip",
+    "state": "published",
+    "render": "outfit_01+02+04_hand-on-hip_1.png",
+    "cutout": "outfit_01+02+04_hand-on-hip_1_cut.png",
+    "created": "2026-07-14"
+  },
+  {
+    "id": "look-003",
+    "title": "look 003",
+    "items": [
+      "02-jeans",
+      "04-structured-blazer",
+      "05-hardest-item"
+    ],
+    "pose": null,
+    "state": "draft",
+    "render": null,
+    "cutout": null,
+    "created": "2026-07-13"
+  }
+]
