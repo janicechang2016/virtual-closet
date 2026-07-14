@@ -36,15 +36,24 @@ def clean(img: Image.Image) -> Image.Image:
     return img
 
 
+def hidden_stems():
+    try:
+        import json
+        return set(json.loads((ROOT / "renders" / "hidden.json").read_text()))
+    except (OSError, ValueError):
+        return set()
+
+
 def targets():
+    hidden = hidden_stems()
     yield ROOT / "avatar" / "avatar-v1" / "front.png"
     for gdir in sorted((ROOT / "garments").glob("*/")):
         finals = [p for p in sorted((ROOT / "renders").glob(f"{gdir.name}_nb2_*.png"))
-                  if not p.stem.endswith("_raw")]
+                  if not p.stem.endswith("_raw") and p.stem not in hidden]
         if finals:
             yield finals[-1]
     for p in sorted((ROOT / "renders").glob("outfit_*.png")):
-        if not p.stem.endswith("_raw"):
+        if not p.stem.endswith("_raw") and p.stem not in hidden:
             yield p
 
 

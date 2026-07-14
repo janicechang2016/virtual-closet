@@ -10,11 +10,11 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   in `avatar/avatar-v3/` (front / contrapposto / hand-on-hip / 34turn) — new lineage
   superseding avatar-v1 (v1 4-view sheet kept in `avatar/avatar-v1/`). **Whole catalog
   re-rendered on v3 poses 07-14** (`tryon.py --pose <name>`, works for `--outfit` too;
-  v1 renders legacy on disk, old look renders in hidden.json). Pose map: 01+03
-  contrapposto, 02 hand-on-hip, 04 34turn, 05 front, look 01+02 34turn, look 01+02+04
-  hand-on-hip. One pose per saved look; difficulty-4/5 garments stay on front — NB:
-  03 (plissé, difficulty 4) accidentally went to contrapposto; garment held but pose
-  drifted (hand-to-hair); Janice to keep or re-render on front ($0.06). **Poses are
+  v1 renders legacy on disk, old look renders in hidden.json). Pose map: 01
+  contrapposto, 02 hand-on-hip, 03 front (Janice rejected its drifted contrapposto —
+  hidden via hidden.json, which now also governs cutout choice in the server AND
+  cutout_render.py), 04 34turn, 05 front, look 01+02 34turn, look 01+02+04 hand-on-hip.
+  One pose per saved look; difficulty-4/5 garments stay on front. **Poses are
   archive-only (Janice 07-14): the fitting room shows/corrects front renders exclusively**
   (server filters pose-tagged stems from `renders`). Front v3 renders exist for all five
   garments (01–04 batch $0.235, approved 07-14; 02 corrected twice via the feedback
@@ -109,8 +109,8 @@ actually look at the PNG.
 - **Pose rollout DONE** (see current state) — going forward: assign one pose per saved
   look at creation (~$0.06/render). Do NOT re-pose via nb2/edit prompt language alone
   (it's an editor; re-posing fights it). Difficulty-4/5 garments stay on the front pose
-  (03 plissé AND 05 draped maxi — check `difficulty` in meta.json, not folder names).
-  Open: Janice's keep-or-redo verdict on 03's drifted contrapposto.
+  (03 plissé AND 05 draped maxi — check `difficulty` in meta.json, not folder names;
+  03's drifted contrapposto rejected by Janice 07-14, hidden not deleted).
 - **New garment ingest incoming:** Janice will provide new on-model photos at a later
   session. At ingest, fill `meta.json` per the schema **including `size_owned`** (sizes
   vary per item — never default to S) and the per-item note on what in the photo is NOT

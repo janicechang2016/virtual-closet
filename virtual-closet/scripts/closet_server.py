@@ -77,7 +77,8 @@ def garment_list():
         renders = [f"/assets/renders/{p.name}" for p in sorted((ROOT / "renders").glob(f"{folder.name}_*"))
                    if p.suffix.lower() in IMG_EXT and not p.stem.endswith("_raw")
                    and p.stem not in hidden and not is_posed(p.stem)]
-        cuts = sorted((ROOT / "renders" / "cutouts").glob(f"{folder.name}_*_cut.png"))
+        cuts = [p for p in sorted((ROOT / "renders" / "cutouts").glob(f"{folder.name}_*_cut.png"))
+                if p.stem[:-len("_cut")] not in hidden]
         meta.update({"photos": photos, "renders": renders,
                      "cutout": f"/assets/renders/cutouts/{cuts[-1].name}" if cuts else None})
         out.append(meta)
