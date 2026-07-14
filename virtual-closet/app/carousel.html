@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Virtual Closet</title>
+<title>the archive.</title>
 <style>
   /* SYVE-style carousel (design-inspo/fashion-site-instruction.md), wired to the closet */
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 100%; height: 100vh; overflow: hidden; background: #fff; }
+  html, body { width: 100%; height: 100vh; overflow: hidden; background: #fff; overscroll-behavior: none; }
   body, button {
     font-family: 'SuisseIntl', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-weight: 600; font-size: 12px; text-transform: uppercase;
@@ -29,7 +29,7 @@
   nav .on { text-decoration: underline; }
   nav .quiet { cursor: default; }
 
-  .carousel-img { position: absolute; will-change: transform; }
+  .carousel-img { position: absolute; will-change: transform; cursor: pointer; }
   .carousel-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
   #info {
@@ -58,7 +58,7 @@
 </head>
 <body>
 <div id="viewport">
-  <div id="logo">virtual closet.</div>
+  <div id="logo">the archive.</div>
   <nav id="nav-left">
     <span class="filter on" data-f="all">All</span>
     <div class="spacer"></div>
@@ -120,10 +120,15 @@ function buildItems() {
       title: g.name, desc: [g.fabric, g.fit].filter(Boolean).join('. '),
       src: g.cutout || (g.renders.length ? g.renders[g.renders.length - 1] : null),
       colors: swatches(g.color),
+      size: g.size_owned || null,
     });
   });
   M.outfits.forEach((o) => {
-    const names = o.items.map((n) => (byNum[n] ? byNum[n].name : n));
+    const names = o.items.map((n) => {
+      const g = byNum[n];
+      if (!g) return n;
+      return g.size_owned ? `${g.name} (${g.size_owned})` : g.name;
+    });
     ALL_ITEMS.push({
       kind: 'outfit', cat: 'outfit', ids: o.items.map((n) => byNum[n] && byNum[n].id).filter(Boolean),
       title: 'Look — ' + o.items.join(' + '), desc: names.join('. '),
@@ -180,13 +185,14 @@ function mount(filter) {
   items = ALL_ITEMS.filter((it) => filter === 'all' || it.cat === filter);
   const host = $('#stage-items');
   host.innerHTML = '';
-  els = items.map((it) => {
+  els = items.map((it, i) => {
     const d = document.createElement('div');
     d.className = 'carousel-img';
     const img = document.createElement('img');
     img.src = it.src || PLACEHOLDER;
     img.onerror = () => { img.src = PLACEHOLDER; };
     d.appendChild(img);
+    d.addEventListener('click', () => centerOn(i));
     host.appendChild(d);
     return d;
   });
@@ -219,8 +225,10 @@ function updateInfo() {
   if (!it) return;
   $('#info-title').textContent = it.title;
   $('#info-desc').textContent = it.desc;
-  $('#sizes').innerHTML = ['XS', 'S', 'M', 'L'].map((s, i) =>
-    `<span class="${i === 1 ? 'on' : ''}">${s}</span>`).join('');
+  const sizes = ['XS', 'S', 'M', 'L'];
+  if (it.size && !sizes.includes(it.size)) sizes.push(it.size);
+  $('#sizes').innerHTML = sizes.map((s) =>
+    `<span class="${s === it.size ? 'on' : ''}">${s}</span>`).join('');
   $('#colors').innerHTML = it.colors.map((c) => `<div style="background:${c}"></div>`).join('');
   $('#price').textContent = M.generation_enabled ? '$0.06 / render' : 'copy-prompt mode';
   $('#cta').textContent = it.kind === 'outfit' ? 'Re-render look' : 'Try on';
@@ -228,6 +236,13 @@ function updateInfo() {
 
 function moveCarousel(dir) {
   target = scrollPos + dir;   // continuous position; wrapping handled per-item
+  isSnapped = false;
+}
+
+function centerOn(i) {
+  const off = normalizeOffset(i - scrollPos);   // shortest way around the wrap
+  if (Math.round(Math.abs(off)) === 0) return;  // already the hero
+  target = Math.round(scrollPos + off);
   isSnapped = false;
 }
 
@@ -242,9 +257,10 @@ function handleScroll(delta) {
 }
 
 window.addEventListener('wheel', (e) => {
+  e.preventDefault();   // keep horizontal swipes from firing the browser back/forward gesture
   const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
   handleScroll(d);
-}, { passive: true });
+}, { passive: false });
 
 let touchLastX = null;
 window.addEventListener('touchstart', (e) => { touchLastX = e.touches[0].clientX; }, { passive: true });

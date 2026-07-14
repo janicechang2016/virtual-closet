@@ -36,8 +36,17 @@ TRYON_TEMPLATE = (
 )
 
 
+def hidden_stems():
+    """renders/hidden.json: render stems kept out of the app (files stay on disk)."""
+    try:
+        return set(json.loads((ROOT / "renders" / "hidden.json").read_text()))
+    except (OSError, ValueError):
+        return set()
+
+
 def garment_list():
     out = []
+    hidden = hidden_stems()
     gdir = ROOT / "garments"
     for meta_path in sorted(gdir.glob("*/meta.json")):
         try:
@@ -49,7 +58,8 @@ def garment_list():
                   for sub in ("clean", "raw")
                   for p in sorted((folder / sub).glob("*")) if p.suffix.lower() in IMG_EXT]
         renders = [f"/assets/renders/{p.name}" for p in sorted((ROOT / "renders").glob(f"{folder.name}_*"))
-                   if p.suffix.lower() in IMG_EXT and not p.stem.endswith("_raw")]
+                   if p.suffix.lower() in IMG_EXT and not p.stem.endswith("_raw")
+                   and p.stem not in hidden]
         cuts = sorted((ROOT / "renders" / "cutouts").glob(f"{folder.name}_*_cut.png"))
         meta.update({"photos": photos, "renders": renders,
                      "cutout": f"/assets/renders/cutouts/{cuts[-1].name}" if cuts else None})
@@ -59,8 +69,9 @@ def garment_list():
 
 def outfit_list():
     out = []
+    hidden = hidden_stems()
     for p in sorted((ROOT / "renders").glob("outfit_*.png")):
-        if p.stem.endswith("_raw"):
+        if p.stem.endswith("_raw") or p.stem in hidden:
             continue
         cut = ROOT / "renders" / "cutouts" / f"{p.stem}_cut.png"
         out.append({

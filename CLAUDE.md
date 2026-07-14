@@ -13,15 +13,19 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
 - Server `scripts/closet_server.py` → http://localhost:8765 (run with
   `ENABLE_GENERATION=1` for live spending). Single-item try-on, multi-item outfit compose,
   feedback→corrective-edit loop, clear-to-base — all working from the UI.
-- **Two designs coexist:**
-  - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): white void, figure
-    cutouts (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
-    interpolation + infinite wrap + 80px snap/dwell, italic lowercase wordmark, TRY ON
-    wired to the live pipeline. Spec: `virtual-closet/design-inspo/` (docx + reel).
-  - `/classic` — **"The Boutique" v3** (git tag `boutique-v3`; revert:
-    `git checkout boutique-v3 -- virtual-closet/app/`): 313NY tokens from
-    `~/liminal-wardrobe/spec/design/design-tokens.md`, soft-chrome accent
-    (amber rejected as masculine; violet/rose rejected outright).
+- **One brand ("the archive."), two views, one SYVE language** (white void, black 1px
+  hairlines, uppercase Helvetica, italic lowercase wordmark):
+  - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): figure cutouts
+    (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
+    interpolation + infinite wrap + 80px snap/dwell, x-axis scroll + click-to-center,
+    TRY ON wired to the live pipeline. Spec: `virtual-closet/design-inspo/` (docx + reel).
+  - `/classic` — **fitting room** (outfit rail | stage | racks), restyled 07-13 late to
+    the SYVE language. Old look "The Boutique" v3 (313NY tokens, soft chrome) preserved
+    at git tag `boutique-v3` (revert: `git checkout boutique-v3 -- virtual-closet/app/`);
+    amber rejected as masculine, violet/rose rejected outright.
+  - `renders/hidden.json` — render stems the server keeps out of the app (files stay on
+    disk). Size row reads `size_owned` from each garment's `meta.json`; unset = no
+    highlight (log real sizes at ingest — not everything is S).
 - **Janice's architectural intent (2026-07-13, to flesh out later — do not build yet):**
   the SYVE carousel likely becomes the **OUTFIT ARCHIVE** view (browsing saved looks),
   while the Boutique app remains the **FITTING ROOM** (composing/trying-on). How the two

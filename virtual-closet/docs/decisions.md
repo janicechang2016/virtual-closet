@@ -1,5 +1,21 @@
 # Decision log
 
+## 2026-07-13 (late) — Site brand "the archive."; SYVE language goes site-wide
+
+**Decision (user):** The header/brand is **"the archive."** (lowercase, with period), and
+the `/classic` fitting room is restyled to the same SYVE white-void language as the
+carousel (white bg, black 1px hairlines, uppercase Helvetica, black-fill CTAs, italic
+lowercase wordmark). Layout of the fitting room (outfit rail | stage | racks) is unchanged.
+This supersedes the Boutique/313NY visual direction; Boutique v3 remains recoverable at
+git tag `boutique-v3` (`git checkout boutique-v3 -- virtual-closet/app/`). The two-view
+architecture (carousel = archive, /classic = fitting room) still stands.
+
+Same batch: carousel responds to horizontal (x-axis) scroll and click-to-center on any
+figure; `renders/hidden.json` lists render stems the server keeps out of the app
+(currently the two `outfit_01+02+04` renders — files stay on disk); the size row now
+reflects each garment's `size_owned` from `meta.json` (no highlight when unset — sizes
+must be logged per item at ingest, everything is NOT small).
+
 ## 2026-07-13 — Phase 3 verdict: nb2/edit + face-swap is the default try-on pipeline
 
 Benchmark (docs/phase3-benchmark.md): `fal-ai/nano-banana-2/edit` + face-swap finish swept
