@@ -382,20 +382,23 @@ let detailItem = null;
 function openDetail(it) {
   detailItem = it;
   $('#detail-img').src = it.src || PLACEHOLDER;
-  $('#detail-title').textContent = it.title;
   const gids = it.kind === 'look' ? it.items : [it.gid];
-  $('#detail-items').innerHTML = gids.map((gid) => {
-    const g = M.garments.find((x) => x.id === gid);
-    if (!g) return `<div class="d-row">${gid}</div>`;
-    const brand = g.brand ? `<span class="d-brand">${g.brand}</span> · ` : '';
-    return `<div class="d-row">${brand}${g.name}${g.size_owned ? ` — ${g.size_owned}` : ''}</div>`;
-  }).join('');
   if (it.kind === 'look') {
+    $('#detail-title').textContent = it.title;
+    $('#detail-items').innerHTML = gids.map((gid) => {
+      const g = M.garments.find((x) => x.id === gid);
+      if (!g) return `<div class="d-row">${gid}</div>`;
+      const brand = g.brand ? `<span class="d-brand">${g.brand}</span> · ` : '';
+      return `<div class="d-row">${brand}${g.name}${g.size_owned ? ` — ${g.size_owned}` : ''}</div>`;
+    }).join('');
     $('#detail-meta').textContent = `pose: ${it.pose || 'front'}`;
   } else {
+    // brand is the headline; the garment name lives in the row below only
     const g = M.garments.find((x) => x.id === it.gid);
-    $('#detail-meta').innerHTML =
-      (g && g.brand ? `<div class="d-brand-line">${g.brand}</div>` : '') + (it.desc || '');
+    $('#detail-title').textContent = (g && g.brand) || it.title;
+    $('#detail-items').innerHTML =
+      `<div class="d-row">${it.title}${g && g.size_owned ? ` — ${g.size_owned}` : ''}</div>`;
+    $('#detail-meta').textContent = it.desc || '';
   }
   $('#detail').hidden = false;
 }
