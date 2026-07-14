@@ -406,8 +406,7 @@ $('#detail-open').addEventListener('click', () => {
   if (!detailItem) return;
   const items_ = detailItem.kind === 'look' ? detailItem.items : [detailItem.gid];
   localStorage.setItem('incomingLook', JSON.stringify({
-    title: detailItem.title, items: items_,
-    kind: detailItem.kind, src: detailItem.src || null,
+    title: detailItem.title, items: items_, kind: detailItem.kind,
   }));
   location.href = '/fitting-room';
 });

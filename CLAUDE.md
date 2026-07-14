@@ -60,12 +60,13 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   FITTING ROOM → localStorage handoff into slots); fitting room SAVE LOOK = free draft,
   PUBLISH = pose-picker + $0.06 render + cutout → appears in carousel. Cross-document
   view transitions morph the hero ↔ stage (`view-transition-name: figure`). Publishing
-  runs the cutout pass via the liminal venv subprocess. Poses remain archive-only —
-  one deliberate exception: a look arriving via OPEN IN FITTING ROOM shows its archive
-  render on the stage. Current fitting-room design tagged **`fitting-room-syve-v1`**
+  runs the cutout pass via the liminal venv subprocess. Poses remain archive-only,
+  no exceptions (Janice 07-14): looks arriving via OPEN IN FITTING ROOM load the slots
+  and show the base avatar. Current fitting-room design tagged **`fitting-room-syve-v1`**
   (revert: `git checkout fitting-room-syve-v1 -- virtual-closet/app/`) ahead of a
-  planned prettier-fitting-room pass. Garment `meta.json` now has a `brand` field —
-  shown as the first line of the archive detail overlay (data pending from Janice).
+  planned prettier-fitting-room pass. Garment `meta.json` has a `brand` field (all five
+  filled — Peachy Den / In This Era / Nin Studio / Musinsa Standard / Woodrose Deli),
+  shown as the first line of the archive detail overlay; fill at ingest for new items.
 - Spend: ~$6.23 of $25 cap (`python3 scripts/genlog.py summary`).
 
 ## Standing rules
