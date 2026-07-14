@@ -90,6 +90,10 @@ const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
   '<rect width="620" height="835" fill="#E8DDD3"/></svg>');
 const REF_W = 1440, REF_H = 900;
 const DWELL = 80, EASE = 0.12;
+const AUTO_SPEED = 0.18;      // ambient drift, items/sec (medium pace)
+const SLOW_SPEED = 0.015;     // drift while a figure is hovered — near halt, still creeping
+const SPEED_EASE = 0.08;      // per-frame easing between the two speeds
+const MANUAL_HOLD_MS = 1500;  // drift pause after a manual scroll/click
 
 let M = null;          // manifest
 let ALL_ITEMS = [];    // every item
@@ -97,6 +101,11 @@ let items = [];        // filtered view
 let els = [];          // DOM nodes parallel to items
 let scrollPos = 0, target = 0, isSnapped = true, dwellAccum = 0;
 let SLOTS = {};
+let driftSpeed = AUTO_SPEED;
+let mouseX = -1, mouseY = -1;
+let lastManual = 0;
+let lastTick = 0;
+let infoIndex = -1;
 
 const $ = (s) => document.querySelector(s);
 
@@ -163,13 +172,14 @@ window.addEventListener('resize', buildSlots);
 function getSlot(offset) {
   const clamped = Math.max(-3, Math.min(3, offset));
   const lo = Math.floor(clamped), hi = Math.ceil(clamped), t = clamped - lo;
+  const e = t * t * (3 - 2 * t);  // smoothstep: size ramps in/out, no kink at slot edges
   const a = SLOTS[String(lo)], b = SLOTS[String(hi)];
   return {
     cx: a.cx + (b.cx - a.cx) * t,
-    cy: a.cy + (b.cy - a.cy) * t,
-    w:  a.w  + (b.w  - a.w)  * t,
-    h:  a.h  + (b.h  - a.h)  * t,
-    opacity: a.opacity + (b.opacity - a.opacity) * t,
+    cy: a.cy + (b.cy - a.cy) * e,
+    w:  a.w  + (b.w  - a.w)  * e,
+    h:  a.h  + (b.h  - a.h)  * e,
+    opacity: a.opacity + (b.opacity - a.opacity) * e,
     z: Math.round(a.z + (b.z - a.z) * t),
   };
 }
@@ -199,6 +209,7 @@ function mount(filter) {
   });
   scrollPos = target = 0; isSnapped = true; dwellAccum = 0;
   updateInfo();
+  infoIndex = centeredIndex();
 }
 
 function layout() {
@@ -236,11 +247,12 @@ function updateInfo() {
 }
 
 function moveCarousel(dir) {
-  target = scrollPos + dir;   // continuous position; wrapping handled per-item
+  target = Math.round(scrollPos) + dir;   // continuous position; wrapping handled per-item
   isSnapped = false;
 }
 
 function centerOn(i) {
+  lastManual = performance.now();
   const off = normalizeOffset(i - scrollPos);   // shortest way around the wrap
   if (Math.round(Math.abs(off)) === 0) return;  // already the hero
   target = Math.round(scrollPos + off);
@@ -248,6 +260,7 @@ function centerOn(i) {
 }
 
 function handleScroll(delta) {
+  lastManual = performance.now();
   if (isSnapped) {
     dwellAccum += delta;
     if (Math.abs(dwellAccum) > DWELL) {
@@ -255,6 +268,16 @@ function handleScroll(delta) {
       dwellAccum = 0;
     }
   }
+}
+
+window.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+document.documentElement.addEventListener('mouseleave', () => { mouseX = -1; mouseY = -1; });
+
+// Figures drift under a stationary cursor, so mouseenter/leave never fire — hit-test instead.
+function hoveringFigure() {
+  if (mouseX < 0) return false;
+  const el = document.elementFromPoint(mouseX, mouseY);
+  return !!(el && el.closest('.carousel-img'));
 }
 
 window.addEventListener('wheel', (e) => {
@@ -272,15 +295,21 @@ window.addEventListener('touchmove', (e) => {
 }, { passive: true });
 window.addEventListener('touchend', () => { touchLastX = null; });
 
-function tick() {
+function tick(now) {
+  const dt = Math.min((now - lastTick) / 1000, 0.1);
+  lastTick = now;
   if (!isSnapped) {
     scrollPos += (target - scrollPos) * EASE;
     if (Math.abs(target - scrollPos) < 0.001) {
       scrollPos = target; isSnapped = true; dwellAccum = 0;
-      updateInfo();
     }
+  } else if (now - lastManual > MANUAL_HOLD_MS) {
+    driftSpeed += ((hoveringFigure() ? SLOW_SPEED : AUTO_SPEED) - driftSpeed) * SPEED_EASE;
+    scrollPos += driftSpeed * dt;
   }
   layout();
+  const ci = centeredIndex();
+  if (ci !== infoIndex) { infoIndex = ci; updateInfo(); }
   requestAnimationFrame(tick);
 }
 
@@ -322,7 +351,8 @@ async function boot() {
   buildItems();
   buildSlots();
   mount('all');
-  tick();
+  lastTick = performance.now();
+  requestAnimationFrame(tick);
 }
 boot();
 </script>
