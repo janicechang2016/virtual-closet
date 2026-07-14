@@ -32,6 +32,8 @@ async function boot() {
   renderSlots();
   renderSaved();
   consumeIncomingLook();
+  const first = M.garments.find((g) => g.photos[0]);
+  if (first) previewGarment(first.id);   // the preview frame is never empty
 }
 
 // pre-looks.json saves lived in localStorage; move them to server drafts once
@@ -97,15 +99,22 @@ function renderFilters() {
 function renderGrid() {
   const items = M.garments.filter((g) => filter === "all" || g.category === filter);
   $("#garment-grid").innerHTML = items.map((g) => {
-    const img = g.photos[0]
-      ? `<img class="thumb" src="${g.photos[0]}" alt="${g.name}">`
-      : `<div class="thumb-empty">no photo yet<br>drop into<br>garments/${g.id}/raw/</div>`;
     const num = /^\d+/.exec(g.id)?.[0] ?? "";
-    return `<div class="card" data-id="${g.id}"><span class="card-num">${num}</span>${img}
-      <div class="label">${g.name} <span class="diff">${"◆".repeat(g.difficulty)}</span></div></div>`;
+    return `<div class="row" data-id="${g.id}">
+      <span class="row-num">${num}</span>
+      <span class="row-name">${g.brand ? `<span class="row-brand">${g.brand}</span>` : ""}${g.name}</span>
+      <span class="row-diff">${"◆".repeat(g.difficulty)}</span>
+    </div>`;
   }).join("");
-  document.querySelectorAll(".card").forEach((c) =>
-    c.addEventListener("click", () => tryOn(c.dataset.id)));
+  document.querySelectorAll("#garment-grid .row").forEach((r) => {
+    r.addEventListener("click", () => tryOn(r.dataset.id));
+    r.addEventListener("mouseenter", () => previewGarment(r.dataset.id));
+  });
+}
+
+function previewGarment(id) {
+  const g = M.garments.find((x) => x.id === id);
+  if (g && g.photos[0]) $("#rack-preview-img").src = g.photos[0];
 }
 
 function tryOn(id) {
@@ -163,11 +172,13 @@ function equip(g) {
 
 function renderSlots() {
   $("#outfit-slots").innerHTML = SLOTS.map((s) => {
-    const v = outfit[s];
-    return `<div class="slot ${v ? "filled" : ""}" data-s="${s}">
-      <span class="slot-name">${s}</span>${v || "empty"}</div>`;
+    const gid = outfit[s];
+    const g = gid && M ? M.garments.find((x) => x.id === gid) : null;
+    const val = g ? `${g.brand ? g.brand + " · " : ""}${g.name}` : (gid || "—");
+    return `<div class="slot ${gid ? "filled" : ""}" data-s="${s}">
+      <span class="slot-name">${s}</span><span class="slot-val">${val}</span></div>`;
   }).join("");
-  document.querySelectorAll(".slot").forEach((el) =>
+  document.querySelectorAll(".slot.filled").forEach((el) =>
     el.addEventListener("click", () => {
       delete outfit[el.dataset.s];
       localStorage.setItem("outfit", JSON.stringify(outfit));

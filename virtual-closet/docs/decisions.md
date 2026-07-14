@@ -1,5 +1,16 @@
 # Decision log
 
+## 2026-07-14 — Fitting room "prettier pass" (mirror / index / manifest)
+
+**Decision (user):** art-direct the fitting room within the SYVE language, keeping the
+three-zone layout. Stage = a hairline-framed **mirror** with a gallery label (tracked
+9px caps under a rule). Racks = a **text-first index** — number, brand eyebrow, name,
+difficulty dots; row hover inverts and fills a framed square **preview** below (never
+empty; defaults to the first garment). Outfit rail = a **manifest** — hairline rows,
+slot label + "Brand · name", strike-through on hover as the remove affordance, empty
+slots read "—". Looks list restyled to the same hairline rows. Previous design remains
+at tag `fitting-room-syve-v1` (revert: `git checkout fitting-room-syve-v1 -- virtual-closet/app/`).
+
 ## 2026-07-14 — Two-view architecture decided and built: the look is the atom
 
 **Decision (user, after talking through options):** home stays the archive (`/`); the

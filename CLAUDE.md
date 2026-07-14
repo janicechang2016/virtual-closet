@@ -62,9 +62,10 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   view transitions morph the hero ↔ stage (`view-transition-name: figure`). Publishing
   runs the cutout pass via the liminal venv subprocess. Poses remain archive-only,
   no exceptions (Janice 07-14): looks arriving via OPEN IN FITTING ROOM load the slots
-  and show the base avatar. Current fitting-room design tagged **`fitting-room-syve-v1`**
-  (revert: `git checkout fitting-room-syve-v1 -- virtual-closet/app/`) ahead of a
-  planned prettier-fitting-room pass. Garment `meta.json` has a `brand` field (all five
+  and show the base avatar. **Prettier pass shipped 07-14** (mirror stage + gallery
+  label, text-first index racks with hover preview, manifest outfit rail — see
+  decisions.md); pre-pass design tagged **`fitting-room-syve-v1`**
+  (revert: `git checkout fitting-room-syve-v1 -- virtual-closet/app/`). Garment `meta.json` has a `brand` field (all five
   filled — Peachy Den / In This Era / Nin Studio / Musinsa Standard / Woodrose Deli),
   shown as the first line of the archive detail overlay; fill at ingest for new items.
 - Spend: ~$6.23 of $25 cap (`python3 scripts/genlog.py summary`).
