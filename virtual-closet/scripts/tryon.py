@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Try-on pipeline: garment + avatar-v1 -> render -> face-swap finish -> log.
+"""Try-on pipeline: garment + avatar-v3 pose base -> render -> face-swap finish -> log.
 
 Arms:
-  nb-pro    fal-ai/nano-banana-pro   (avatar front + garment asset, prompt compose)
+  nb-pro    fal-ai/nano-banana-pro   (avatar base + garment asset, prompt compose)
   nb2       fal-ai/nano-banana-2     (same inputs, cheaper)
   idm-vton  fal-ai/idm-vton          (specialist: human_image_url + garment_image_url)
 
 Every face-visible render gets the fal-ai/face-swap finishing pass with
-avatar/avatar-v1/front.png as the identity source (standing policy,
-docs/decisions.md 2026-07-13). All calls are budget-gated and logged.
+avatar/avatar-v3/front.png as the identity source (standing policy,
+docs/decisions.md 2026-07-14; v1 renders are legacy lineage). All calls are
+budget-gated and logged.
 
 CLI:
-    python3 scripts/tryon.py <garment-id> [--arm nb-pro] [--suffix 1]
+    python3 scripts/tryon.py <garment-id> [--arm nb-pro] [--suffix 1] [--pose contrapposto]
     python3 scripts/tryon.py --benchmark          # all garments x all arms
 """
 import argparse
@@ -28,18 +29,21 @@ from genlog import check_budget, log_generation
 from fal_generate import generate, load_key
 
 ROOT = Path(__file__).resolve().parent.parent
-AVATAR = ROOT / "avatar" / "avatar-v1" / "front.png"
+AVATAR_DIR = ROOT / "avatar" / "avatar-v3"
+AVATAR = AVATAR_DIR / "front.png"          # identity source for every face-swap
+AVA_VER = "v3"
+POSES = ("front", "contrapposto", "hand-on-hip", "34turn")
 IMG_EXT = {".png", ".jpg", ".jpeg", ".webp"}
 ARMS = ("nb-pro", "nb2", "idm-vton")
 
 TRYON_PROMPT = (
     "Virtual try-on: show the person from Image 1 wearing the garment from Image 2. "
-    "Keep the person EXACTLY as in Image 1: same face, same hair (black, wispy bangs, "
-    "past shoulders), same body proportions as Image 1, same standing pose, same "
-    "light-gray seamless studio background and soft even lighting. One single figure, "
+    "Keep the person EXACTLY as in Image 1: same face, same hair (black, soft parted "
+    "bangs, long loose waves), same body proportions as Image 1, same pose, same "
+    "seamless studio background and soft even lighting. One single figure, "
     "not a collage. Reproduce the garment exactly: same color, pattern placement, "
     "neckline, sleeve length, buttons, hem length, and construction details. Natural "
-    "fabric drape appropriate to {fabric}. {layer_note}Full-body, front-facing, "
+    "fabric drape appropriate to {fabric}. {layer_note}Full-body, {facing}"
     "photorealistic.{details}{cutout_note}"
 )
 
@@ -90,7 +94,7 @@ def face_swap(base_path, out_path, source_path=AVATAR, purpose="tryon"):
                                outcome=f"completed-download-failed: {url}")
                 raise
             time.sleep(3 * (attempt + 1))
-    log_generation("fal-ai/face-swap", "face-swap finish (avatar-v1 identity)", purpose,
+    log_generation("fal-ai/face-swap", f"face-swap finish (avatar-{AVA_VER} identity)", purpose,
                    ref_images=[str(base_path), str(source_path)],
                    output_path=str(out_path), cost_usd=0.02)
     return out_path
@@ -120,10 +124,12 @@ def run_idm_vton(gid, meta, out_path):
     return out_path
 
 
-def tryon(gid, arm="nb-pro", suffix="1"):
+def tryon(gid, arm="nb-pro", suffix="1", pose="front"):
     meta = json.loads((ROOT / "garments" / gid / "meta.json").read_text())
-    out = ROOT / "renders" / f"{gid}_{arm}_v1_{suffix}.png"
-    raw = ROOT / "renders" / f"{gid}_{arm}_v1_{suffix}_raw.png"
+    base = AVATAR_DIR / f"{pose}.png"
+    pose_tag = "" if pose == "front" else f"_{pose}"
+    out = ROOT / "renders" / f"{gid}_{arm}_{AVA_VER}{pose_tag}_{suffix}.png"
+    raw = ROOT / "renders" / f"{gid}_{arm}_{AVA_VER}{pose_tag}_{suffix}_raw.png"
 
     if arm == "idm-vton":
         run_idm_vton(gid, meta, raw)
@@ -142,10 +148,12 @@ def tryon(gid, arm="nb-pro", suffix="1"):
         if meta.get("layer_order", 0) > 0:
             layer_note = ("Layer the garment OPEN over her existing gray tank top, tank visible "
                           "underneath. ")
+        facing = ("front-facing, " if pose == "front"
+                  else "in the same stance and camera angle as Image 1, ")
         prompt = TRYON_PROMPT.format(fabric=meta.get("fabric") or "the fabric",
                                      details=details, cutout_note=cutout_note,
-                                     layer_note=layer_note)
-        generate(model, prompt, [str(AVATAR), str(asset)], purpose="tryon", out=str(raw))
+                                     layer_note=layer_note, facing=facing)
+        generate(model, prompt, [str(base), str(asset)], purpose="tryon", out=str(raw))
 
     face_swap(raw, out)
     print(f"done {out.name}")
@@ -172,14 +180,16 @@ def next_suffix(stem_prefix):
 
 def correct(gid, button, note="", render=None):
     """Targeted corrective edit of a render (edit, don't regenerate)."""
-    if render is None:  # newest final nb2 render for this garment
-        cands = [p for p in sorted((ROOT / "renders").glob(f"{gid}_*_v1_*.png"))
-                 if not p.stem.endswith("_raw")]
+    if render is None:  # newest final FRONT render (feedback loop is fitting-room only)
+        pose_tags = tuple(f"_{p}_" for p in POSES if p != "front")
+        cands = [p for p in sorted((ROOT / "renders").glob(f"{gid}_*_v*_*.png"))
+                 if not p.stem.endswith("_raw")
+                 and not any(t in f"{p.stem}_" for t in pose_tags)]
         if not cands:
             raise FileNotFoundError(f"no render to correct for {gid}")
         render = cands[-1]
     render = ROOT / "renders" / Path(render).name
-    out = ROOT / "renders" / f"{gid}_nb2_v1_{next_suffix(f'{gid}_nb2_v1')}.png"
+    out = ROOT / "renders" / f"{gid}_nb2_{AVA_VER}_{next_suffix(f'{gid}_nb2_{AVA_VER}')}.png"
 
     if CORRECTIVE.get(button, "x") is None:  # face drifted -> swap only
         face_swap(render, out)
@@ -213,8 +223,8 @@ LAYER_HINTS = {
 }
 
 
-def tryon_outfit(gids, suffix=None):
-    """Single-shot multi-garment compose: avatar + one image per garment."""
+def tryon_outfit(gids, suffix=None, pose="front"):
+    """Single-shot multi-garment compose: avatar pose base + one image per garment."""
     metas = []
     for gid in gids:
         metas.append(json.loads((ROOT / "garments" / gid / "meta.json").read_text()))
@@ -222,7 +232,7 @@ def tryon_outfit(gids, suffix=None):
     order = {"dress": 0, "bottom": 1, "top": 2, "layer": 3, "outerwear": 3, "shoes": 4}
     pairs = sorted(zip(gids, metas), key=lambda p: order.get(p[1].get("category"), 2))
 
-    lines, images = [], [str(AVATAR)]
+    lines, images = [], [str(AVATAR_DIR / f"{pose}.png")]
     for i, (gid, meta) in enumerate(pairs):
         images.append(str(garment_asset(gid)))
         hint = LAYER_HINTS.get(meta.get("category", ""), "")
@@ -239,9 +249,12 @@ def tryon_outfit(gids, suffix=None):
         "its reference image: colors, patterns, necklines, lengths, construction. The "
         "garment reference images are isolated product shots; any small gaps or ragged "
         "edges are extraction artifacts - render each garment complete. Full-body, "
-        "front-facing, photorealistic."
+        + ("front-facing, " if pose == "front"
+           else "in the same stance and camera angle as Image 1, ")
+        + "photorealistic."
     )
-    slug = "outfit_" + "+".join(g.split("-")[0] for g in sorted(gids))
+    slug = ("outfit_" + "+".join(g.split("-")[0] for g in sorted(gids))
+            + ("" if pose == "front" else f"_{pose}"))
     n = suffix or next_suffix(slug)
     out = ROOT / "renders" / f"{slug}_{n}.png"
     raw = out.with_name(out.stem + "_raw.png")
@@ -256,6 +269,8 @@ def main():
     ap.add_argument("garment", nargs="?")
     ap.add_argument("--arm", default="nb2", choices=ARMS)  # Phase 3 winner (docs/phase3-benchmark.md)
     ap.add_argument("--suffix", default="1")
+    ap.add_argument("--pose", default="front", choices=POSES,
+                    help="avatar-v3 pose base (one pose per saved look)")
     ap.add_argument("--benchmark", action="store_true")
     ap.add_argument("--correct", metavar="BUTTON", help="corrective edit; pass the feedback button text")
     ap.add_argument("--note", default="", help="freeform correction note (with --correct)")
@@ -263,7 +278,7 @@ def main():
     args = ap.parse_args()
 
     if args.outfit:
-        tryon_outfit(args.outfit)
+        tryon_outfit(args.outfit, pose=args.pose)
         return
 
     if args.correct:
@@ -284,7 +299,7 @@ def main():
                 except Exception as e:  # keep the batch going; report at the end
                     print(f"FAIL {gid} {arm}: {e}")
     elif args.garment:
-        tryon(args.garment, args.arm, args.suffix)
+        tryon(args.garment, args.arm, args.suffix, args.pose)
     else:
         ap.error("garment id or --benchmark required")
 

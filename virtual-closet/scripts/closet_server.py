@@ -44,6 +44,15 @@ def hidden_stems():
         return set()
 
 
+# pose-tagged render stems stay out of the fitting room (front pose only there);
+# the carousel shows poses via each garment's cutout / the outfit list instead
+POSE_TAGS = ("_contrapposto_", "_hand-on-hip_", "_34turn_")
+
+
+def is_posed(stem):
+    return any(t in f"{stem}_" for t in POSE_TAGS)
+
+
 def garment_list():
     out = []
     hidden = hidden_stems()
@@ -59,7 +68,7 @@ def garment_list():
                   for p in sorted((folder / sub).glob("*")) if p.suffix.lower() in IMG_EXT]
         renders = [f"/assets/renders/{p.name}" for p in sorted((ROOT / "renders").glob(f"{folder.name}_*"))
                    if p.suffix.lower() in IMG_EXT and not p.stem.endswith("_raw")
-                   and p.stem not in hidden]
+                   and p.stem not in hidden and not is_posed(p.stem)]
         cuts = sorted((ROOT / "renders" / "cutouts").glob(f"{folder.name}_*_cut.png"))
         meta.update({"photos": photos, "renders": renders,
                      "cutout": f"/assets/renders/cutouts/{cuts[-1].name}" if cuts else None})
@@ -84,12 +93,12 @@ def outfit_list():
 
 
 def manifest():
-    locked = ROOT / "avatar" / "avatar-v1" / "front.png"
+    locked = ROOT / "avatar" / "avatar-v3" / "front.png"
     if locked.exists():
         avatar = {
-            "draft": "/assets/avatar/avatar-v1/front.png",
-            "locked_version": "avatar-v1",
-            "status": "avatar-v1 locked 2026-07-13 (4-view sheet in avatar/avatar-v1/)",
+            "draft": "/assets/avatar/avatar-v3/front.png",
+            "locked_version": "avatar-v3",
+            "status": "avatar-v3 canon 2026-07-14 (pose library in avatar/avatar-v3/; v1 renders legacy)",
         }
     else:
         # newest avatar-draft*.png is the working base
