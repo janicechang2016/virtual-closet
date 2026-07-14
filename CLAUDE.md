@@ -23,6 +23,9 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
     A **runway-procession variant** (single-file line receding to a vanishing point, per
     `design-inspo/runway-inspo.avif`) was built and shelved same night — saved at tag
     `runway-procession-v1` (restore: `git checkout runway-procession-v1 -- virtual-closet/app/carousel.html`).
+    An **auto-scroll variant** (ambient drift + hover slow-to-crawl) was built and shelved
+    2026-07-14 — saved at tag `auto-drift-v1` (restore:
+    `git checkout auto-drift-v1 -- virtual-closet/app/carousel.html`).
   - `/classic` — **fitting room** (outfit rail | stage | racks), restyled 07-13 late to
     the SYVE language. Old look "The Boutique" v3 (313NY tokens, soft chrome) preserved
     at git tag `boutique-v3` (revert: `git checkout boutique-v3 -- virtual-closet/app/`);

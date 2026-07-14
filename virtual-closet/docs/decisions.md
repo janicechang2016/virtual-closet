@@ -1,5 +1,14 @@
 # Decision log
 
+## 2026-07-14 — Carousel auto-scroll built and shelved
+
+**Decision (user):** an ambient auto-scroll for the archive carousel (drift at 0.18
+items/s, easing to a 0.015 items/s crawl while the cursor is over a figure, smoothstep
+on the thumb→hero growth) was built, tuned once, and then shelved — not the browsing
+effect Janice wants. Reverted to the manual-scroll carousel; the auto-drift version is
+archived at tag `auto-drift-v1`
+(restore: `git checkout auto-drift-v1 -- virtual-closet/app/carousel.html`).
+
 ## 2026-07-13 (night) — Archive page becomes a runway procession
 
 **Decision (user):** rework the archive carousel into a static single-file procession per
