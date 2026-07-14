@@ -102,6 +102,12 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
+- **ASCII entrance page (spec agreed 07-14, wait for Janice's baseline inspo image):**
+  overlay skin inside `carousel.html` — a figure/wordmark rendered as a luminance-mapped
+  monospace glyph grid on canvas, black on the white void; slow shimmer at rest;
+  "enter the archive." click → medium-speed dissolve (ideally resolving into the real
+  hero figure); shows once per browser session (sessionStorage). $0, pure front-end.
+
 - **Look cards, remaining half:** the content-unit half shipped with publish (rembg
   cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**
   of all looks (second lens beside the carousel) once the archive grows past ~10 looks,
