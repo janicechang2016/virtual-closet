@@ -12,6 +12,11 @@ blur, passed figure exits by scaling through the camera). Scroll/click/filters/T
 mechanics unchanged. Previous side-by-side SYVE layout preserved at tag
 `syve-carousel-v1`.
 
+**Amendment (user, same night):** after seeing it live, Janice reverted the archive page
+back to the side-by-side SYVE carousel. The procession is saved at tag
+`runway-procession-v1` (restore: `git checkout runway-procession-v1 -- virtual-closet/app/carousel.html`)
+should we want to revisit it.
+
 ## 2026-07-13 (late) — Site brand "the archive."; SYVE language goes site-wide
 
 **Decision (user):** The header/brand is **"the archive."** (lowercase, with period), and

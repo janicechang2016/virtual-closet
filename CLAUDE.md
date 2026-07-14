@@ -15,13 +15,13 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   feedback→corrective-edit loop, clear-to-base — all working from the UI.
 - **One brand ("the archive."), two views, one SYVE language** (white void, black 1px
   hairlines, uppercase Helvetica, italic lowercase wordmark):
-  - `/` — **runway procession** (`app/carousel.html`, single-file): figure cutouts in a
-    single-file line receding to a raised vanishing point (spec image:
-    `design-inspo/runway-inspo.avif`), infinite wrap + 80px snap/dwell, x-axis scroll +
-    click-to-center, contact shadows, depth blur; TRY ON wired to the live pipeline.
-    Figures are static by design (no walk animation — video/multi-frame is off the table
-    for cost + identity drift). Previous side-by-side SYVE carousel: tag
-    `syve-carousel-v1` (revert: `git checkout syve-carousel-v1 -- virtual-closet/app/carousel.html`).
+  - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): figure cutouts
+    (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
+    interpolation + infinite wrap + 80px snap/dwell, x-axis scroll + click-to-center,
+    TRY ON wired to the live pipeline. Spec: `virtual-closet/design-inspo/` (docx + reel).
+    A **runway-procession variant** (single-file line receding to a vanishing point, per
+    `design-inspo/runway-inspo.avif`) was built and shelved same night — saved at tag
+    `runway-procession-v1` (restore: `git checkout runway-procession-v1 -- virtual-closet/app/carousel.html`).
   - `/classic` — **fitting room** (outfit rail | stage | racks), restyled 07-13 late to
     the SYVE language. Old look "The Boutique" v3 (313NY tokens, soft chrome) preserved
     at git tag `boutique-v3` (revert: `git checkout boutique-v3 -- virtual-closet/app/`);
