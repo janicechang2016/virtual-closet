@@ -4,7 +4,7 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-14)
+## Current state (2026-07-14, evening)
 
 - Phases 0–4 complete. **avatar-v3 is canon** (2026-07-14): user-supplied 4-pose library
   in `avatar/avatar-v3/` (front / contrapposto / hand-on-hip / 34turn) — new lineage
@@ -32,24 +32,30 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   at try-on (re-stages scenes); IDM-VTON needs its `category` param wired.
 - Server `scripts/closet_server.py` → http://localhost:8765 (run with
   `ENABLE_GENERATION=1` for live spending). Single-item try-on, multi-item outfit compose,
-  feedback→corrective-edit loop, clear-to-base — all working from the UI.
+  feedback→corrective-edit loop, clear-to-base, look save/publish/delete
+  (`/api/looks`, `/api/looks/delete`, `/api/publish`) — all working from the UI.
 - **One brand ("the archive."), two views, one SYVE language** (white void, black 1px
   hairlines, uppercase Helvetica, italic lowercase wordmark):
   - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): figure cutouts
     (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
     interpolation + infinite wrap + 80px snap/dwell, x-axis scroll + click-to-center,
     TRY ON wired to the live pipeline; hero slot at 85% of spec size (Janice: full size
-    too big). Spec: `virtual-closet/design-inspo/` (docx + reel).
+    too big); snap ease slowed to 0.08 (07-14); hero click opens the detail overlay
+    (brand headline for garments, item rows + pose for looks, OPEN IN FITTING ROOM as
+    the black primary — no TRY ON button there). Spec: `virtual-closet/design-inspo/`
+    (docx + reel).
     A **runway-procession variant** (single-file line receding to a vanishing point, per
     `design-inspo/runway-inspo.avif`) was built and shelved same night — saved at tag
     `runway-procession-v1` (restore: `git checkout runway-procession-v1 -- virtual-closet/app/carousel.html`).
     An **auto-scroll variant** (ambient drift + hover slow-to-crawl) was built and shelved
     2026-07-14 — saved at tag `auto-drift-v1` (restore:
     `git checkout auto-drift-v1 -- virtual-closet/app/carousel.html`).
-  - `/classic` — **fitting room** (outfit rail | stage | racks), restyled 07-13 late to
-    the SYVE language. Old look "The Boutique" v3 (313NY tokens, soft chrome) preserved
-    at git tag `boutique-v3` (revert: `git checkout boutique-v3 -- virtual-closet/app/`);
-    amber rejected as masculine, violet/rose rejected outright.
+  - `/fitting-room` (`/classic` kept as alias) — **fitting room** (outfit rail | stage |
+    racks). Design lineage: Boutique v3 (313NY, tag `boutique-v3`; amber rejected as
+    masculine, violet/rose rejected outright) → SYVE restyle 07-13 (tag
+    `fitting-room-syve-v1`) → **prettier pass 07-14** (current): mirror stage + gallery
+    label, text-first index racks with hover preview, manifest outfit rail, "Nº 313"
+    copy removed.
   - `renders/hidden.json` — render stems the server keeps out of the app (files stay on
     disk). Size row reads `size_owned` from each garment's `meta.json`; unset = no
     highlight (log real sizes at ingest — not everything is S).
@@ -59,8 +65,11 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   Doors: archive hero click → detail overlay (items+sizes, pose, re-render, OPEN IN
   FITTING ROOM → localStorage handoff into slots); fitting room SAVE LOOK = free draft,
   PUBLISH = pose-picker + $0.06 render + cutout → appears in carousel. Cross-document
-  view transitions morph the hero ↔ stage (`view-transition-name: figure`). Publishing
-  runs the cutout pass via the liminal venv subprocess. Poses remain archive-only,
+  view transitions morph the hero ↔ stage (`view-transition-name: figure`) — polished
+  07-14: 0.55s soft-ease morph over a 0.35s root crossfade; the detail overlay's image
+  anchors the morph while open; plain header links clear the names (quiet crossfade,
+  morphs reserved for the deliberate doors). Publishing runs the cutout pass via the
+  liminal venv subprocess. Poses remain archive-only,
   no exceptions (Janice 07-14): looks arriving via OPEN IN FITTING ROOM load the slots
   and show the base avatar. **Prettier pass shipped 07-14** (mirror stage + gallery
   label, text-first index racks with hover preview, manifest outfit rail — see
@@ -68,7 +77,9 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   (revert: `git checkout fitting-room-syve-v1 -- virtual-closet/app/`). Garment `meta.json` has a `brand` field (all five
   filled — Peachy Den / In This Era / Nin Studio / Musinsa Standard / Woodrose Deli),
   shown as the first line of the archive detail overlay; fill at ingest for new items.
-- Spend: ~$6.23 of $25 cap (`python3 scripts/genlog.py summary`).
+- Spend: ~$6.35 of $25 cap (`python3 scripts/genlog.py summary`). Includes Janice's own
+  first live loop 07-14 (published+removed a 02+03 look, one 01 re-render, $0.118 — the
+  publish pipeline's first real end-to-end validation).
 
 ## Standing rules
 
@@ -81,8 +92,11 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
 3. **Prompts for nb2/edit must be neutrally worded** ("virtual try-on: show the person
    wearing…", never "dress the woman", no body-size adjectives) — its content checker is
    strict. Anti-collage phrasing ("one single figure, not a collage…") in every prompt.
-4. **Renders:** `renders/<garment>_<arm>_v1_<n>.png`; `_raw` = pre-swap intermediate
-   (excluded from the app). Garment-id prefix is how the app matches renders.
+4. **Renders:** `renders/<garment>_<arm>_v3[_<pose>]_<n>.png` (v1 = legacy lineage);
+   look renders `outfit_<nums>[_<pose>]_<n>.png`; `_raw` = pre-swap intermediate
+   (excluded from the app). Garment-id prefix is how the app matches renders;
+   `renders/hidden.json` hides stems from render lists AND cutout choice;
+   `renders/archive/` is app-invisible.
 
 ## Key commands
 
@@ -119,5 +133,5 @@ actually look at the PNG.
   03's drifted contrapposto rejected by Janice 07-14, hidden not deleted).
 - **New garment ingest incoming:** Janice will provide new on-model photos at a later
   session. At ingest, fill `meta.json` per the schema **including `size_owned`** (sizes
-  vary per item — never default to S) and the per-item note on what in the photo is NOT
-  part of the garment.
+  vary per item — never default to S), **`brand`** (shown in the archive detail overlay),
+  and the per-item note on what in the photo is NOT part of the garment.
