@@ -39,5 +39,18 @@
     "render": null,
     "cutout": null,
     "created": "2026-07-13"
+  },
+  {
+    "id": "look-004",
+    "title": "outfit 1",
+    "items": [
+      "01-plain-tee",
+      "02-jeans"
+    ],
+    "pose": null,
+    "state": "draft",
+    "render": null,
+    "cutout": null,
+    "created": "2026-07-14"
   }
 ]
