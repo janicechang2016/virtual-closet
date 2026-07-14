@@ -1,5 +1,28 @@
 # Decision log
 
+## 2026-07-14 — Two-view architecture decided and built: the look is the atom
+
+**Decision (user, after talking through options):** home stays the archive (`/`); the
+fitting room moves to `/fitting-room` (`/classic` kept as alias). The **look** is the
+canonical object: `looks.json` stores id/title/items/pose/state/render/cutout/created
+with a **draft → published lifecycle** (manifest's filename-derived outfit list removed).
+Doors between the views:
+- **Archive → fitting room:** clicking the centered hero opens a detail overlay
+  (items + sizes, pose, RE-RENDER LOOK / OPEN IN FITTING ROOM / CLOSE); "open" hands the
+  look's items to the fitting room via localStorage and loads them into the slots.
+- **Fitting room → archive:** SAVE LOOK saves a free draft (`POST /api/looks`);
+  PUBLISH opens a pose-picker dialog (front pre-selected when the look contains a
+  difficulty-4+ garment) → `POST /api/publish` renders via tryon_outfit with that pose,
+  runs the cutout pass (liminal venv subprocess), and the look appears in the carousel.
+- Re-rendering a published look (carousel CTA / detail) also goes through `/api/publish`
+  with its stored pose, keeping looks.json current.
+- Cross-document **view transitions**: the hero figure morphs into/out of the stage
+  (`view-transition-name: figure`; only the centered carousel element carries it).
+- Legacy localStorage `savedOutfits` migrate to server drafts on first fitting-room load.
+Seeded: look-001 (01+02, 34turn) + look-002 (01+02+04, hand-on-hip) published;
+look-003 (02+04+05) draft. Also fixed en route: `/api/generate`'s suffix counter
+scanned `_v1_` stems (could overwrite v3 renders); now scans v3 front stems.
+
 ## 2026-07-14 — avatar-v3 is the new canon; pose library live (user gate passed)
 
 **Decision (user):** Janice supplied her own externally-generated pose set and chose it as

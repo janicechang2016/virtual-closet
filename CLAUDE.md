@@ -53,11 +53,14 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   - `renders/hidden.json` — render stems the server keeps out of the app (files stay on
     disk). Size row reads `size_owned` from each garment's `meta.json`; unset = no
     highlight (log real sizes at ingest — not everything is S).
-- **Janice's architectural intent (2026-07-13, to flesh out later — do not build yet):**
-  the SYVE carousel likely becomes the **OUTFIT ARCHIVE** view (browsing saved looks),
-  while the Boutique app remains the **FITTING ROOM** (composing/trying-on). How the two
-  connect (navigation, shared state, which is home) is an open design question she wants
-  to work through together. Dovetails with the queued look-cards feature.
+- **Two-view architecture BUILT (2026-07-14, user-approved):** home = archive (`/`);
+  fitting room at `/fitting-room` (`/classic` alias). The **look is the atom**:
+  `looks.json` is the canonical store (draft → published lifecycle; see decisions.md).
+  Doors: archive hero click → detail overlay (items+sizes, pose, re-render, OPEN IN
+  FITTING ROOM → localStorage handoff into slots); fitting room SAVE LOOK = free draft,
+  PUBLISH = pose-picker + $0.06 render + cutout → appears in carousel. Cross-document
+  view transitions morph the hero ↔ stage (`view-transition-name: figure`). Publishing
+  runs the cutout pass via the liminal venv subprocess. Poses remain archive-only.
 - Spend: ~$6.23 of $25 cap (`python3 scripts/genlog.py summary`).
 
 ## Standing rules
@@ -92,8 +95,10 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
-- Saved outfits as **look cards** — port `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`
-  (rembg u2net_human_seg cutout → largest-component cleanup → crop → coverflow lookbook).
+- **Look cards, remaining half:** the content-unit half shipped with publish (rembg
+  cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**
+  of all looks (second lens beside the carousel) once the archive grows past ~10 looks,
+  plus any coverflow treatment from `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`.
 - **Pose rollout DONE** (see current state) — going forward: assign one pose per saved
   look at creation (~$0.06/render). Do NOT re-pose via nb2/edit prompt language alone
   (it's an editor; re-posing fights it). Difficulty-4/5 garments stay on the front pose
