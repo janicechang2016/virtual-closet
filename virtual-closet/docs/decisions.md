@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-07-13 (night) — Archive page becomes a runway procession
+
+**Decision (user):** rework the archive carousel into a static single-file procession per
+`design-inspo/runway-inspo.avif` — white background kept (no crowd/set), figures static
+(no walk animation: per-frame/video generation rejected for cost + identity risk; fake
+CSS limb motion rejected as less sophisticated). Implementation is a parametric
+perspective path in `carousel.html` (scale ~ 1/z, vanishing point just above the hero's
+head like the inspo's raised camera, alternating lateral stagger, contact shadows, depth
+blur, passed figure exits by scaling through the camera). Scroll/click/filters/TRY ON
+mechanics unchanged. Previous side-by-side SYVE layout preserved at tag
+`syve-carousel-v1`.
+
 ## 2026-07-13 (late) — Site brand "the archive."; SYVE language goes site-wide
 
 **Decision (user):** The header/brand is **"the archive."** (lowercase, with period), and

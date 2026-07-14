@@ -30,7 +30,11 @@
   nav .quiet { cursor: default; }
 
   .carousel-img { position: absolute; will-change: transform; cursor: pointer; }
-  .carousel-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .carousel-img img { position: relative; width: 100%; height: 100%; object-fit: contain; display: block; }
+  .carousel-img .shadow {
+    position: absolute; left: 22%; right: 22%; bottom: 0; height: 3.5%;
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,0.14), transparent 70%);
+  }
 
   #info {
     position: absolute; left: 12px; bottom: 12px; width: 350px; z-index: 10;
@@ -88,15 +92,14 @@
 const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="620" height="835" viewBox="0 0 620 835">' +
   '<rect width="620" height="835" fill="#E8DDD3"/></svg>');
-const REF_W = 1440, REF_H = 900;
 const DWELL = 80, EASE = 0.12;
+const K = 0.8;              // perspective falloff per queue step
 
 let M = null;          // manifest
 let ALL_ITEMS = [];    // every item
 let items = [];        // filtered view
 let els = [];          // DOM nodes parallel to items
 let scrollPos = 0, target = 0, isSnapped = true, dwellAccum = 0;
-let SLOTS = {};
 
 const $ = (s) => document.querySelector(s);
 
@@ -137,48 +140,33 @@ function buildItems() {
   });
 }
 
-function buildSlots() {
-  var vw = window.innerWidth, vh = window.innerHeight;
-  var sx = vw / REF_W, sy = vh / REF_H;
-  var heroH = (835 - 40) * sy;
-  var heroTop = 58 * sy;
-  var heroCy = heroTop + heroH / 2;
-  var heroW = 620 * sx;
-  var thumbH = (194 - 40 * (194 / 835)) * sy;
-  var thumbW = 144 * sx;
-  var thumbCy = vh * 0.5;
-  SLOTS = {
-    '-3': { cx: -80 * sx,  cy: thumbCy, w: thumbW, h: thumbH, opacity: 0, z: 1 },
-    '-2': { cx: 144 * sx,  cy: thumbCy, w: thumbW, h: thumbH, opacity: 1, z: 2 },
-    '-1': { cx: 368 * sx,  cy: thumbCy, w: thumbW, h: thumbH, opacity: 1, z: 3 },
-     '0': { cx: vw / 2,    cy: heroCy,  w: heroW,  h: heroH,  opacity: 1, z: 5 },
-     '1': { cx: 1072 * sx, cy: thumbCy, w: thumbW, h: thumbH, opacity: 1, z: 3 },
-     '2': { cx: 1296 * sx, cy: thumbCy, w: thumbW, h: thumbH, opacity: 1, z: 2 },
-     '3': { cx: 1520 * sx, cy: thumbCy, w: thumbW, h: thumbH, opacity: 0, z: 1 },
-  };
-}
-window.addEventListener('resize', buildSlots);
-
-function getSlot(offset) {
-  const clamped = Math.max(-3, Math.min(3, offset));
-  const lo = Math.floor(clamped), hi = Math.ceil(clamped), t = clamped - lo;
-  const a = SLOTS[String(lo)], b = SLOTS[String(hi)];
+/* Runway procession: single file receding to a horizon (design-inspo/runway-inspo.avif).
+   o = queue position. 0 = hero at the front; positive = behind, walking up the line;
+   (-0.75, 0) = just passed the hero mark, scaling past the camera while fading out. */
+function slotFor(o, side) {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const s = 1 / (1 + Math.max(o, -0.45) * K);         // perspective scale ~ 1/z
+  const heroH = vh * 0.68, heroBottom = vh * 0.88, horizon = vh * 0.16; // vanishing point just above the hero's head, like the inspo's raised camera
+  const h = heroH * s, w = h * (620 / 835);
+  const bottom = horizon + (heroBottom - horizon) * s; // feet rise toward the horizon
+  const lateral = side * Math.max(0, Math.min(o, 1)) * vw * 0.105 * s;
+  let opacity;
+  if (o < 0) opacity = Math.max(0, 1 + o / 0.7);       // walks past the camera
+  else if (o <= 3.5) opacity = 1;
+  else opacity = Math.max(0, 1 - (o - 3.5) / 2.5);     // dissolves near the horizon
+  const blur = o < 0 ? Math.min(3, -o * 2.5)
+             : o > 2 ? Math.min(3, (o - 2) * 0.7) : 0;
   return {
-    cx: a.cx + (b.cx - a.cx) * t,
-    cy: a.cy + (b.cy - a.cy) * t,
-    w:  a.w  + (b.w  - a.w)  * t,
-    h:  a.h  + (b.h  - a.h)  * t,
-    opacity: a.opacity + (b.opacity - a.opacity) * t,
-    z: Math.round(a.z + (b.z - a.z) * t),
+    cx: vw / 2 + lateral, top: bottom - h, w: w, h: h,
+    opacity: opacity, z: 1000 - Math.round(o * 10), blur: blur,
   };
 }
 
-function normalizeOffset(offset) {
-  const TOTAL = items.length;
-  offset = offset % TOTAL;
-  if (offset > TOTAL / 2) offset -= TOTAL;
-  if (offset < -TOTAL / 2) offset += TOTAL;
-  return offset;
+function procOffset(i) {
+  const T = items.length;
+  let off = (((i - scrollPos) % T) + T) % T;           // [0, T): position in the queue
+  if (T >= 3 && off > T - 0.75) off -= T;              // just-passed item exits forward
+  return off;
 }
 
 function mount(filter) {
@@ -188,6 +176,9 @@ function mount(filter) {
   els = items.map((it, i) => {
     const d = document.createElement('div');
     d.className = 'carousel-img';
+    const sh = document.createElement('div');
+    sh.className = 'shadow';
+    d.appendChild(sh);
     const img = document.createElement('img');
     img.src = it.src || PLACEHOLDER;
     img.onerror = () => { img.src = PLACEHOLDER; };
@@ -201,17 +192,17 @@ function mount(filter) {
 }
 
 function layout() {
-  const TOTAL = items.length;
   els.forEach((el, i) => {
-    const off = normalizeOffset(i - scrollPos);
-    if (Math.abs(off) > 3.02) { el.style.display = 'none'; return; }
-    const s = getSlot(off);
+    const off = procOffset(i);
+    const s = slotFor(off, i % 2 ? 1 : -1);
+    if (s.opacity <= 0.005) { el.style.display = 'none'; return; }
     el.style.display = 'block';
     el.style.width = s.w + 'px';
     el.style.height = s.h + 'px';
     el.style.opacity = s.opacity;
     el.style.zIndex = s.z;
-    el.style.transform = `translate(${s.cx - s.w / 2}px, ${s.cy - s.h / 2}px)`;
+    el.style.filter = s.blur ? `blur(${s.blur}px)` : 'none';
+    el.style.transform = `translate(${s.cx - s.w / 2}px, ${s.top}px)`;
   });
 }
 
@@ -240,7 +231,7 @@ function moveCarousel(dir) {
 }
 
 function centerOn(i) {
-  const off = normalizeOffset(i - scrollPos);   // shortest way around the wrap
+  const off = procOffset(i);                    // advance the line to this figure
   if (Math.round(Math.abs(off)) === 0) return;  // already the hero
   target = Math.round(scrollPos + off);
   isSnapped = false;
@@ -319,7 +310,6 @@ async function boot() {
   $('#nav-gen').textContent = M.generation_enabled ? 'Generation live' : 'Copy-prompt';
   $('#nav-cost').textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
   buildItems();
-  buildSlots();
   mount('all');
   tick();
 }
