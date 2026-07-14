@@ -78,9 +78,11 @@
     font-size: 11px; letter-spacing: 0.04em;
   }
   #detail-actions button:hover { background: #000; color: #fff; }
-  #detail-actions #detail-tryon { background: #000; color: #fff; }
-  #detail-actions #detail-tryon:hover { opacity: 0.8; }
+  #detail-actions #detail-open { background: #000; color: #fff; }
+  #detail-actions #detail-open:hover { opacity: 0.8; }
   #detail-actions button:disabled { opacity: 0.4; cursor: wait; }
+  .d-brand-line { font-weight: 800; margin-bottom: 4px; }
+  .d-row .d-brand { font-weight: 800; }
 
   /* the hero morphs into the fitting-room stage on navigation */
   @view-transition { navigation: auto; }
@@ -120,7 +122,6 @@
         <div id="detail-items"></div>
         <div id="detail-meta"></div>
         <div id="detail-actions">
-          <button id="detail-tryon">Try on</button>
           <button id="detail-open">Open in fitting room</button>
           <button id="detail-close">Close</button>
         </div>
@@ -343,8 +344,8 @@ document.addEventListener('click', (e) => {
 async function renderHero() {
   const it = items[centeredIndex()];
   if (!it || !M.generation_enabled) return;
-  const btns = [$('#cta'), $('#detail-tryon')];
-  btns.forEach((b) => { b.disabled = true; b.textContent = 'Rendering…'; });
+  const btn = $('#cta');
+  btn.disabled = true; btn.textContent = 'Rendering…';
   try {
     let src = null;
     if (it.kind === 'look') {   // re-publish with its assigned pose; updates looks.json
@@ -370,9 +371,8 @@ async function renderHero() {
       $('#nav-cost').textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
     }
   } finally {
-    btns.forEach((b) => { b.disabled = false; });
+    btn.disabled = false;
     updateInfo();
-    if (detailItem) $('#detail-tryon').textContent = detailItem.kind === 'look' ? 'Re-render look' : 'Try on';
   }
 }
 $('#cta').addEventListener('click', renderHero);
@@ -386,22 +386,29 @@ function openDetail(it) {
   const gids = it.kind === 'look' ? it.items : [it.gid];
   $('#detail-items').innerHTML = gids.map((gid) => {
     const g = M.garments.find((x) => x.id === gid);
-    const label = g ? (g.size_owned ? `${g.name} — ${g.size_owned}` : g.name) : gid;
-    return `<div class="d-row">${label}</div>`;
+    if (!g) return `<div class="d-row">${gid}</div>`;
+    const brand = g.brand ? `<span class="d-brand">${g.brand}</span> · ` : '';
+    return `<div class="d-row">${brand}${g.name}${g.size_owned ? ` — ${g.size_owned}` : ''}</div>`;
   }).join('');
-  $('#detail-meta').textContent = it.kind === 'look'
-    ? `pose: ${it.pose || 'front'}` : (it.desc || '');
-  $('#detail-tryon').textContent = it.kind === 'look' ? 'Re-render look' : 'Try on';
+  if (it.kind === 'look') {
+    $('#detail-meta').textContent = `pose: ${it.pose || 'front'}`;
+  } else {
+    const g = M.garments.find((x) => x.id === it.gid);
+    $('#detail-meta').innerHTML =
+      (g && g.brand ? `<div class="d-brand-line">${g.brand}</div>` : '') + (it.desc || '');
+  }
   $('#detail').hidden = false;
 }
 $('#detail-close').addEventListener('click', () => { $('#detail').hidden = true; });
 $('#detail').addEventListener('click', (e) => { if (e.target.id === 'detail') $('#detail').hidden = true; });
 window.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#detail').hidden = true; });
-$('#detail-tryon').addEventListener('click', renderHero);
 $('#detail-open').addEventListener('click', () => {
   if (!detailItem) return;
   const items_ = detailItem.kind === 'look' ? detailItem.items : [detailItem.gid];
-  localStorage.setItem('incomingLook', JSON.stringify({ title: detailItem.title, items: items_ }));
+  localStorage.setItem('incomingLook', JSON.stringify({
+    title: detailItem.title, items: items_,
+    kind: detailItem.kind, src: detailItem.src || null,
+  }));
   location.href = '/fitting-room';
 });
 

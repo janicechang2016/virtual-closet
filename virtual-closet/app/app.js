@@ -57,7 +57,7 @@ function consumeIncomingLook() {
   if (!raw) return;
   localStorage.removeItem("incomingLook");
   try {
-    const { title, items } = JSON.parse(raw);
+    const { title, items, kind, src } = JSON.parse(raw);
     SLOTS.forEach((s) => delete outfit[s]);
     items.forEach((gid) => {
       const g = M.garments.find((x) => x.id === gid);
@@ -65,6 +65,13 @@ function consumeIncomingLook() {
     });
     localStorage.setItem("outfit", JSON.stringify(outfit));
     renderSlots();
+    if (kind === "garment" && items.length === 1) {
+      tryOn(items[0]);              // its newest front render goes on stage
+    } else if (src) {
+      $("#stage-img").src = src;    // the look arrives already dressed
+      $("#stage-caption").textContent = `${title} — from the archive`;
+      $("#feedback-bar").hidden = true;
+    }
     toast(`from the archive: ${title}`);
   } catch { /* stale handoff — ignore */ }
 }
