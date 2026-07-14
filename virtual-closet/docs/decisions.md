@@ -1,6 +1,41 @@
 # Decision log
 
-## 2026-07-14 — Carousel auto-scroll built and shelved
+## 2026-07-14 — avatar-v3 is the new canon; pose library live (user gate passed)
+
+**Decision (user):** Janice supplied her own externally-generated pose set and chose it as
+the **new avatar lineage over avatar-v1**: `avatar/avatar-v3/` = front.png, contrapposto.png,
+hand-on-hip.png, 34turn.png (canonical copies; her originals remain `avatar/avatar-v3*.png`;
+`avatar_v2.png` was a superseded iteration — Janice trashed it 07-14).
+The v3 face/hair (curtain bangs, long waves) visibly differs from v1 —
+**face-swap identity source is now `avatar/avatar-v3/front.png`** (tryon.py + server
+updated). Per plan §5.4 the seven v1 renders are legacy: they keep their `_v1_` tags and
+remain in the app until re-rendered on v3 (~$0.41 for the full set — NOT yet approved).
+
+**Amendment 2 (same day): poses are archive-only (user).** The fitting room (`/classic`)
+shows front-facing renders exclusively: the manifest's per-garment `renders` list filters
+out pose-tagged stems (`is_posed()` in closet_server.py), and tryon.py's corrective
+default targets the newest FRONT render. Both generate paths already default to front.
+Consequence: 01–04's stage renders fall back to the legacy v1 (old face) front renders
+until front v3 renders exist (~$0.06 each, not approved). 05 already has a front v3.
+
+**Amendment (same day): full catalog re-rendered on v3 (approved batch, $0.295).** Pose
+map: 01 contrapposto · 02 hand-on-hip · 03 contrapposto · 04 34turn · 05 front ·
+look 01+02 34turn · look 01+02+04 hand-on-hip. Outfit compose got `--pose` too (slug
+carries the pose: `outfit_01+02_34turn_1`). The three v1 look renders joined
+`outfit_02+04+05_1` in hidden.json (files kept). Two honest notes: (a) 03 is the
+difficulty-4 plissé and should have stayed on front per the standing rule — the folder
+name "05-hardest-item" misled; garment fidelity held but the pose drifted to a
+hand-to-hair gesture (kept pending Janice's verdict; re-render on front is one $0.06
+call). (b) 05's difficulty-5 drape rendered clean on the front pose. Spend $5.82/$25.
+
+**Approved test envelope ($0.118, passed):** `tryon.py --pose` wired (pose base as Image 1,
+prompt made pose-aware — "same stance and camera angle as Image 1" replaces "front-facing"
+for non-front poses; hair description updated to v3). 01 mock-neck on contrapposto and
+04 blazer on 34turn both held pose, garment, and identity; cutouts clean (hand-on-hip
+arm-triangle QA'd separately, $0); carousel picks v3 cutouts automatically (`v3` sorts
+after `v1` in the server's `cuts[-1]`). Render naming: `<gid>_<arm>_v3[_<pose>]_<n>.png`.
+Standing rules otherwise unchanged (budget gate, no NB edits on the head region, one pose
+per saved look — variance across looks, not within; difficulty-4/5 garments stay on front).
 
 **Decision (user):** an ambient auto-scroll for the archive carousel (drift at 0.18
 items/s, easing to a 0.015 items/s crawl while the cursor is over a figure, smoothstep

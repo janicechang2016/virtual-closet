@@ -4,9 +4,29 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-13, night)
+## Current state (2026-07-14)
 
-- Phases 0–4 complete. **avatar-v1 LOCKED**: 4-view sheet in `avatar/avatar-v1/`.
+- Phases 0–4 complete. **avatar-v3 is canon** (2026-07-14): user-supplied 4-pose library
+  in `avatar/avatar-v3/` (front / contrapposto / hand-on-hip / 34turn) — new lineage
+  superseding avatar-v1 (v1 4-view sheet kept in `avatar/avatar-v1/`). **Whole catalog
+  re-rendered on v3 poses 07-14** (`tryon.py --pose <name>`, works for `--outfit` too;
+  v1 renders legacy on disk, old look renders in hidden.json). Pose map: 01+03
+  contrapposto, 02 hand-on-hip, 04 34turn, 05 front, look 01+02 34turn, look 01+02+04
+  hand-on-hip. One pose per saved look; difficulty-4/5 garments stay on front — NB:
+  03 (plissé, difficulty 4) accidentally went to contrapposto; garment held but pose
+  drifted (hand-to-hair); Janice to keep or re-render on front ($0.06). **Poses are
+  archive-only (Janice 07-14): the fitting room shows/corrects front renders exclusively**
+  (server filters pose-tagged stems from `renders`). Front v3 renders exist for all five
+  garments (01–04 batch $0.235, approved 07-14; 02 corrected twice via the feedback
+  loop — navy→pure black, then waistband removed → `02-jeans_nb2_v3_4.png`).
+  **Lesson (07-14): chained correctives compound face drift** — two stacked nb2 edits
+  made 02's face uncanny despite face-swaps (each edit re-synthesizes the head; swap
+  restores identity, not skin texture). Batch fixes into ONE corrective note when
+  possible; after edits degrade a face, transplant the head from the cleanest render
+  of the same chain locally ($0, alignment is pixel-close) → `02-jeans_nb2_v3_5.png`.
+  05's front render was frame-padded locally to square 1824² to match the 1024² v3
+  renders (nb2 returned a 1:3 sliver; original at `renders/archive/*_prepad.png` —
+  `renders/archive/` is app-invisible).
 - Phase 3 benchmark done (`docs/phase3-benchmark.md`): default try-on pipeline is
   **fal-ai/nano-banana-2/edit + fal-ai/face-swap finish** ($0.059/render). NB Pro is worse
   at try-on (re-stages scenes); IDM-VTON needs its `category` param wired.
@@ -38,15 +58,16 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   while the Boutique app remains the **FITTING ROOM** (composing/trying-on). How the two
   connect (navigation, shared state, which is home) is an open design question she wants
   to work through together. Dovetails with the queued look-cards feature.
-- Spend: ~$5.41 of $25 cap (`python3 scripts/genlog.py summary`).
+- Spend: ~$6.23 of $25 cap (`python3 scripts/genlog.py summary`).
 
 ## Standing rules
 
 1. **Spending:** fal calls only in user-approved batches/envelopes. All calls go through
    `scripts/genlog.py` budget gate; never bypass it.
 2. **Identity:** every render with a visible avatar face gets a `fal-ai/face-swap`
-   finishing pass, source `avatar/avatar-v1/front.png`. Never edit the avatar's head
-   region with NB models (edits collage or regress the face — regenerate instead).
+   finishing pass, source `avatar/avatar-v3/front.png` (v3 canon 2026-07-14; v1 renders
+   are legacy lineage). Never edit the avatar's head region with NB models (edits collage
+   or regress the face — regenerate instead).
 3. **Prompts for nb2/edit must be neutrally worded** ("virtual try-on: show the person
    wearing…", never "dress the woman", no body-size adjectives) — its content checker is
    strict. Anti-collage phrasing ("one single figure, not a collage…") in every prompt.
@@ -58,6 +79,7 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
 ```bash
 ENABLE_GENERATION=1 python3 scripts/closet_server.py     # app (from virtual-closet/)
 python3 scripts/tryon.py <garment-id>                    # one try-on render
+python3 scripts/tryon.py <gid> --pose contrapposto       # render on an avatar-v3 pose base
 python3 scripts/tryon.py --outfit 01-plain-tee 02-jeans  # multi-item compose
 python3 scripts/tryon.py <gid> --correct "wrong fit" --note "…"  # corrective edit
 python3 scripts/genlog.py summary                        # spend vs cap
@@ -72,17 +94,11 @@ actually look at the PNG.
 
 - Saved outfits as **look cards** — port `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`
   (rembg u2net_human_seg cutout → largest-component cleanup → crop → coverflow lookbook).
-- **Avatar pose variants** (Janice, 2026-07-13 — feasibility agreed, wait for go): build a
-  small **pose library** extending avatar-v1 (contrapposto, hand-on-hip, mid-stride, 3/4
-  turn) via the proven turnaround recipe — generate pose base once + face-swap finish,
-  ~$0.08/pose one-time. Do NOT re-pose via nb2/edit prompt language alone (it's an editor;
-  re-posing fights it — benchmark first if tried). Assign **one pose per saved look** at
-  creation — variance across looks, not within (multiple poses per look multiplies cost).
-  Limits: keep difficulty-4/5 garments (plissé dress) on the standard front pose; stay
-  within the validated 3/4 face-angle envelope for face-swap; unusual silhouettes may need
-  cutout cleanup. First step when greenlit: user-approved test envelope (~$0.35 = 2 pose
-  bases × 2 outfit renders). Goal: archive page reads as a varied, character-select-style
-  lineup.
+- **Pose rollout DONE** (see current state) — going forward: assign one pose per saved
+  look at creation (~$0.06/render). Do NOT re-pose via nb2/edit prompt language alone
+  (it's an editor; re-posing fights it). Difficulty-4/5 garments stay on the front pose
+  (03 plissé AND 05 draped maxi — check `difficulty` in meta.json, not folder names).
+  Open: Janice's keep-or-redo verdict on 03's drifted contrapposto.
 - **New garment ingest incoming:** Janice will provide new on-model photos at a later
   session. At ingest, fill `meta.json` per the schema **including `size_owned`** (sizes
   vary per item — never default to S) and the per-item note on what in the photo is NOT
