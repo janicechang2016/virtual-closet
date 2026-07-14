@@ -4,7 +4,7 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-13, evening)
+## Current state (2026-07-13, night)
 
 - Phases 0–4 complete. **avatar-v1 LOCKED**: 4-view sheet in `avatar/avatar-v1/`.
 - Phase 3 benchmark done (`docs/phase3-benchmark.md`): default try-on pipeline is
@@ -18,7 +18,8 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): figure cutouts
     (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
     interpolation + infinite wrap + 80px snap/dwell, x-axis scroll + click-to-center,
-    TRY ON wired to the live pipeline. Spec: `virtual-closet/design-inspo/` (docx + reel).
+    TRY ON wired to the live pipeline; hero slot at 85% of spec size (Janice: full size
+    too big). Spec: `virtual-closet/design-inspo/` (docx + reel).
     A **runway-procession variant** (single-file line receding to a vanishing point, per
     `design-inspo/runway-inspo.avif`) was built and shelved same night — saved at tag
     `runway-procession-v1` (restore: `git checkout runway-procession-v1 -- virtual-closet/app/carousel.html`).
@@ -66,5 +67,20 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
-Saved outfits as **look cards** — port `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`
-(rembg u2net_human_seg cutout → largest-component cleanup → crop → coverflow lookbook).
+- Saved outfits as **look cards** — port `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`
+  (rembg u2net_human_seg cutout → largest-component cleanup → crop → coverflow lookbook).
+- **Avatar pose variants** (Janice, 2026-07-13 — feasibility agreed, wait for go): build a
+  small **pose library** extending avatar-v1 (contrapposto, hand-on-hip, mid-stride, 3/4
+  turn) via the proven turnaround recipe — generate pose base once + face-swap finish,
+  ~$0.08/pose one-time. Do NOT re-pose via nb2/edit prompt language alone (it's an editor;
+  re-posing fights it — benchmark first if tried). Assign **one pose per saved look** at
+  creation — variance across looks, not within (multiple poses per look multiplies cost).
+  Limits: keep difficulty-4/5 garments (plissé dress) on the standard front pose; stay
+  within the validated 3/4 face-angle envelope for face-swap; unusual silhouettes may need
+  cutout cleanup. First step when greenlit: user-approved test envelope (~$0.35 = 2 pose
+  bases × 2 outfit renders). Goal: archive page reads as a varied, character-select-style
+  lineup.
+- **New garment ingest incoming:** Janice will provide new on-model photos at a later
+  session. At ingest, fill `meta.json` per the schema **including `size_owned`** (sizes
+  vary per item — never default to S) and the per-item note on what in the photo is NOT
+  part of the garment.
