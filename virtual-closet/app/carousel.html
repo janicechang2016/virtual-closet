@@ -86,6 +86,12 @@
 
   /* the hero morphs into the fitting-room stage on navigation */
   @view-transition { navigation: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.35s; }
+  ::view-transition-group(figure),
+  ::view-transition-old(figure), ::view-transition-new(figure) {
+    animation-duration: 0.55s;
+    animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
+  }
 </style>
 </head>
 <body>
@@ -143,6 +149,8 @@ let items = [];        // filtered view
 let els = [];          // DOM nodes parallel to items
 let scrollPos = 0, target = 0, isSnapped = true, dwellAccum = 0;
 let SLOTS = {};
+let detailOpen = false;       // while open, #detail-img carries the morph name
+let suppressFigure = false;   // plain nav links crossfade instead of morphing
 
 const $ = (s) => document.querySelector(s);
 
@@ -261,8 +269,10 @@ function layout() {
     el.style.opacity = s.opacity;
     el.style.zIndex = s.z;
     el.style.transform = `translate(${s.cx - s.w / 2}px, ${s.cy - s.h / 2}px)`;
-    // only the hero carries the cross-page transition name (must be unique)
-    el.style.viewTransitionName = Math.abs(off) < 0.5 ? 'figure' : 'none';
+    // only ONE element may carry the cross-page transition name: the hero —
+    // unless the detail overlay is open (its image anchors the morph instead)
+    el.style.viewTransitionName =
+      (!suppressFigure && !detailOpen && Math.abs(off) < 0.5) ? 'figure' : 'none';
   });
 }
 
@@ -401,10 +411,17 @@ function openDetail(it) {
     $('#detail-meta').textContent = it.desc || '';
   }
   $('#detail').hidden = false;
+  detailOpen = true;
+  $('#detail-img').style.viewTransitionName = 'figure';
 }
-$('#detail-close').addEventListener('click', () => { $('#detail').hidden = true; });
-$('#detail').addEventListener('click', (e) => { if (e.target.id === 'detail') $('#detail').hidden = true; });
-window.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#detail').hidden = true; });
+function closeDetail() {
+  $('#detail').hidden = true;
+  detailOpen = false;
+  $('#detail-img').style.viewTransitionName = 'none';
+}
+$('#detail-close').addEventListener('click', closeDetail);
+$('#detail').addEventListener('click', (e) => { if (e.target.id === 'detail') closeDetail(); });
+window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
 $('#detail-open').addEventListener('click', () => {
   if (!detailItem) return;
   const items_ = detailItem.kind === 'look' ? detailItem.items : [detailItem.gid];
@@ -412,6 +429,13 @@ $('#detail-open').addEventListener('click', () => {
     title: detailItem.title, items: items_, kind: detailItem.kind,
   }));
   location.href = '/fitting-room';
+});
+
+// plain header navigation gets a quiet crossfade, not a figure-to-figure morph
+document.querySelector('#nav-left a[href="/fitting-room"]').addEventListener('click', () => {
+  suppressFigure = true;
+  els.forEach((el) => { el.style.viewTransitionName = 'none'; });
+  $('#detail-img').style.viewTransitionName = 'none';
 });
 
 async function boot() {

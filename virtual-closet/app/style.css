@@ -179,3 +179,9 @@ section::-webkit-scrollbar-thumb { background: #000; }
 /* ── cross-document transition: the archive hero morphs into the stage ── */
 @view-transition { navigation: auto; }
 #stage-img { view-transition-name: figure; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.35s; }
+::view-transition-group(figure),
+::view-transition-old(figure), ::view-transition-new(figure) {
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
+}

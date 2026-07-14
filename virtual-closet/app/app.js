@@ -53,6 +53,11 @@ async function migrateLegacySaves() {
   toast(`migrated ${legacy.length} saved outfit(s) to looks`);
 }
 
+// plain header navigation gets a quiet crossfade, not a figure-to-figure morph
+document.querySelector('.strip-left a[href="/"]').addEventListener("click", () => {
+  $("#stage-img").style.viewTransitionName = "none";
+});
+
 // the archive's "open in fitting room" door
 function consumeIncomingLook() {
   const raw = localStorage.getItem("incomingLook");
