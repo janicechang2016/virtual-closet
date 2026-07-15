@@ -107,8 +107,14 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 #feedback-bar {
   margin-top: 12px; display: flex; gap: 5px; align-items: center;
   flex-wrap: wrap; justify-content: center;
+  transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s;
 }
-#feedback-bar[hidden] { display: none; }
+/* keep the bar's footprint even when hidden so appearing never shifts the
+   centered mirror — it fades/rises in place instead of pushing layout */
+#feedback-bar[hidden] {
+  display: flex;
+  visibility: hidden; opacity: 0; transform: translateY(4px); pointer-events: none;
+}
 .fb-label { font-size: 9px; letter-spacing: 0.08em; opacity: 0.6; }
 .fb {
   background: #fff; border: 1px solid #000; padding: 3px 9px;
