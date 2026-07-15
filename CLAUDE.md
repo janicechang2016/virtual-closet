@@ -4,7 +4,7 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-14, evening)
+## Current state (2026-07-15)
 
 - Phases 0–4 complete. **avatar-v3 is canon** (2026-07-14): user-supplied 4-pose library
   in `avatar/avatar-v3/` (front / contrapposto / hand-on-hip / 34turn) — new lineage
@@ -50,12 +50,21 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
     An **auto-scroll variant** (ambient drift + hover slow-to-crawl) was built and shelved
     2026-07-14 — saved at tag `auto-drift-v1` (restore:
     `git checkout auto-drift-v1 -- virtual-closet/app/carousel.html`).
+    **ASCII entrance SHIPPED 07-15** (in carousel.html, from Janice's design handoff at
+    `design-inspo/design_handoff_ascii_entrance/`, SYVE-skinned): full-bleed cleaned
+    grayscale interior (`app/entrance-bg.jpg`), black glyphs of the handoff quote trace
+    its edges (charSize 12, shimmerDepth 0.9 — new knob, handoff twinkle invisible in
+    b/w), "enter the archive." label; click → pulse-fade dispel (glyphs stop reappearing,
+    photo fades to white, NO ghost) revealing the live carousel; once per session
+    (`sessionStorage.archiveEntered`), reduced-motion skip, `?entrance=1/0` debug.
+    Previews kept in `design-inspo/entrance-previews/` (options 1–3; see decisions.md).
   - `/fitting-room` (`/classic` kept as alias) — **fitting room** (outfit rail | stage |
     racks). Design lineage: Boutique v3 (313NY, tag `boutique-v3`; amber rejected as
     masculine, violet/rose rejected outright) → SYVE restyle 07-13 (tag
     `fitting-room-syve-v1`) → **prettier pass 07-14** (current): mirror stage + gallery
     label, text-first index racks with hover preview, manifest outfit rail, "Nº 313"
-    copy removed.
+    copy removed. Feedback bar keeps its footprint when hidden and fades in place
+    (07-15) — appearing must never shift the centered mirror.
   - `renders/hidden.json` — render stems the server keeps out of the app (files stay on
     disk). Size row reads `size_owned` from each garment's `meta.json`; unset = no
     highlight (log real sizes at ingest — not everything is S).
@@ -116,12 +125,6 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
-- **ASCII entrance page (spec agreed 07-14, wait for Janice's baseline inspo image):**
-  overlay skin inside `carousel.html` — a figure/wordmark rendered as a luminance-mapped
-  monospace glyph grid on canvas, black on the white void; slow shimmer at rest;
-  "enter the archive." click → medium-speed dissolve (ideally resolving into the real
-  hero figure); shows once per browser session (sessionStorage). $0, pure front-end.
-
 - **Look cards, remaining half:** the content-unit half shipped with publish (rembg
   cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**
   of all looks (second lens beside the carousel) once the archive grows past ~10 looks,
@@ -131,7 +134,13 @@ actually look at the PNG.
   (it's an editor; re-posing fights it). Difficulty-4/5 garments stay on the front pose
   (03 plissé AND 05 draped maxi — check `difficulty` in meta.json, not folder names;
   03's drifted contrapposto rejected by Janice 07-14, hidden not deleted).
-- **New garment ingest incoming:** Janice will provide new on-model photos at a later
-  session. At ingest, fill `meta.json` per the schema **including `size_owned`** (sizes
-  vary per item — never default to S), **`brand`** (shown in the archive detail overlay),
-  and the per-item note on what in the photo is NOT part of the garment.
+- **New garment ingest — photos ARRIVED, awaiting ingest session:** Janice dropped
+  **9 shoe photos** in `garments/raw/` on 07-14 (Jil Sander boots, Yello boots + heels,
+  Weejuns loafers, Camper flats, Keen sandals, Salomon/ASICS/Mizuno sneakers — brands
+  per filenames, confirm at ingest). At ingest: move each into its own
+  `garments/<NN-slug>/raw/` folder (numbering continues from 05), fill `meta.json` per
+  the schema **including `size_owned`** (sizes vary per item — never default to S),
+  **`brand`** (shown in the archive detail overlay), and the per-item note on what in
+  the photo is NOT part of the garment. Note: shoes are a new category — the fitting
+  room's outfit rail already has a SHOES slot; check category handling in
+  `app.js`/server manifest during ingest.
