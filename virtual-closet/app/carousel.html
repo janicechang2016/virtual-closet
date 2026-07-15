@@ -84,6 +84,21 @@
   .d-brand-line { font-weight: 800; margin-bottom: 4px; }
   .d-row .d-brand { font-weight: 800; }
 
+  /* ── ASCII entrance (design_handoff_ascii_entrance; shows once per session) ── */
+  #entrance { position: fixed; inset: 0; z-index: 100; background: #fff; cursor: pointer; }
+  #entrance[hidden] { display: none; }
+  /* the crop matches the viewport aspect, so pinning to 100vw/100vh is
+     distortion-free; !important beats the module's inline sizing */
+  #entrance canvas { display: block; width: 100vw !important; height: 100vh !important; }
+  #entrance-label {
+    position: absolute; left: 50%; bottom: 6vh; transform: translateX(-50%);
+    font-style: italic; text-transform: lowercase; font-size: 15px;
+    letter-spacing: 0.01em; background: rgba(255, 255, 255, 0.88);
+    padding: 8px 18px; white-space: nowrap; transition: opacity 0.9s ease;
+  }
+  #entrance.dispelling { background: transparent; } /* photo fade reveals the live carousel */
+  #entrance.dispelling #entrance-label { opacity: 0; }
+
   /* the hero morphs into the fitting-room stage on navigation */
   @view-transition { navigation: auto; }
   ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.35s; }
@@ -136,6 +151,11 @@
   </div>
 </div>
 
+<div id="entrance" hidden>
+  <canvas id="entrance-canvas"></canvas>
+  <div id="entrance-label">enter the archive.</div>
+</div>
+
 <script>
 const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="620" height="835" viewBox="0 0 620 835">' +
@@ -151,6 +171,7 @@ let scrollPos = 0, target = 0, isSnapped = true, dwellAccum = 0;
 let SLOTS = {};
 let detailOpen = false;       // while open, #detail-img carries the morph name
 let suppressFigure = false;   // plain nav links crossfade instead of morphing
+let entranceActive = false;   // ASCII entrance cover is up (blocks carousel scroll)
 
 const $ = (s) => document.querySelector(s);
 
@@ -308,6 +329,7 @@ function centerOn(i) {
 }
 
 function handleScroll(delta) {
+  if (entranceActive) return;   // don't drift the carousel behind the entrance cover
   if (isSnapped) {
     dwellAccum += delta;
     if (Math.abs(dwellAccum) > DWELL) {
@@ -449,6 +471,242 @@ async function boot() {
   tick();
 }
 boot();
+
+/* ── ASCII entrance ──────────────────────────────────────────────────────
+   Edge-trace cover per design-inspo/design_handoff_ascii_entrance, in the
+   SYVE skin Janice approved 07-15: grayscale photo cropped to the viewport,
+   black monospace glyphs (the handoff's text passage) tracing its contours,
+   deep shimmer at rest. Click: glyphs pulse under a decaying envelope until
+   they stop reappearing while the photo fades out, revealing the live
+   carousel. Shows once per browser session; skipped for reduced-motion.
+   Debug: ?entrance=1 forces it, ?entrance=0 suppresses it. */
+
+const ENTRANCE_TEXT =
+  'We are all filled with a longing for the wild. There are few culturally sanctioned antidotes for this yearning. We were taught to feel shame for this desire. We grew our hair long and used it to hide our feelings. But the shadow of the Wild Woman still lurks behind us during our days and in our nights. No matter where we are, the shadow that trots behind is definitely four-footed. ';
+
+function createAsciiEntrance(canvas, opts) {
+  let api = { dispel: () => {}, destroy: () => {} };
+  let destroyed = false;
+
+  const img = new Image();
+  img.onload = () => {
+    const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    fontsReady.then(() => { if (!destroyed) boot(img); });
+  };
+  img.src = opts.src;
+
+  function boot(img) {
+    const cssW = opts.width;
+    const W = cssW * 2;                       // 2x internal resolution
+    const H = Math.round(W * (img.height / img.width));
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = (H / 2) + 'px';
+    const ctx = canvas.getContext('2d');
+
+    const fs = opts.charSize * 2;
+    const font = fs + "px 'IBM Plex Mono', monospace";
+    const cellW = Math.max(4, Math.round(fs * 0.6));
+    const cellH = Math.max(6, Math.round(fs * 1.02));
+    const cols = Math.ceil(W / cellW), rows = Math.ceil(H / cellH);
+
+    // sample luminance at grid resolution, contrast-normalize (2nd–98th pct)
+    const sc = document.createElement('canvas'); sc.width = cols; sc.height = rows;
+    const sx = sc.getContext('2d', { willReadFrequently: true });
+    sx.drawImage(img, 0, 0, cols, rows);
+    const px = sx.getImageData(0, 0, cols, rows).data;
+    const lum = new Float32Array(cols * rows);
+    for (let i = 0; i < cols * rows; i++)
+      lum[i] = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) / 255;
+    const sorted = Float32Array.from(lum).sort();
+    const lo = sorted[Math.floor(sorted.length * 0.02)];
+    const hi = sorted[Math.floor(sorted.length * 0.98)];
+    const rng = Math.max(0.05, hi - lo);
+    for (let i = 0; i < lum.length; i++) lum[i] = Math.min(1, Math.max(0, (lum[i] - lo) / rng));
+
+    // Sobel edge magnitude decides which cells get a character
+    const mag = new Float32Array(cols * rows);
+    for (let r = 1; r < rows - 1; r++) for (let c = 1; c < cols - 1; c++) {
+      const i = r * cols + c;
+      const gx = (lum[i - cols + 1] + 2 * lum[i + 1] + lum[i + cols + 1]) - (lum[i - cols - 1] + 2 * lum[i - 1] + lum[i + cols - 1]);
+      const gy = (lum[i + cols - 1] + 2 * lum[i + cols] + lum[i + cols + 1]) - (lum[i - cols - 1] + 2 * lum[i - cols] + lum[i - cols + 1]);
+      mag[i] = Math.sqrt(gx * gx + gy * gy);
+    }
+
+    const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+    const base = mk(), bx = base.getContext('2d');
+    bx.drawImage(img, 0, 0, W, H);
+    bx.fillStyle = opts.veil;
+    bx.fillRect(0, 0, W, H);
+
+    // characters drawn sequentially from the passage into 4 twinkle layers
+    const inten = opts.intensity;
+    const eThresh = 0.3 + (1 - inten) * 0.45;
+    const eAlpha = 0.3 + 0.7 * inten;
+    const q = opts.text.replace(/\s+/g, ' ');
+    const layers = [mk(), mk(), mk(), mk()];
+    const xs = layers.map((L) => {
+      const x = L.getContext('2d');
+      x.font = font; x.textBaseline = 'top';
+      x.globalAlpha = eAlpha; x.fillStyle = opts.charColor;
+      x.shadowColor = opts.charColor; x.shadowBlur = 3 * inten;
+      return x;
+    });
+    const parts = [];
+    let qi = 0;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const i = r * cols + c;
+      if (!mag[i] || mag[i] < eThresh) continue;
+      let ch = q[qi++ % q.length]; while (ch === ' ') ch = q[qi++ % q.length];
+      xs[(Math.random() * 4) | 0].fillText(ch, c * cellW, r * cellH);
+      parts.push({ x: c * cellW, y: r * cellH, ch, a: eAlpha });
+    }
+
+    const state = { mode: 'idle', t0: 0, raf: 0 };
+
+    const drawIdle = (t) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.drawImage(base, 0, 0);
+      for (let k = 0; k < layers.length; k++) {
+        const d = opts.shimmerDepth;
+        ctx.globalAlpha = (1 - d) + d * (0.5 + 0.5 * Math.sin(t * 0.0016 * opts.shimmerSpeed + k * 1.7));
+        ctx.drawImage(layers[k], 0, 0);
+      }
+      ctx.globalAlpha = 1;
+    };
+
+    // dispel: glyphs pulse in and out under a decaying envelope — each
+    // reappearance weaker until they stop coming back — while the photo
+    // fades fully out (no ghost). Noise-clustered per-glyph delays.
+    const FADE_DUR = 2.6;
+    const BG_START = 0.9, BG_DUR = 1.8;
+    const startDispel = () => {
+      if (state.mode !== 'idle') return;
+      for (const p of parts) {
+        p.dl = (0.5 + 0.5 * Math.sin(p.x * 0.011 + p.y * 0.017)) * 0.4 + Math.random() * 0.3;
+        p.w = 4 + Math.random() * 4;    // pulse rate: period ~0.8–1.6s
+      }
+      state.mode = 'dispel';
+      state.t0 = performance.now();
+    };
+
+    const drawDispel = (t) => {
+      const u = (t - state.t0) / 1000;
+      ctx.clearRect(0, 0, W, H);
+      const bgA = u > BG_START ? Math.max(0, 1 - (u - BG_START) / BG_DUR) : 1;
+      if (bgA > 0) {
+        ctx.globalAlpha = bgA; ctx.drawImage(base, 0, 0); ctx.globalAlpha = 1;
+      }
+      ctx.font = font; ctx.textBaseline = 'top'; ctx.fillStyle = opts.charColor;
+      let alive = false;
+      for (const p of parts) {
+        const tt = u - p.dl;
+        let a = p.a;
+        if (tt > 0) {
+          const pulse = 0.5 + 0.5 * Math.sin(p.w * tt + Math.PI / 2);
+          a = p.a * pulse * Math.max(0, 1 - tt / FADE_DUR);
+        }
+        if (a <= 0.01) continue;
+        alive = true;
+        ctx.globalAlpha = a;
+        ctx.fillText(p.ch, p.x, p.y);
+      }
+      ctx.globalAlpha = 1;
+      if (!alive && u > BG_START + BG_DUR) {
+        state.mode = 'done';
+        ctx.clearRect(0, 0, W, H);
+        if (opts.onDispelled) opts.onDispelled();
+      }
+    };
+
+    let last = 0;
+    const loop = (t) => {
+      if (destroyed) return;
+      state.raf = requestAnimationFrame(loop);
+      if (state.mode === 'idle') { if (t - last < 33) return; last = t; drawIdle(t); }
+      else if (state.mode === 'dispel') drawDispel(t);
+    };
+    state.raf = requestAnimationFrame(loop);
+
+    api = {
+      dispel: startDispel,
+      destroy: () => { destroyed = true; cancelAnimationFrame(state.raf); },
+    };
+  }
+
+  return {
+    dispel: () => api.dispel(),
+    destroy: () => { destroyed = true; api.destroy(); },
+  };
+}
+
+(function entranceBoot() {
+  const q = new URLSearchParams(location.search).get('entrance');
+  if (q === '0') return;
+  if (q !== '1') {
+    if (sessionStorage.getItem('archiveEntered')) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  }
+  const host = $('#entrance');
+  host.hidden = false;
+  entranceActive = true;
+
+  const srcImg = new Image();
+  srcImg.src = '/app/entrance-bg.jpg';
+  let inst = null, dispelling = false;
+
+  const dismiss = () => {           // shared by finish + failure paths
+    host.hidden = true;
+    entranceActive = false;
+  };
+
+  function cropToViewport(img) {    // center-crop at source resolution
+    const va = window.innerWidth / window.innerHeight;
+    const ia = img.width / img.height;
+    let sx, sy, sw, sh;
+    if (ia > va) { sh = img.height; sw = sh * va; sx = (img.width - sw) / 2; sy = 0; }
+    else { sw = img.width; sh = sw / va; sx = 0; sy = (img.height - sh) / 2; }
+    const c = document.createElement('canvas');
+    c.width = Math.round(sw); c.height = Math.round(sh);
+    c.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.92);
+  }
+
+  function build() {
+    if (inst) inst.destroy();
+    inst = createAsciiEntrance($('#entrance-canvas'), {
+      src: cropToViewport(srcImg),
+      text: ENTRANCE_TEXT,
+      charSize: 12,
+      shimmerSpeed: 3,
+      shimmerDepth: 0.9,          // glyphs breathe between 10% and 100% opacity
+      intensity: 0.5,
+      width: window.innerWidth,
+      veil: 'rgba(255,255,255,0.45)',
+      charColor: '#000',
+      onDispelled: () => {
+        try { sessionStorage.setItem('archiveEntered', '1'); } catch (e) {}
+        dismiss();
+      },
+    });
+  }
+  srcImg.onload = build;
+  srcImg.onerror = dismiss;         // never trap the site behind a broken cover
+
+  host.addEventListener('click', () => {
+    if (!inst || dispelling) return;
+    dispelling = true;
+    host.classList.add('dispelling');   // transparent bg: the photo fade reveals the carousel
+    inst.dispel();
+  });
+
+  let rz;
+  window.addEventListener('resize', () => {
+    if (!entranceActive || dispelling) return;
+    clearTimeout(rz);
+    rz = setTimeout(build, 250);
+  });
+})();
 </script>
 </body>
 </html>

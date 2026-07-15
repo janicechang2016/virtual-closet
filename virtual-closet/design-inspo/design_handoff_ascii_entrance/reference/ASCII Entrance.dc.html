@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"><style>body{margin:0;background:#e7e3d5;font-family:'IBM Plex Mono',monospace;color:#2f3a28}a{color:#2f3a28}a:hover{color:#6b7d55}.hd{padding:52px 52px 0}.ttl{font-size:15px;font-weight:600;letter-spacing:.16em;text-transform:uppercase}.sub{font-size:12px;color:#77735f;margin-top:6px}.row{display:flex;flex-wrap:wrap;gap:44px;padding:40px 52px 72px;align-items:flex-start}.opt{display:flex;flex-direction:column;gap:10px;width:420px}.bdg{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;background:#2f3a28;color:#f2efe6;padding:3px 8px;border-radius:2px}.lbl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#5c5a4e}.frame{position:relative;width:420px;background:#f2efe6;box-shadow:0 18px 50px rgba(47,58,40,.16)}.cv{display:block;position:relative;z-index:1;cursor:pointer}.reveal{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}.rq{font-size:11px;line-height:1.7;color:#8a8676;max-width:260px}.enter{font-size:18px;font-weight:600;letter-spacing:.2em;text-decoration:none;border:1px solid currentColor;padding:12px 28px}.ft{display:flex;align-items:center;justify-content:space-between}.hint{font-size:11px;color:#8a8676}.rp{font-family:inherit;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid #b9b4a2;padding:6px 12px;cursor:pointer;color:#5c5a4e}.rp:hover{border-color:#2f3a28;color:#2f3a28}</style></helmet><section><div class="hd"><div class="ttl">ASCII Entrance — Edge Trace</div><div class="sub">click the image to dispel and enter · replay to reform</div></div><div class="row"><div class="opt" id="1b"><div class="fx ac gap10"><span class="bdg">1b</span><span class="lbl">edge trace — characters on contours</span></div><div class="frame"><canvas class="cv" ref="{{ refB }}" onClick="{{ clickB }}"></canvas></div><div class="ft"><span class="hint">click the image to enter</span><button class="rp" onClick="{{ replayB }}">replay</button></div></div></div></section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;charSize&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:7,&quot;min&quot;:7,&quot;max&quot;:16,&quot;step&quot;:1,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;ASCII&quot;},&quot;shimmerSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:2.2,&quot;min&quot;:0.2,&quot;max&quot;:2.5,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;ASCII&quot;},&quot;palette&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;botanical&quot;,&quot;options&quot;:[&quot;botanical&quot;,&quot;ink&quot;,&quot;terminal&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;ASCII&quot;},&quot;edgeIntensity&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:0.5,&quot;min&quot;:0.15,&quot;max&quot;:1,&quot;step&quot;:0.05,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Edge trace (1b)&quot;}}">
+class Component extends DCLogic {
+  els = {};
+  renderers = [null, null, null];
+  quote = "We are all filled with a longing for the wild. There are few culturally sanctioned antidotes for this yearning. We were taught to feel shame for this desire. We grew our hair long and used it to hide our feelings. But the shadow of the Wild Woman still lurks behind us during our days and in our nights. No matter where we are, the shadow that trots behind is definitely four-footed. ";
+
+  renderVals() {
+    if (!this._fns) {
+      const setRef = (k) => (el) => { this.els[k] = el; };
+      const click = (i) => (e) => { const r = this.renderers[i]; if (r) r.dispel(e); };
+      const replay = (i) => () => { const r = this.renderers[i]; if (r) r.reset(); };
+      this._fns = { refB: setRef('b'), clickB: click(0), replayB: replay(0) };
+    }
+    return this._fns;
+  }
+
+  componentDidMount() {
+    const img = new Image();
+    img.onload = () => {
+      const ready = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+      ready.then(() => { this._img = img; this.buildAll(); });
+    };
+    img.src = 'assets/interior.jpeg';
+  }
+
+  componentDidUpdate(pp) {
+    if (this._img && (pp.charSize !== this.props.charSize || pp.shimmerSpeed !== this.props.shimmerSpeed || pp.palette !== this.props.palette || pp.edgeIntensity !== this.props.edgeIntensity)) this.buildAll();
+  }
+
+  componentWillUnmount() { this.renderers.forEach(r => r && r.stop()); }
+
+  palette() {
+    const p = this.props.palette ?? 'botanical';
+    if (p === 'ink') return { paper: '#f4f1ea', dark: false, inkFixed: '#22201b', edge: '#fffdf6', dither: '#22201b', mono: '#22201b' };
+    if (p === 'terminal') return { paper: '#0f130e', dark: true, inkFixed: '#c9e4ae', edge: '#e6f5d0', dither: '#a8cf8a', mono: '#c9e4ae' };
+    return { paper: '#f2efe6', dark: false, inkFixed: null, edge: '#fffdf4', dither: '#2f3a28', mono: '#2f3a28' };
+  }
+
+  buildAll() {
+    this.renderers.forEach(r => r && r.stop());
+    this.renderers = [this.makeRenderer(this.els.b, 'edge')];
+  }
+
+  makeRenderer(cv, mode) {
+    if (!cv || !this._img) return null;
+    const img = this._img, P = this.palette();
+    const speed = this.props.shimmerSpeed ?? 1;
+    const fs = (this.props.charSize ?? 10) * 2;
+    const W = 840, H = Math.round(W * img.height / img.width);
+    cv.width = W; cv.height = H;
+    cv.style.width = '420px'; cv.style.height = (H / 2) + 'px';
+    cv.style.pointerEvents = 'auto';
+    const ctx = cv.getContext('2d');
+    const cellW = Math.max(4, Math.round(fs * 0.6)), cellH = Math.max(6, Math.round(fs * 1.02));
+    const cols = Math.ceil(W / cellW), rows = Math.ceil(H / cellH);
+    const sc = document.createElement('canvas'); sc.width = cols; sc.height = rows;
+    const sx = sc.getContext('2d', { willReadFrequently: true });
+    sx.drawImage(img, 0, 0, cols, rows);
+    const px = sx.getImageData(0, 0, cols, rows).data;
+    const lum = new Float32Array(cols * rows);
+    for (let i = 0; i < cols * rows; i++) lum[i] = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) / 255;
+    const sorted = Float32Array.from(lum).sort();
+    const lo = sorted[Math.floor(sorted.length * 0.02)], hiL = sorted[Math.floor(sorted.length * 0.98)];
+    const rng = Math.max(0.05, hiL - lo);
+    for (let i = 0; i < lum.length; i++) lum[i] = Math.min(1, Math.max(0, (lum[i] - lo) / rng));
+    const q = this.quote.replace(/\s+/g, ' ');
+    const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+    const font = fs + "px 'IBM Plex Mono',monospace";
+    const parts = [];
+    const base = mk(), bx = base.getContext('2d');
+    let layers = [];
+
+    if (mode === 'ink') {
+      bx.fillStyle = P.paper; bx.fillRect(0, 0, W, H);
+      const O = mk(), ox = O.getContext('2d');
+      ox.font = font; ox.textBaseline = 'top';
+      let qi = 0;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const i = r * cols + c, d = 1 - lum[i];
+        const ch = q[qi++ % q.length];
+        const a = Math.pow(Math.max(0, d), 1.8);
+        if (ch === ' ' || a < 0.06) continue;
+        const kk = 0.15 + 0.55 * lum[i];
+        const col = P.inkFixed || ('rgb(' + Math.round(px[i * 4] * kk) + ',' + Math.round(px[i * 4 + 1] * kk) + ',' + Math.round(px[i * 4 + 2] * kk) + ')');
+        ox.globalAlpha = a; ox.fillStyle = col;
+        ox.fillText(ch, c * cellW, r * cellH);
+        parts.push({ x: c * cellW, y: r * cellH, ch: ch, col: col, a: a, dn: c / cols });
+      }
+      layers = [O];
+    } else if (mode === 'edge') {
+      bx.drawImage(img, 0, 0, W, H);
+      bx.fillStyle = P.dark ? 'rgba(10,14,9,0.45)' : 'rgba(242,239,230,0.30)';
+      bx.fillRect(0, 0, W, H);
+      const mag = new Float32Array(cols * rows);
+      for (let r = 1; r < rows - 1; r++) for (let c = 1; c < cols - 1; c++) {
+        const i = r * cols + c;
+        const gx = (lum[i - cols + 1] + 2 * lum[i + 1] + lum[i + cols + 1]) - (lum[i - cols - 1] + 2 * lum[i - 1] + lum[i + cols - 1]);
+        const gy = (lum[i + cols - 1] + 2 * lum[i + cols] + lum[i + cols + 1]) - (lum[i - cols - 1] + 2 * lum[i - cols] + lum[i - cols + 1]);
+        mag[i] = Math.sqrt(gx * gx + gy * gy);
+      }
+      const inten = this.props.edgeIntensity ?? 0.7;
+      const eThresh = 0.3 + (1 - inten) * 0.45;
+      const eAlpha = 0.3 + 0.7 * inten;
+      const Ls = [mk(), mk(), mk(), mk()];
+      const xs = Ls.map(L => { const x = L.getContext('2d'); x.font = font; x.textBaseline = 'top'; x.globalAlpha = eAlpha; x.fillStyle = P.edge; x.shadowColor = P.edge; x.shadowBlur = 3 * inten; return x; });
+      let qi = 0;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const i = r * cols + c;
+        if (!mag[i] || mag[i] < eThresh) continue;
+        let ch = q[qi++ % q.length]; while (ch === ' ') ch = q[qi++ % q.length];
+        const k = (Math.random() * 4) | 0;
+        xs[k].fillText(ch, c * cellW, r * cellH);
+        parts.push({ x: c * cellW, y: r * cellH, ch: ch, col: P.edge, a: eAlpha, dn: c / cols });
+      }
+      layers = Ls;
+    } else {
+      bx.fillStyle = P.paper; bx.fillRect(0, 0, W, H);
+      bx.fillStyle = P.mono; bx.globalAlpha = 0.45; bx.fillRect(W / 2 - 1, 0, 2, H); bx.globalAlpha = 1;
+      const B4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+      const bs = 6;
+      const dcn = Math.ceil(W / 2 / bs), drn = Math.ceil(H / bs);
+      const s2 = document.createElement('canvas'); s2.width = dcn; s2.height = drn;
+      const s2x = s2.getContext('2d', { willReadFrequently: true });
+      s2x.drawImage(img, 0, 0, img.width / 2, img.height, 0, 0, dcn, drn);
+      const p2 = s2x.getImageData(0, 0, dcn, drn).data;
+      const D = mk(), dx2 = D.getContext('2d');
+      dx2.fillStyle = P.dither;
+      for (let r = 0; r < drn; r++) for (let c = 0; c < dcn; c++) {
+        const i = (r * dcn + c) * 4;
+        const l = (0.299 * p2[i] + 0.587 * p2[i + 1] + 0.114 * p2[i + 2]) / 255;
+        const th = (B4[(r % 4) * 4 + (c % 4)] + 0.5) / 16;
+        if (l < th) {
+          dx2.fillRect(c * bs, r * bs, bs, bs);
+          parts.push({ x: c * bs, y: r * bs, rect: bs, col: P.dither, a: 1, dn: (c * bs) / W });
+        }
+      }
+      const O = mk(), ox = O.getContext('2d');
+      ox.font = font; ox.textBaseline = 'top'; ox.fillStyle = P.mono;
+      let qi = 0;
+      const half = Math.floor(cols / 2);
+      for (let r = 0; r < rows; r++) for (let c = half; c < cols; c++) {
+        const i = r * cols + c, d = 1 - lum[i];
+        const ch = q[qi++ % q.length];
+        const a = Math.pow(Math.max(0, d), 1.8);
+        if (ch === ' ' || a < 0.07) continue;
+        ox.globalAlpha = a;
+        ox.fillText(ch, c * cellW, r * cellH);
+        parts.push({ x: c * cellW, y: r * cellH, ch: ch, col: P.mono, a: a, dn: c / cols });
+      }
+      layers = [D, O];
+    }
+
+    const S = mk(), sxx = S.getContext('2d');
+    const state = { mode: 'idle', t0: 0, raf: 0, dead: false };
+    const hi = P.dark ? 'rgba(240,255,220,0.9)' : 'rgba(255,255,255,0.9)';
+
+    const drawIdle = (t) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.drawImage(base, 0, 0);
+      if (mode === 'edge') {
+        for (let k = 0; k < layers.length; k++) {
+          ctx.globalAlpha = 0.5 + 0.5 * (0.5 + 0.5 * Math.sin(t * 0.0016 * speed + k * 1.7));
+          ctx.drawImage(layers[k], 0, 0);
+        }
+        ctx.globalAlpha = 1;
+      } else {
+        for (const L of layers) ctx.drawImage(L, 0, 0);
+        sxx.clearRect(0, 0, W, H);
+        sxx.globalCompositeOperation = 'source-over';
+        sxx.drawImage(layers[layers.length - 1], 0, 0);
+        sxx.globalCompositeOperation = 'source-in';
+        const u = ((t * 0.00012 * speed) % 1.4) - 0.2;
+        const g = sxx.createLinearGradient(W * (u - 0.25), H * (u - 0.25), W * (u + 0.25), H * (u + 0.25));
+        g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, hi); g.addColorStop(1, 'rgba(255,255,255,0)');
+        sxx.fillStyle = g; sxx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = 0.55;
+        ctx.drawImage(S, 0, 0);
+        ctx.globalAlpha = 1;
+      }
+    };
+
+    const startDispel = (e) => {
+      if (state.mode !== 'idle') return;
+      let cx = W / 2, cy = H / 2;
+      if (e && e.clientX != null) {
+        const rc = cv.getBoundingClientRect();
+        cx = (e.clientX - rc.left) * (W / rc.width);
+        cy = (e.clientY - rc.top) * (H / rc.height);
+      }
+      for (const p of parts) {
+        if (mode === 'ink') {
+          const dxv = p.x - cx, dyv = p.y - cy, dist = Math.max(20, Math.hypot(dxv, dyv));
+          const v = 300 + Math.random() * 700;
+          p.vx = dxv / dist * v + (Math.random() - 0.5) * 120;
+          p.vy = dyv / dist * v + (Math.random() - 0.5) * 120;
+          p.dl = dist / (W * 1.2) * 0.45 + Math.random() * 0.08;
+          p.g = 0;
+        } else if (mode === 'edge') {
+          const ang = Math.random() * Math.PI * 2;
+          const sp = 30 + Math.random() * Math.random() * 320;
+          p.vx = Math.cos(ang) * sp;
+          p.vy = Math.sin(ang) * sp - 40;
+          p.dl = (0.5 + 0.5 * Math.sin(p.x * 0.011 + p.y * 0.017)) * 0.4 + Math.random() * 0.3;
+          p.g = (Math.random() - 0.5) * 400;
+          p.fl = 8 + Math.random() * 26;
+          p.rv = 500 + Math.random() * 700;
+        } else {
+          p.vx = (Math.random() - 0.5) * 60;
+          p.vy = 60 + Math.random() * 160;
+          p.dl = p.dn * 0.4 + Math.random() * 0.2; p.g = 1400;
+        }
+      }
+      state.mode = 'dispel'; state.t0 = performance.now();
+    };
+
+    const drawDispel = (t) => {
+      const u = (t - state.t0) / 1000;
+      ctx.clearRect(0, 0, W, H);
+      const bgA = Math.max(0.12, 1 - u / 2.4);
+      ctx.globalAlpha = bgA; ctx.drawImage(base, 0, 0); ctx.globalAlpha = 1;
+      ctx.font = font; ctx.textBaseline = 'top';
+      let alive = false;
+      for (const p of parts) {
+        const tt = u - p.dl;
+        let x = p.x, y = p.y, a = p.a;
+        if (mode === 'edge') {
+          if (tt > 0) {
+            x += p.vx * tt; y += p.vy * tt + 0.5 * p.g * tt * tt;
+            a = p.a * (0.7 + 0.3 * Math.sin(tt * p.fl));
+          }
+          const tr = Math.max(0, u - 1.2);
+          if (tr > 0) {
+            y -= p.rv * tr * tr;
+            a *= Math.max(0, 1 - tr / 1.1);
+          }
+          if (a <= 0.01) continue;
+        } else if (tt > 0) {
+          x += p.vx * tt; y += p.vy * tt + 0.5 * p.g * tt * tt;
+          a = p.a * Math.max(0, 1 - tt / (p.fd || 0.9));
+          if (a <= 0.01) continue;
+        }
+        alive = true;
+        ctx.globalAlpha = a; ctx.fillStyle = p.col;
+        if (p.rect) ctx.fillRect(x, y, p.rect, p.rect); else ctx.fillText(p.ch, x, y);
+      }
+      ctx.globalAlpha = 1;
+      if (!alive && u > 2.4) {
+        state.mode = 'done';
+        ctx.clearRect(0, 0, W, H);
+        ctx.globalAlpha = 0.12; ctx.drawImage(base, 0, 0); ctx.globalAlpha = 1;
+        cv.style.pointerEvents = 'none';
+      }
+    };
+
+    let last = 0;
+    const loop = (t) => {
+      if (state.dead) return;
+      state.raf = requestAnimationFrame(loop);
+      if (state.mode === 'idle') { if (t - last < 33) return; last = t; drawIdle(t); }
+      else if (state.mode === 'dispel') drawDispel(t);
+    };
+    state.raf = requestAnimationFrame(loop);
+
+    return {
+      dispel: startDispel,
+      reset: () => { state.mode = 'idle'; cv.style.pointerEvents = 'auto'; },
+      stop: () => { state.dead = true; cancelAnimationFrame(state.raf); }
+    };
+  }
+}
+</script>
+</body>
+</html>

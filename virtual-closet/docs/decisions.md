@@ -1,5 +1,31 @@
 # Decision log
 
+## 2026-07-15 — ASCII entrance shipped (handoff algorithm, SYVE skin, pulse-fade)
+
+**Decision (user, after three live previews):** the archive's entrance is the
+design-handoff effect (`design-inspo/design_handoff_ascii_entrance/` — Sobel edge-trace,
+chars drawn sequentially from the Wild Woman passage, 4-layer twinkle) translated to the
+SYVE language, not the handoff's warm-putty look. Final form, iterated in
+`design-inspo/entrance-previews/option3-interior-syve.html` (options 1/2 retained there):
+- **Image:** the handoff interior photo, grayscaled, Instagram UI (arrows / profile icon /
+  dots) inpainted out (cv2 + clone patches; handoff original untouched) →
+  `app/entrance-bg.jpg`. Full-bleed: runtime center-crop to the viewport aspect, canvas
+  pinned to 100vw/100vh (!important over the module's inline sizing).
+- **Glyphs:** black on the white void, charSize 12 (handoff's 7 too tiny), quote text;
+  "enter the archive." italic label kept (white backdrop pill).
+- **Shimmer:** new `shimmerDepth` knob = 0.9 (alpha 10–100%, speed 3) — the handoff's
+  50–100% twinkle is invisible in black-on-white.
+- **Dispel (replaces scatter/rise):** glyphs pulse in and out under a ~2.6s decaying
+  envelope — each reappearance weaker until they stop coming back — while the photo fades
+  fully out from 0.9s (NO ghost); the overlay bg goes transparent on click so the fade
+  reveals the live carousel directly. ~3.3s total.
+- **Integration** (inside `carousel.html`, single-file): shows once per browser session
+  (`sessionStorage.archiveEntered`, set on dispel completion), skipped under
+  prefers-reduced-motion, `?entrance=1` forces / `?entrance=0` suppresses (QA),
+  image-load failure dismisses the cover (never trap the site), carousel wheel/touch
+  scroll blocked while the cover is up. Verified end-to-end via CDP-driven Chrome:
+  idle cover → click → mid-dispel reveal → clean carousel → same-session reload skips.
+
 ## 2026-07-14 — Fitting room "prettier pass" (mirror / index / manifest)
 
 **Decision (user):** art-direct the fitting room within the SYVE language, keeping the
