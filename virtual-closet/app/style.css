@@ -183,6 +183,15 @@ dialog h3 { font-size: 12px; font-weight: 800; }
 .modal-row { display: flex; gap: 8px; margin-top: 12px; }
 code { font-family: ui-monospace, Menlo, monospace; text-transform: none; }
 
+/* ── drag-to-dress affordances ── */
+#garment-grid .row[draggable="true"] { cursor: grab; }
+#garment-grid .row[draggable="true"]:active { cursor: grabbing; }
+/* while a garment is in the air, the mirror announces itself as a target */
+body.dragging #stage-frame { box-shadow: inset 0 0 0 1px #000; }
+#stage-frame.drop-hot { box-shadow: inset 0 0 0 3px #000; }
+.slot.drop-hot { background: #000; color: #fff; }
+.slot.drop-hot .slot-name, .slot.drop-hot .slot-val { opacity: 1; }
+
 /* ── toast ── */
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);

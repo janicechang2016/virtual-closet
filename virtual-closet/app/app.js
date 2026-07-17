@@ -31,6 +31,7 @@ async function boot() {
   renderGrid();
   renderSlots();
   renderSaved();
+  setupDropZones();
   consumeIncomingLook();
   const first = M.garments.find((g) => g.photos[0]);
   if (first) previewGarment(first.id);   // the preview frame is never empty
@@ -114,6 +115,20 @@ function renderGrid() {
   document.querySelectorAll("#garment-grid .row").forEach((r) => {
     r.addEventListener("click", () => tryOn(r.dataset.id));
     r.addEventListener("mouseenter", () => previewGarment(r.dataset.id));
+    // drag-to-dress: rows can be dragged onto the mirror or a manifest slot
+    r.draggable = true;
+    r.addEventListener("dragstart", (e) => {
+      draggedId = r.dataset.id;
+      e.dataTransfer.setData("text/plain", r.dataset.id);
+      e.dataTransfer.effectAllowed = "copy";
+      previewGarment(r.dataset.id);
+      const ghost = $("#rack-preview-img");
+      if (ghost && ghost.complete && ghost.naturalWidth) {
+        e.dataTransfer.setDragImage(ghost, 48, 64);
+      }
+      document.body.classList.add("dragging");
+    });
+    r.addEventListener("dragend", endDrag);
   });
 }
 
@@ -169,10 +184,86 @@ async function generateRender(g) {
   }
 }
 
-function equip(g) {
-  const slot = g.category === "dress" ? "top" : SLOTS.includes(g.category) ? g.category
+function naturalSlot(g) {
+  return g.category === "dress" ? "top" : SLOTS.includes(g.category) ? g.category
     : g.category === "outerwear" ? "layer" : null;
+}
+
+function equip(g) {
+  const slot = naturalSlot(g);
   if (slot) { outfit[slot] = g.id; localStorage.setItem("outfit", JSON.stringify(outfit)); renderSlots(); }
+}
+
+/* ── drag-to-dress: drop a rack item on the mirror (auto-slot) or a manifest
+   slot (must match). Drop position carries no other meaning — nb2 places
+   garments by category; the drop is slot assignment, nothing else. ── */
+let draggedId = null;
+let savedCaption = null;
+
+function endDrag() {
+  draggedId = null;
+  document.body.classList.remove("dragging");
+  document.querySelectorAll(".drop-hot").forEach((el) => el.classList.remove("drop-hot"));
+  restoreCaption();
+}
+
+function restoreCaption() {
+  if (savedCaption !== null) { $("#stage-caption").textContent = savedCaption; savedCaption = null; }
+}
+
+function setupDropZones() {
+  const frame = $("#stage-frame");
+  frame.addEventListener("dragover", (e) => {
+    if (!draggedId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    frame.classList.add("drop-hot");
+    if (savedCaption === null) savedCaption = $("#stage-caption").textContent;
+    const g = M.garments.find((x) => x.id === draggedId);
+    $("#stage-caption").textContent = g ? `drop to wear — ${g.name}` : "drop to wear";
+  });
+  frame.addEventListener("dragleave", (e) => {
+    if (frame.contains(e.relatedTarget)) return;
+    frame.classList.remove("drop-hot");
+    restoreCaption();
+  });
+  frame.addEventListener("drop", (e) => {
+    e.preventDefault();
+    const gid = draggedId || e.dataTransfer.getData("text/plain");
+    savedCaption = null;   // tryOn writes the real caption
+    endDrag();
+    if (gid) tryOn(gid);
+  });
+
+  // manifest rail: only the matching slot lights up / accepts
+  const rail = $("#outfit-slots");
+  rail.addEventListener("dragover", (e) => {
+    const slotEl = e.target.closest(".slot");
+    if (!slotEl || !draggedId) return;
+    const g = M.garments.find((x) => x.id === draggedId);
+    if (!g || naturalSlot(g) !== slotEl.dataset.s) return;   // incompatible: not a target
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    slotEl.classList.add("drop-hot");
+  });
+  rail.addEventListener("dragleave", (e) => {
+    const slotEl = e.target.closest(".slot");
+    if (slotEl && !slotEl.contains(e.relatedTarget)) slotEl.classList.remove("drop-hot");
+  });
+  rail.addEventListener("drop", (e) => {
+    const slotEl = e.target.closest(".slot");
+    if (!slotEl) return;
+    e.preventDefault();
+    const gid = draggedId || e.dataTransfer.getData("text/plain");
+    endDrag();
+    const g = M.garments.find((x) => x.id === gid);
+    if (!g) return;
+    if (naturalSlot(g) !== slotEl.dataset.s) {
+      toast(`${g.name} wears as ${naturalSlot(g) || "…"} — drop it there or on the mirror`);
+      return;
+    }
+    tryOn(gid);
+  });
 }
 
 function renderSlots() {

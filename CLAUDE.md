@@ -23,10 +23,12 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   10 failures traced to prompts missing the not-part notes → fixed via `SLOT_NOTES`
   category anchor + `exclude_from_photo` meta field in tryon.py (fill it at ingest
   for on-model photos!); 9 re-rendered clean (`_2` suffix, bad `_1`s hidden);
-  30-off-shoulder borderline-kept. **Next build: drag-to-dress**
-  (agreed 07-15: drop rack item on mirror → fills slot, instant swap when a render
-  exists; position ≠ meaning; collage preview = maybe-later. 360/turntable parked —
-  revisit after renders; grab garment BACK views when sourcing).
+  30-off-shoulder borderline-kept; 45 sundae corrective 07-16 (pasted-on → worn,
+  _1 hidden). **Drag-to-dress SHIPPED 07-16** (rack rows draggable → mirror
+  (auto-slot) or matching manifest slot; drop = slot assignment + tryOn instant
+  swap; position ≠ meaning; mismatch toasts; CDP-verified; rollback tag
+  `pre-drag-to-dress`). Collage preview = maybe-later. 360/turntable parked —
+  revisit after renders; grab garment BACK views when sourcing.
 
 - Phases 0–4 complete. **avatar-v3 is canon** (2026-07-14): user-supplied 4-pose library
   in `avatar/avatar-v3/` (front / contrapposto / hand-on-hip / 34turn) — new lineage

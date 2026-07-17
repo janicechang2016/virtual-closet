@@ -1,5 +1,22 @@
 # Decision log
 
+## 2026-07-16 — Drag-to-dress ships in the fitting room
+
+**Decision (user, vetted 07-15):** garments can be dragged from the racks onto the
+mirror (auto-slot via the category map) or onto a specific manifest slot (only the
+matching slot arms; a mismatch drop toasts the right destination). Drop = slot
+assignment + the existing tryOn flow — instant render swap since every garment now
+has a front render; **drop position carries no pixel-placement meaning** (nb2 slots
+by category). Affordances in the SYVE language: grab cursor on rows, mirror hairline
+doubles while dragging (inset shadow, no layout shift), triples on hover, caption
+becomes "drop to wear — {name}", matching slot inverts; the rack preview image rides
+as the drag ghost. Verified via CDP-driven Chrome (synthetic DragEvents): mirror
+drop, slot mismatch rejection, slot match equip — all pass. Rollback point: tag
+`pre-drag-to-dress`. Inspiration: kaberikram/Interactive-Styling-Canvas (whose
+"instant" trick is pre-rendered assets — exactly our render library).
+Same day, sundae shirt corrective ($0.06): pasted-on look → naturally worn; old
+render hidden. Spend $10.19/$25.
+
 ## 2026-07-16 — Batch ingest: 53 items (06–58), shoes category goes live
 
 **The July sourcing haul is in.** Janice gathered ~120 ecomm photos via `/sourcing`;
