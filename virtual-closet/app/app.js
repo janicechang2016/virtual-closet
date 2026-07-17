@@ -86,7 +86,7 @@ function showAvatar() {
   if (M.avatar.draft) {
     $("#stage-img").src = M.avatar.draft;
     const v = M.avatar.locked_version || "draft";
-    $("#stage-caption").textContent = `base avatar (${v}) — click a garment to try on`;
+    $("#stage-caption").textContent = `base avatar (${v}) — click a garment, or drag one onto the mirror`;
   } else {
     $("#stage-caption").textContent = "no avatar yet — Phase 2 pending";
   }
@@ -106,7 +106,7 @@ function renderGrid() {
   const items = M.garments.filter((g) => filter === "all" || g.category === filter);
   $("#garment-grid").innerHTML = items.map((g) => {
     const num = /^\d+/.exec(g.id)?.[0] ?? "";
-    return `<div class="row" data-id="${g.id}">
+    return `<div class="row" data-id="${g.id}" title="click to try on · drag onto the mirror or a slot">
       <span class="row-num">${num}</span>
       <span class="row-name">${g.brand ? `<span class="row-brand">${g.brand}</span>` : ""}${g.name}</span>
       <span class="row-diff">${"◆".repeat(g.difficulty)}</span>

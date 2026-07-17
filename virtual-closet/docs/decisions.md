@@ -14,8 +14,14 @@ as the drag ghost. Verified via CDP-driven Chrome (synthetic DragEvents): mirror
 drop, slot mismatch rejection, slot match equip — all pass. Rollback point: tag
 `pre-drag-to-dress`. Inspiration: kaberikram/Interactive-Styling-Canvas (whose
 "instant" trick is pre-rendered assets — exactly our render library).
-Same day, sundae shirt corrective ($0.06): pasted-on look → naturally worn; old
-render hidden. Spend $10.19/$25.
+Same day, sundae shirt corrective ($0.06): pasted-on look improved but the ghost
+photo's propped-open collar + inner brand tag survived (Janice caught the tag —
+the true "sitting on top" tell). 07-17: fresh render ($0.06) with the tag in
+`exclude_from_photo` + "collar worn naturally closed" in details → clean, lives at
+`_3` (both earlier takes hidden; the original _1 was accidentally overwritten by
+the CLI's default suffix — lesson: pass explicit --suffix when re-rendering).
+Drag-to-dress discovery copy: idle-mirror caption now reads "click a garment, or
+drag one onto the mirror"; rack rows carry a hover tooltip. Spend $10.25/$25.
 
 ## 2026-07-16 — Batch ingest: 53 items (06–58), shoes category goes live
 

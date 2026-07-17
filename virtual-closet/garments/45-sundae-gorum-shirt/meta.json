@@ -12,9 +12,13 @@
   "details_to_preserve": [
     "asymmetric wrap collar with bow-tie closure",
     "off-center button placket",
-    "boxy body"
+    "boxy body",
+    "collar worn naturally closed against the neck, no inner label visible"
   ],
   "source_photo_type": "product-page",
-  "notes": "",
-  "brand": "Sundae School"
+  "notes": " Ghost photo shows open collar w/ inner tags - excluded.",
+  "brand": "Sundae School",
+  "exclude_from_photo": [
+    "the white inner brand and size labels visible inside the propped-open collar (product-photo staging - when worn, the collar sits closed on the neck and no inner label shows)"
+  ]
 }
