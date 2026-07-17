@@ -9,6 +9,14 @@ Serves the app UI, repo assets, and a small JSON API:
   POST /api/looks         {title, items} -> save a draft look (free, looks.json)
   POST /api/looks/delete  {id} -> remove a look entry (render files stay on disk)
   POST /api/publish       {id, pose} -> render + cutout + publish (spend-gated)
+  POST /api/source/scan   {url} -> rank product images from an ecomm page ($0)
+  GET  /api/source/img    ?i=   -> a scanned candidate's bytes (in-memory)
+  POST /api/source/save   {picks, slug} -> write picks into garments/raw/
+  GET  /api/source/staged        -> files staged in garments/raw/
+  POST /api/source/discard{name} -> move a staged file to garments/raw/_discarded/
+
+The /sourcing page is the UI over the /api/source/* routes (scan needs the
+`requests` package; everything else stays stdlib).
 
 Looks live in looks.json (draft -> published lifecycle); the carousel shows
 published looks, the fitting room lists and manages all of them.
@@ -138,6 +146,44 @@ def manifest():
     }
 
 
+# ── sourcing: the last scan's downloaded candidates, held in memory ──
+SCAN = {"items": []}   # [{data, ctype, url, source, w, h}] per ingest_fetch ranking
+RAW_DIR = ROOT / "garments" / "raw"
+
+
+def source_scan(page_url):
+    import ingest_fetch as ifetch   # lazy — the only route needing `requests`
+    session = ifetch.requests.Session()
+    cands, direct, title = ifetch.collect_candidates(session, page_url)
+    if direct:
+        data, ctype = direct
+        w, h = ifetch.measure(data)
+        ranked = [{"data": data, "ctype": ctype, "url": page_url,
+                   "source": "direct", "w": w, "h": h}]
+    else:
+        if not cands:
+            return {"error": "no image candidates found on the page (JS-only "
+                             "gallery? paste the zoom-image URL directly)"}
+        ranked = ifetch.rank_candidates(session, cands, 12)
+        if not ranked:
+            return {"error": "candidates found but none downloaded (site may "
+                             "block non-browser fetches; save manually)"}
+    SCAN["items"] = ranked
+    return {"slug": ifetch.slug_from_title(title) or ifetch.slug_from_url(page_url),
+            "candidates": [{"i": i, "w": r["w"], "h": r["h"],
+                            "kb": len(r["data"]) // 1024,
+                            "source": r["source"], "url": r["url"]}
+                           for i, r in enumerate(ranked)]}
+
+
+def source_staged():
+    files = [p for p in RAW_DIR.glob("*")
+             if p.is_file() and p.suffix.lower() in IMG_EXT | {".avif"}]
+    files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return {"files": [{"name": p.name, "kb": p.stat().st_size // 1024,
+                       "url": f"/assets/garments/raw/{p.name}"} for p in files]}
+
+
 class Handler(SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass  # keep the terminal quiet
@@ -154,7 +200,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not path.is_file():
             self.send_error(404)
             return
-        ctype = self.guess_type(str(path))
+        ctype = "image/avif" if path.suffix.lower() == ".avif" else self.guess_type(str(path))
         body = path.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", ctype)
@@ -169,6 +215,22 @@ class Handler(SimpleHTTPRequestHandler):
             return self._file(carousel if carousel.exists() else ROOT / "app" / "index.html")
         if url.path in ("/fitting-room", "/classic"):  # /classic kept as legacy alias
             return self._file(ROOT / "app" / "index.html")
+        if url.path == "/sourcing":
+            return self._file(ROOT / "app" / "sourcing.html")
+        if url.path == "/api/source/img":
+            try:
+                item = SCAN["items"][int(parse_qs(url.query).get("i", ["-1"])[0])]
+            except (ValueError, IndexError):
+                return self._json({"error": "no such candidate (re-scan?)"}, 404)
+            body = item["data"]
+            self.send_response(200)
+            self.send_header("Content-Type", item["ctype"])
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if url.path == "/api/source/staged":
+            return self._json(source_staged())
         if url.path.startswith("/app/"):
             return self._file((ROOT / url.path.lstrip("/")).resolve())
         if url.path == "/api/manifest":
@@ -272,6 +334,50 @@ class Handler(SimpleHTTPRequestHandler):
                 lk["cutout"] = f"{out.stem}_cut.png"
             save_looks(looks)
             return self._json({"ok": True, "look": lk})
+        if url.path == "/api/source/scan":
+            if not (data.get("url") or "").startswith("http"):
+                return self._json({"error": "paste an http(s) URL"}, 400)
+            try:
+                res = source_scan(data["url"])
+            except ImportError:
+                return self._json({"error": "the `requests` package is missing "
+                                            "for this python"}, 500)
+            except Exception as e:
+                return self._json({"error": f"{type(e).__name__}: {e}"}, 500)
+            return self._json(res, 400 if "error" in res else 200)
+        if url.path == "/api/source/save":
+            import ingest_fetch as ifetch
+            slug = re.sub(r"[^a-z0-9-]+", "-", (data.get("slug") or "").lower()).strip("-")
+            picks = data.get("picks") or []
+            if not slug or not picks:
+                return self._json({"error": "need a slug and at least one pick"}, 400)
+            RAW_DIR.mkdir(parents=True, exist_ok=True)
+            saved = []
+            for n, i in enumerate(picks, 1):
+                try:
+                    r = SCAN["items"][int(i)]
+                except (ValueError, IndexError):
+                    return self._json({"error": "stale candidate — re-scan"}, 409)
+                path = ifetch.save(r["data"], r["ctype"], r["url"], RAW_DIR, slug, n)
+                name = Path(path).name
+                saved.append({"name": name, "url": f"/assets/garments/raw/{name}"})
+            return self._json({"ok": True, "saved": saved})
+        if url.path == "/api/source/clear":
+            SCAN["items"] = []
+            return self._json({"ok": True})
+        if url.path == "/api/source/discard":
+            name = Path(data.get("name") or "").name   # basename only — no traversal
+            target = RAW_DIR / name
+            if not name or not target.is_file():
+                return self._json({"error": "unknown staged file"}, 404)
+            bin_dir = RAW_DIR / "_discarded"
+            bin_dir.mkdir(exist_ok=True)
+            dest, bump = bin_dir / name, 2
+            while dest.exists():
+                dest = bin_dir / f"{target.stem}-{bump}{target.suffix}"
+                bump += 1
+            target.rename(dest)
+            return self._json({"ok": True})
         if url.path == "/api/generate":
             if not GENERATION_ENABLED:
                 return self._json({
