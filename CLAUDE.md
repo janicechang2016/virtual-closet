@@ -24,10 +24,12 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   category anchor + `exclude_from_photo` meta field in tryon.py (fill it at ingest
   for on-model photos!); 9 re-rendered clean (`_2` suffix, bad `_1`s hidden);
   30-off-shoulder borderline-kept; 45 sundae corrective 07-16 (pasted-on → worn,
-  _1 hidden). **Drag-to-dress SHIPPED 07-16** (rack rows draggable → mirror
-  (auto-slot) or matching manifest slot; drop = slot assignment + tryOn instant
-  swap; position ≠ meaning; mismatch toasts; CDP-verified; rollback tag
-  `pre-drag-to-dress`). Collage preview = maybe-later. 360/turntable parked —
+  _1 hidden). **Drag-to-dress SHIPPED 07-16, ISC physics + bare silhouettes 07-17**
+  (pointer-driven per kaberikram/Interactive-Styling-Canvas: garment cutout rides
+  the cursor w/ grab lift + directional tilt + fly-back; 50/57 items fly as bare
+  transparent silhouettes via `scripts/dragcut.py`, 7 as framed cards; mirror
+  brightens on hover; drop = slot assignment + tryOn instant swap; position ≠
+  meaning; CDP-verified; rollback tag `pre-drag-to-dress`). Collage preview = maybe-later. 360/turntable parked —
   revisit after renders; grab garment BACK views when sourcing.
 
 - Phases 0–4 complete. **avatar-v3 is canon** (2026-07-14): user-supplied 4-pose library
@@ -154,6 +156,7 @@ python3 scripts/tryon.py <gid> --correct "wrong fit" --note "…"  # corrective 
 python3 scripts/genlog.py summary                        # spend vs cap
 /Users/janice.chang/liminal-wardrobe/.venv/bin/python scripts/extract_garment.py  # cloth-seg cutouts
 /Users/janice.chang/liminal-wardrobe/.venv/bin/python scripts/ingest_fetch.py URL [SLUG]  # $0: pull best product image from an ecomm page into garments/raw/ (--list to rank, --pick N to choose, --keep N for extra views)
+/Users/janice.chang/liminal-wardrobe/.venv/bin/python scripts/dragcut.py [id ...]  # $0: transparent drag-ghost silhouettes (run at every ingest; on-model→cloth-seg only, product→general)
 ```
 
 The liminal-wardrobe venv (Python 3.9) has rembg/cv2/PIL; system python3 is 3.9 (no

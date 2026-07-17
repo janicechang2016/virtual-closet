@@ -81,14 +81,18 @@ def garment_list():
         folder = meta_path.parent
         photos = [f"/assets/garments/{folder.name}/{sub}/{p.name}"
                   for sub in ("clean", "raw")
-                  for p in sorted((folder / sub).glob("*")) if p.suffix.lower() in IMG_EXT]
+                  for p in sorted((folder / sub).glob("*"))
+                  if p.suffix.lower() in IMG_EXT and not p.stem.endswith("_dragcut")]
+        dragcut = folder / "clean" / f"{folder.name}_dragcut.png"
         renders = [f"/assets/renders/{p.name}" for p in sorted((ROOT / "renders").glob(f"{folder.name}_*"))
                    if p.suffix.lower() in IMG_EXT and not p.stem.endswith("_raw")
                    and p.stem not in hidden and not is_posed(p.stem)]
         cuts = [p for p in sorted((ROOT / "renders" / "cutouts").glob(f"{folder.name}_*_cut.png"))
                 if p.stem[:-len("_cut")] not in hidden]
         meta.update({"photos": photos, "renders": renders,
-                     "cutout": f"/assets/renders/cutouts/{cuts[-1].name}" if cuts else None})
+                     "cutout": f"/assets/renders/cutouts/{cuts[-1].name}" if cuts else None,
+                     "dragcut": (f"/assets/garments/{folder.name}/clean/{dragcut.name}"
+                                 if dragcut.is_file() else None)})
         out.append(meta)
     return out
 

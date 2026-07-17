@@ -216,8 +216,10 @@ function beginRowDrag(e, row) {
     if (!card) {
       if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < DRAG_THRESHOLD) return;
       card = document.createElement("div");
-      card.className = "drag-card grabbed";
-      card.innerHTML = `<img src="${g.photos[0] || ""}" alt="" draggable="false">`;
+      // a transparent cutout flies as a bare silhouette (the ISC look);
+      // items without a clean cutout fly as the framed product card
+      card.className = "drag-card grabbed" + (g.dragcut ? " bare" : "");
+      card.innerHTML = `<img src="${g.dragcut || g.photos[0] || ""}" alt="" draggable="false">`;
       document.body.appendChild(card);
       document.body.classList.add("dragging");
       place(ev.clientX, ev.clientY);

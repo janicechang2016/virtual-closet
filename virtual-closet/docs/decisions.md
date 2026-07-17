@@ -1,5 +1,22 @@
 # Decision log
 
+## 2026-07-17 — Drag-to-dress v3: bare garment silhouettes (the missing dimension)
+
+**Why v2 still felt flat (user question):** the physics were already the demo's —
+but the demo drags transparent garment PNGs, and a bordered rectangle under the same
+rotateY reads as a playing card, not fabric. Fix: `scripts/dragcut.py` ($0, local
+rembg) writes `clean/<id>_dragcut.png` transparent silhouettes — **only** dragcuts,
+never `_onwhite`/`_extracted`, so try-on inputs are untouched (server also excludes
+them from `photos[]`; manifest gains a `dragcut` field). Routing lesson from the
+first pass: **on-model photos → cloth-seg only, NEVER the general model as fallback**
+(it keeps the whole person: a model-shaped drag ghost); product/ghost/extracted
+shots → general model (cloth-seg rags/truncates them). Result: 50/57 bare
+silhouettes (shadow hugs the alpha); 7 items fly as the framed card (5 weak
+cloth-seg on-model + bunnyhill ×2 demoted after QA). Also: the mirror now "notices"
+— avatar scales 1.015 + brightens 5% while a garment hovers it ($0 stand-in for the
+demo's pre-made hover images, which would cost renders + face risk). CDP suite
+extended (bare vs framed) — all pass. Run dragcut.py at every future ingest.
+
 ## 2026-07-17 — Drag-to-dress v2: the Interactive-Styling-Canvas physics
 
 **Decision (user):** the drag should look like kaberikram/Interactive-Styling-Canvas.
