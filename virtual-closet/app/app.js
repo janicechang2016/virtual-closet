@@ -31,7 +31,6 @@ async function boot() {
   renderGrid();
   renderSlots();
   renderSaved();
-  setupDropZones();
   consumeIncomingLook();
   const first = M.garments.find((g) => g.photos[0]);
   if (first) previewGarment(first.id);   // the preview frame is never empty
@@ -113,22 +112,10 @@ function renderGrid() {
     </div>`;
   }).join("");
   document.querySelectorAll("#garment-grid .row").forEach((r) => {
-    r.addEventListener("click", () => tryOn(r.dataset.id));
+    r.addEventListener("click", () => { if (dragJustEnded) return; tryOn(r.dataset.id); });
     r.addEventListener("mouseenter", () => previewGarment(r.dataset.id));
-    // drag-to-dress: rows can be dragged onto the mirror or a manifest slot
-    r.draggable = true;
-    r.addEventListener("dragstart", (e) => {
-      draggedId = r.dataset.id;
-      e.dataTransfer.setData("text/plain", r.dataset.id);
-      e.dataTransfer.effectAllowed = "copy";
-      previewGarment(r.dataset.id);
-      const ghost = $("#rack-preview-img");
-      if (ghost && ghost.complete && ghost.naturalWidth) {
-        e.dataTransfer.setDragImage(ghost, 48, 64);
-      }
-      document.body.classList.add("dragging");
-    });
-    r.addEventListener("dragend", endDrag);
+    // drag-to-dress: pointer-driven — the garment card follows the cursor
+    r.addEventListener("pointerdown", (e) => beginRowDrag(e, r));
   });
 }
 
@@ -194,76 +181,119 @@ function equip(g) {
   if (slot) { outfit[slot] = g.id; localStorage.setItem("outfit", JSON.stringify(outfit)); renderSlots(); }
 }
 
-/* ── drag-to-dress: drop a rack item on the mirror (auto-slot) or a manifest
-   slot (must match). Drop position carries no other meaning — nb2 places
-   garments by category; the drop is slot assignment, nothing else. ── */
-let draggedId = null;
+/* ── drag-to-dress: pointer-driven, after kaberikram/Interactive-Styling-Canvas.
+   The garment rides the cursor as a small framed card with the demo's physics
+   (grab lift, directional perspective tilt, spring settle, fly-back on a miss).
+   Drop on the mirror = auto-slot; drop on a matching manifest slot = explicit.
+   Drop position carries no other meaning — nb2 places garments by category. ── */
+let dragJustEnded = false;
 let savedCaption = null;
-
-function endDrag() {
-  draggedId = null;
-  document.body.classList.remove("dragging");
-  document.querySelectorAll(".drop-hot").forEach((el) => el.classList.remove("drop-hot"));
-  restoreCaption();
-}
+const DRAG_THRESHOLD = 6;   // px of movement before a press becomes a drag
 
 function restoreCaption() {
   if (savedCaption !== null) { $("#stage-caption").textContent = savedCaption; savedCaption = null; }
 }
 
-function setupDropZones() {
-  const frame = $("#stage-frame");
-  frame.addEventListener("dragover", (e) => {
-    if (!draggedId) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-    frame.classList.add("drop-hot");
-    if (savedCaption === null) savedCaption = $("#stage-caption").textContent;
-    const g = M.garments.find((x) => x.id === draggedId);
-    $("#stage-caption").textContent = g ? `drop to wear — ${g.name}` : "drop to wear";
-  });
-  frame.addEventListener("dragleave", (e) => {
-    if (frame.contains(e.relatedTarget)) return;
-    frame.classList.remove("drop-hot");
-    restoreCaption();
-  });
-  frame.addEventListener("drop", (e) => {
-    e.preventDefault();
-    const gid = draggedId || e.dataTransfer.getData("text/plain");
-    savedCaption = null;   // tryOn writes the real caption
-    endDrag();
-    if (gid) tryOn(gid);
-  });
+function clearDropHot() {
+  document.querySelectorAll(".drop-hot").forEach((el) => el.classList.remove("drop-hot"));
+}
 
-  // manifest rail: only the matching slot lights up / accepts
-  const rail = $("#outfit-slots");
-  rail.addEventListener("dragover", (e) => {
-    const slotEl = e.target.closest(".slot");
-    if (!slotEl || !draggedId) return;
-    const g = M.garments.find((x) => x.id === draggedId);
-    if (!g || naturalSlot(g) !== slotEl.dataset.s) return;   // incompatible: not a target
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-    slotEl.classList.add("drop-hot");
-  });
-  rail.addEventListener("dragleave", (e) => {
-    const slotEl = e.target.closest(".slot");
-    if (slotEl && !slotEl.contains(e.relatedTarget)) slotEl.classList.remove("drop-hot");
-  });
-  rail.addEventListener("drop", (e) => {
-    const slotEl = e.target.closest(".slot");
-    if (!slotEl) return;
-    e.preventDefault();
-    const gid = draggedId || e.dataTransfer.getData("text/plain");
-    endDrag();
-    const g = M.garments.find((x) => x.id === gid);
-    if (!g) return;
-    if (naturalSlot(g) !== slotEl.dataset.s) {
-      toast(`${g.name} wears as ${naturalSlot(g) || "…"} — drop it there or on the mirror`);
-      return;
+function beginRowDrag(e, row) {
+  if (e.button !== undefined && e.button !== 0) return;
+  const gid = row.dataset.id;
+  const g = M.garments.find((x) => x.id === gid);
+  if (!g) return;
+  const startX = e.clientX, startY = e.clientY;
+  const srcRect = row.getBoundingClientRect();
+  let card = null, lastX = startX, lastY = startY, settleTimer = null;
+
+  const place = (x, y) => {
+    card.style.left = `${x - card.offsetWidth / 2}px`;
+    card.style.top = `${y - card.offsetHeight / 2}px`;
+  };
+
+  const move = (ev) => {
+    if (!card) {
+      if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < DRAG_THRESHOLD) return;
+      card = document.createElement("div");
+      card.className = "drag-card grabbed";
+      card.innerHTML = `<img src="${g.photos[0] || ""}" alt="" draggable="false">`;
+      document.body.appendChild(card);
+      document.body.classList.add("dragging");
+      place(ev.clientX, ev.clientY);
     }
-    tryOn(gid);
-  });
+    ev.preventDefault();
+    place(ev.clientX, ev.clientY);
+
+    // the demo's signature: tilt into the direction of travel, settle on pause
+    const dx = ev.clientX - lastX;
+    if (Math.abs(dx) > 2) {
+      card.classList.remove("grabbed", "dragging-left", "dragging-right");
+      card.classList.add(dx > 0 ? "dragging-right" : "dragging-left");
+    }
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(() => {
+      if (!card) return;
+      card.classList.remove("dragging-left", "dragging-right");
+      card.classList.add("grabbed");
+    }, 60);
+    lastX = ev.clientX; lastY = ev.clientY;
+
+    // arm whatever target is under the cursor (the card is pointer-transparent)
+    clearDropHot();
+    const under = document.elementFromPoint(ev.clientX, ev.clientY);
+    const frame = under && under.closest("#stage-frame");
+    const slotEl = under && under.closest(".slot");
+    if (frame) {
+      frame.classList.add("drop-hot");
+      if (savedCaption === null) savedCaption = $("#stage-caption").textContent;
+      $("#stage-caption").textContent = `drop to wear — ${g.name}`;
+    } else {
+      restoreCaption();
+      if (slotEl && naturalSlot(g) === slotEl.dataset.s) slotEl.classList.add("drop-hot");
+    }
+  };
+
+  const up = (ev) => {
+    document.removeEventListener("pointermove", move);
+    document.removeEventListener("pointerup", up);
+    document.removeEventListener("pointercancel", up);
+    if (!card) return;   // never crossed the threshold: it's a plain click
+    dragJustEnded = true;
+    setTimeout(() => { dragJustEnded = false; }, 0);
+    document.body.classList.remove("dragging");
+    clearDropHot();
+
+    const under = document.elementFromPoint(ev.clientX, ev.clientY);
+    const frame = under && under.closest("#stage-frame");
+    const slotEl = under && under.closest(".slot");
+    const slotOk = slotEl && naturalSlot(g) === slotEl.dataset.s;
+
+    if (frame || slotOk) {
+      savedCaption = null;                    // tryOn writes the real caption
+      card.classList.remove("grabbed", "dragging-left", "dragging-right");
+      card.classList.add("dropping");         // shrink into the drop point
+      const c = card;
+      setTimeout(() => c.remove(), 260);
+      card = null;
+      tryOn(gid);
+    } else {
+      if (slotEl) toast(`${g.name} wears as ${naturalSlot(g) || "…"} — drop it there or on the mirror`);
+      restoreCaption();
+      // the demo's miss behavior: the item flies home
+      card.classList.remove("grabbed", "dragging-left", "dragging-right");
+      card.classList.add("flying-home");
+      card.style.left = `${srcRect.left + srcRect.width / 2 - card.offsetWidth / 2}px`;
+      card.style.top = `${srcRect.top + srcRect.height / 2 - card.offsetHeight / 2}px`;
+      const c = card;
+      setTimeout(() => c.remove(), 320);
+      card = null;
+    }
+  };
+
+  document.addEventListener("pointermove", move);
+  document.addEventListener("pointerup", up);
+  document.addEventListener("pointercancel", up);
 }
 
 function renderSlots() {

@@ -183,14 +183,48 @@ dialog h3 { font-size: 12px; font-weight: 800; }
 .modal-row { display: flex; gap: 8px; margin-top: 12px; }
 code { font-family: ui-monospace, Menlo, monospace; text-transform: none; }
 
-/* ── drag-to-dress affordances ── */
-#garment-grid .row[draggable="true"] { cursor: grab; }
-#garment-grid .row[draggable="true"]:active { cursor: grabbing; }
+/* ── drag-to-dress affordances (physics after Interactive-Styling-Canvas) ── */
+#garment-grid .row { cursor: grab; touch-action: pan-y; }
+body.dragging { cursor: grabbing; user-select: none; }
+body.dragging #garment-grid .row { cursor: grabbing; }
 /* while a garment is in the air, the mirror announces itself as a target */
 body.dragging #stage-frame { box-shadow: inset 0 0 0 1px #000; }
 #stage-frame.drop-hot { box-shadow: inset 0 0 0 3px #000; }
 .slot.drop-hot { background: #000; color: #fff; }
 .slot.drop-hot .slot-name, .slot.drop-hot .slot-val { opacity: 1; }
+
+/* the garment card riding the cursor */
+.drag-card {
+  position: fixed; z-index: 1000; width: 128px; aspect-ratio: 3/4;
+  background: #fff; border: 1px solid #000;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; will-change: transform, left, top;
+  transform-origin: center center;
+  transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.drag-card img { max-width: 86%; max-height: 86%; pointer-events: none; }
+.drag-card.grabbed {
+  transform: scale(1.05);
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15));
+}
+.drag-card.dragging-right {
+  transform: perspective(500px) rotateY(-15deg) rotateX(5deg)
+             scale(0.92, 0.98) skew(-5deg, 2deg);
+  filter: drop-shadow(5px 5px 15px rgba(0, 0, 0, 0.2));
+}
+.drag-card.dragging-left {
+  transform: perspective(500px) rotateY(15deg) rotateX(5deg)
+             scale(0.92, 0.98) skew(5deg, -2deg);
+  filter: drop-shadow(-5px 5px 15px rgba(0, 0, 0, 0.2));
+}
+.drag-card.dropping {   /* absorbed into the mirror */
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  transform: scale(0.35); opacity: 0;
+}
+.drag-card.flying-home {   /* missed drop: the item returns to its rack row */
+  transition: left 0.3s ease, top 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+  transform: scale(0.2); opacity: 0;
+}
 
 /* ── toast ── */
 .toast {

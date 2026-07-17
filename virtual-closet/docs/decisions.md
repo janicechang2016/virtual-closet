@@ -1,6 +1,20 @@
 # Decision log
 
-## 2026-07-16 — Drag-to-dress ships in the fitting room
+## 2026-07-17 — Drag-to-dress v2: the Interactive-Styling-Canvas physics
+
+**Decision (user):** the drag should look like kaberikram/Interactive-Styling-Canvas.
+Cloned the repo (MIT, scratchpad only) and ported its mechanics: native HTML5 DnD
+replaced with **pointer-driven drag** — a hairline-framed garment card (the item's
+photo; our sources aren't transparent PNGs like the demo's shirts) rides the cursor,
+with the demo's exact physics: `.grabbed` scale-1.05 lift + soft shadow, directional
+perspective tilt while moving (rotateY ∓15° + skew, spring curve
+cubic-bezier(.68,-.55,.265,1.55)), settle-to-flat on pause (60ms), **fly-back to the
+rack row on a missed drop**, shrink-into-the-mirror on a hit. 6px threshold keeps
+click-to-try-on intact. Targets/slot rules unchanged from v1 (below). CDP-verified:
+click-not-drag, pickup+tilt, mirror arm+drop, slot mismatch fly-home, slot match,
+no leftover cards.
+
+## 2026-07-16 — Drag-to-dress ships in the fitting room (v1, superseded same week)
 
 **Decision (user, vetted 07-15):** garments can be dragged from the racks onto the
 mirror (auto-slot via the category map) or onto a specific manifest slot (only the
