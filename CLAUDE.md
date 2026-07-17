@@ -4,7 +4,29 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-15)
+## Current state (2026-07-16)
+
+- **Catalog is now 57 garments** (22-gnur-hoodie ARCHIVED 07-16 by Janice — strange
+  render off the weakest source; folder in `garments/archive/`, renders in
+  `renders/archive/`, restore = move back) (01–05 benchmark + **53 ingested 07-16**: 43 clothing
+  + 10 shoes — sizes/brands per `docs/ingest-worksheet.md`, Janice-filled; ingest
+  details in decisions.md). New items have NO renders yet — they appear in the
+  fitting-room racks but not the carousel (buildItems skips unrendered garments;
+  carousel got a Shoes filter). **Render batch pending Janice's approval: 53 fronts
+  × $0.059 ≈ $3.13.** raw/ naming: primary view = plain slug (sorts first for
+  garment_asset), extras `_back/_side/_alt/_model-*/_detail`; avif→png at ingest;
+  transparent sources composited on white (transparency reads as black downstream).
+  Difficulty-4/5 (front-only): 23/24 issey, 26 liniss dune, 29 nin, 40 sheer top,
+  43/44 subtle-mermaid (a SET, wearable separately, cross-noted). 22 gnur has a
+  cloth-seg `_onwhite` (source was grey-on-black). **All 58 rendered + cutouts done
+  (07-16, $3.25 + $0.53 fix round, spend $10.13/$25):** batch QA'd on contact sheets;
+  10 failures traced to prompts missing the not-part notes → fixed via `SLOT_NOTES`
+  category anchor + `exclude_from_photo` meta field in tryon.py (fill it at ingest
+  for on-model photos!); 9 re-rendered clean (`_2` suffix, bad `_1`s hidden);
+  30-off-shoulder borderline-kept. **Next build: drag-to-dress**
+  (agreed 07-15: drop rack item on mirror → fills slot, instant swap when a render
+  exists; position ≠ meaning; collage preview = maybe-later. 360/turntable parked —
+  revisit after renders; grab garment BACK views when sourcing).
 
 - Phases 0–4 complete. **avatar-v3 is canon** (2026-07-14): user-supplied 4-pose library
   in `avatar/avatar-v3/` (front / contrapposto / hand-on-hip / 34turn) — new lineage
@@ -34,6 +56,18 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   `ENABLE_GENERATION=1` for live spending). Single-item try-on, multi-item outfit compose,
   feedback→corrective-edit loop, clear-to-base, look save/publish/delete
   (`/api/looks`, `/api/looks/delete`, `/api/publish`) — all working from the UI.
+- **`/sourcing` — photo-sourcing UI (07-15):** SYVE-styled third page over
+  `ingest_fetch.py` (imported as a module; the only route needing `requests`).
+  Paste a product URL → `/api/source/scan` ranks candidates (bytes held in
+  memory, served via `/api/source/img?i=`; browser measures real dims —
+  server python has no PIL), click-select → `/api/source/save {picks, slug}`
+  writes `garments/raw/<slug>.<ext>`. Staged strip lists `garments/raw/*` with
+  <1000px "thumb — re-source" flags (currently flags yello-heels, mizuno,
+  asics, keen); × discards to `garments/raw/_discarded/` (move, not delete).
+  Slug auto-derives from page `<title>`. CLEAR (ghost button, appears after a
+  scan) resets the page + drops the server cache (`/api/source/clear`).
+  `?url=` prefills + auto-scans (bookmarklet-friendly). Linked from both navs. $0, works without
+  ENABLE_GENERATION.
 - **One brand ("the archive."), two views, one SYVE language** (white void, black 1px
   hairlines, uppercase Helvetica, italic lowercase wordmark):
   - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): figure cutouts
@@ -117,6 +151,7 @@ python3 scripts/tryon.py --outfit 01-plain-tee 02-jeans  # multi-item compose
 python3 scripts/tryon.py <gid> --correct "wrong fit" --note "…"  # corrective edit
 python3 scripts/genlog.py summary                        # spend vs cap
 /Users/janice.chang/liminal-wardrobe/.venv/bin/python scripts/extract_garment.py  # cloth-seg cutouts
+/Users/janice.chang/liminal-wardrobe/.venv/bin/python scripts/ingest_fetch.py URL [SLUG]  # $0: pull best product image from an ecomm page into garments/raw/ (--list to rank, --pick N to choose, --keep N for extra views)
 ```
 
 The liminal-wardrobe venv (Python 3.9) has rembg/cv2/PIL; system python3 is 3.9 (no
@@ -124,6 +159,11 @@ The liminal-wardrobe venv (Python 3.9) has rembg/cv2/PIL; system python3 is 3.9 
 actually look at the PNG.
 
 ## Queued next (do not build until asked)
+
+- **Carousel → outfits only (Janice 07-16):** once she starts creating/publishing
+  looks in volume, the archive carousel should display ONLY created outfits (no
+  single-garment figures — those stay browsable in the fitting room racks). Not yet:
+  wait until looks exist; revisit the trigger with her.
 
 - **Look cards, remaining half:** the content-unit half shipped with publish (rembg
   cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**
@@ -134,13 +174,13 @@ actually look at the PNG.
   (it's an editor; re-posing fights it). Difficulty-4/5 garments stay on the front pose
   (03 plissé AND 05 draped maxi — check `difficulty` in meta.json, not folder names;
   03's drifted contrapposto rejected by Janice 07-14, hidden not deleted).
-- **New garment ingest — photos ARRIVED, awaiting ingest session:** Janice dropped
-  **9 shoe photos** in `garments/raw/` on 07-14 (Jil Sander boots, Yello boots + heels,
-  Weejuns loafers, Camper flats, Keen sandals, Salomon/ASICS/Mizuno sneakers — brands
-  per filenames, confirm at ingest). At ingest: move each into its own
-  `garments/<NN-slug>/raw/` folder (numbering continues from 05), fill `meta.json` per
-  the schema **including `size_owned`** (sizes vary per item — never default to S),
-  **`brand`** (shown in the archive detail overlay), and the per-item note on what in
-  the photo is NOT part of the garment. Note: shoes are a new category — the fitting
-  room's outfit rail already has a SHOES slot; check category handling in
-  `app.js`/server manifest during ingest.
+- **Render batch for items 06–58** (53 × $0.059 ≈ $3.13) — Janice said no exclusions
+  (worksheet Q7) but the spend envelope itself is NOT yet explicitly approved. Run as
+  ONE batch when approved; difficulty-4/5 stay front (they all only get front anyway);
+  after renders, run cutout_render.py so the carousel picks the new figures up.
+- **Drag-to-dress** (fitting room): next build after the render batch. Sourcing notes:
+  `scripts/ingest_fetch.py` / the `/sourcing` page pull best-res product images;
+  source-photo bar ≥1500px long side, ghost-mannequin/flat-lay > on-model > editorial;
+  grab BACK views for the future turntable idea. Dropped items (in `_discarded/`, can
+  be re-sourced any time): bitter-cells jacket, realisation scarlet, the "uniqlo"
+  parka (actually Aritzia per baked-in tooltip), reformation leather dress.

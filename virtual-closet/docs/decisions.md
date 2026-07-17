@@ -1,5 +1,63 @@
 # Decision log
 
+## 2026-07-16 — Batch ingest: 53 items (06–58), shoes category goes live
+
+**The July sourcing haul is in.** Janice gathered ~120 ecomm photos via `/sourcing`;
+QA pass flagged 18 files (thumbnails/dupes/screenshots/an info-strip collage) which
+she chose to discard rather than re-source (all in `garments/raw/_discarded/` — four
+items dropped entirely: bitter-cells jacket, realisation scarlet, the aritzia-tooltip
+"uniqlo" parka, reformation leather dress). The remaining 101 files became **53 items
+(06–58): 43 clothing + 10 shoes**, sizes/brands from Janice's worksheet
+(`docs/ingest-worksheet.md`, kept as the ingest record). Conventions established:
+- **raw/ naming:** primary view = plain slug ('.' sorts before '_' so
+  `tryon.garment_asset` picks it); extra views `_back/_side/_alt/_model-*/_detail`.
+- **avif → png at ingest** (pipeline IMG_EXT excludes avif).
+- Fixups: liv-dress black pillarbox bars cropped; gnur hoodie (grey terry shot on
+  black at 800px) got a cloth-seg `_onwhite` extraction; entire-studios alpha
+  composited on white.
+- **Sets:** subtle-mermaid top (43) + skirt (44) are separate garments cross-noted as
+  a set (Janice: wearable separately); set-reference photo lives in 43's raw/.
+- **Shoes:** fitting room needed zero changes (SLOTS/category-map/filters already
+  handled it); carousel got a Shoes filter + a guard so unrendered garments stay out
+  of the parade (they live in the racks until rendered).
+- Difficulty 4/5 assigned (front-pose rule applies): issey tanks ×2, nin pleated top,
+  liniss dune pants, realisation sheer top, subtle-mermaid top + skirt.
+**Render batch (approved, $3.25 actual):** 53/53 rendered clean on the pipeline side,
+45 min. QA found **10 failures with one root cause: the prompt never carried the
+"NOT part of this garment" notes and never anchored what the base outfit keeps** —
+companion garments leaked (09/25/26/27/29/31), and three items mis-slotted (18 white
+skirt → shirt-dress, 44 mermaid skirt → gown, 52 flats → a printed dress).
+**Prompt fix shipped:** `SLOT_NOTES` category anchor (top/bottom/dress/outerwear/shoes
+— what changes, what stays) + `exclude_from_photo` meta field (populated on 15
+on-model items) → exclusion clause in the prompt. Fix round (approved, $0.53): 9/9
+re-rendered clean as `*_nb2_v3_2`; the bad `*_nb2_v3_1` stems live in hidden.json
+(files kept). 30-off-shoulder kept as-is (borderline: model's trousers instead of
+leggings; garment itself correct). Spend after both rounds: **$10.13 / $25**.
+Next build: drag-to-dress in the fitting room (agreed 07-15).
+
+**Post-QA amendments (Janice, same day):** 22-gnur-hoodie ARCHIVED (strange render,
+weakest source) — garment folder → `garments/archive/`, renders → `renders/archive/`;
+`garments/archive/` joins `renders/archive/` as app-invisible. 45-sundae-gorum-shirt
+flagged: reads as pasted-on rather than worn (corrective candidate). **Standing
+intent: the archive carousel eventually shows ONLY created outfits** (single garments
+stay in the fitting room racks) — build when looks exist in volume.
+
+## 2026-07-15 — /sourcing: photo-sourcing gets a page (URL → ranked images → raw/)
+
+**Decision (user):** garment photo sourcing moves from CLI-only to a friendly UI.
+Janice is gathering closet photos (clothing, shoes, accessories) from ecomm sites;
+`scripts/ingest_fetch.py` (built same day) pulls a page's declared images at full
+resolution, and `/sourcing` is the SYVE-styled page over it: paste URL → scan →
+ranked candidate grid (browser measures true dims; server python lacks PIL) →
+click-select → save to `garments/raw/<slug>.<ext>` with a page-title-derived slug.
+A "staged in garments/raw." strip shows what awaits ingest, flags anything under
+1000px long side ("thumb — re-source"), and × moves files to
+`garments/raw/_discarded/` (never deletes). Routes: `/api/source/{scan,img,save,
+staged,discard}`; scan is the server's one `requests`-dependent route (lazy import,
+graceful error). $0 — no fal involvement; works without ENABLE_GENERATION.
+Source-photo bar stated on the page: ≥1500px long side, ghost-mannequin/flat-lay >
+on-model studio > editorial, true color.
+
 ## 2026-07-15 — ASCII entrance shipped (handoff algorithm, SYVE skin, pulse-fade)
 
 **Decision (user, after three live previews):** the archive's entrance is the
