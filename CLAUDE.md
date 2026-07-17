@@ -28,7 +28,9 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   (pointer-driven per kaberikram/Interactive-Styling-Canvas: garment cutout rides
   the cursor w/ grab lift + directional tilt + fly-back; 50/57 items fly as bare
   transparent silhouettes via `scripts/dragcut.py`, 7 as framed cards; mirror
-  brightens on hover; drop = slot assignment + tryOn instant swap; position ≠
+  brightens on hover; base avatar swaps to `avatar/avatar-v3/front-receive.png`
+  while a garment hovers the mirror + ~220ms "she takes it" hold on drop (UI frame
+  ONLY — never a render base; Janice-supplied, locally aligned); drop = slot assignment + tryOn instant swap; position ≠
   meaning; CDP-verified; rollback tag `pre-drag-to-dress`). Collage preview = maybe-later. 360/turntable parked —
   revisit after renders; grab garment BACK views when sourcing.
 

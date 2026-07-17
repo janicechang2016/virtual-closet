@@ -198,6 +198,17 @@ function clearDropHot() {
   document.querySelectorAll(".drop-hot").forEach((el) => el.classList.remove("drop-hot"));
 }
 
+// the base avatar reacts to a garment hovering the mirror (two-frame swap,
+// like the ISC demo's ModelHover). Only on the base state — renders keep the
+// CSS breath; front-receive.png is a UI frame, never a render base.
+function baseHover(on) {
+  if (currentRender || !M.avatar || !M.avatar.receive) return false;
+  const img = $("#stage-img");
+  const want = on ? M.avatar.receive : M.avatar.draft;
+  if (img.getAttribute("src") !== want) img.src = want;
+  return on;
+}
+
 function beginRowDrag(e, row) {
   if (e.button !== undefined && e.button !== 0) return;
   const gid = row.dataset.id;
@@ -248,9 +259,11 @@ function beginRowDrag(e, row) {
     const slotEl = under && under.closest(".slot");
     if (frame) {
       frame.classList.add("drop-hot");
+      baseHover(true);
       if (savedCaption === null) savedCaption = $("#stage-caption").textContent;
       $("#stage-caption").textContent = `drop to wear — ${g.name}`;
     } else {
+      baseHover(false);
       restoreCaption();
       if (slotEl && naturalSlot(g) === slotEl.dataset.s) slotEl.classList.add("drop-hot");
     }
@@ -278,8 +291,13 @@ function beginRowDrag(e, row) {
       const c = card;
       setTimeout(() => c.remove(), 260);
       card = null;
-      tryOn(gid);
+      // if she's mid-reaction, hold the receiving frame a beat before the render lands
+      const receiving = frame && !currentRender && M.avatar.receive
+        && $("#stage-img").getAttribute("src") === M.avatar.receive;
+      if (receiving) setTimeout(() => tryOn(gid), 220);
+      else tryOn(gid);
     } else {
+      baseHover(false);
       if (slotEl) toast(`${g.name} wears as ${naturalSlot(g) || "…"} — drop it there or on the mirror`);
       restoreCaption();
       // the demo's miss behavior: the item flies home

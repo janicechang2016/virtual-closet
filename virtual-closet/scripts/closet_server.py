@@ -127,8 +127,11 @@ def looks_list():
 def manifest():
     locked = ROOT / "avatar" / "avatar-v3" / "front.png"
     if locked.exists():
+        receive = ROOT / "avatar" / "avatar-v3" / "front-receive.png"
         avatar = {
             "draft": "/assets/avatar/avatar-v3/front.png",
+            # UI-only reaction frame for drag-to-dress (never a render base)
+            "receive": "/assets/avatar/avatar-v3/front-receive.png" if receive.is_file() else None,
             "locked_version": "avatar-v3",
             "status": "avatar-v3 canon 2026-07-14 (pose library in avatar/avatar-v3/; v1 renders legacy)",
         }

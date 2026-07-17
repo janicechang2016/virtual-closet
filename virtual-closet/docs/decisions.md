@@ -1,5 +1,20 @@
 # Decision log
 
+## 2026-07-17 — The mirror reacts: avatar "receive" frame on drag-hover
+
+**Decision (user, photo supplied):** the ISC demo's ModelHover mechanic, done our way.
+Janice generated `avatar-v3-front-receive.png` externally (nano banana edit of
+front.png per our prompt spec: same stance/framing/outfit, arms lifting to receive);
+aligned locally via human-seg figure bboxes (scale 0.817, ±1px shift — blink-strip
+verified) → canonical `avatar/avatar-v3/front-receive.png`; her original kept at
+`avatar/avatar-v3-front-receive.png`. Behavior: while a dragged garment hovers the
+mirror AND the stage shows the base avatar, the stage crossfades to the receive
+frame; leaving reverts; a successful drop holds the receiving frame ~220ms before
+the render lands ("she takes it"). Renders on stage keep the CSS breath only —
+per-render hover variants were rejected (≈$0.06 × catalog + face risk).
+**front-receive.png is a UI frame only, never a render base** (renders stay on
+front.png). $0 total. CDP suite: 11 checks, all pass.
+
 ## 2026-07-17 — Drag-to-dress v3: bare garment silhouettes (the missing dimension)
 
 **Why v2 still felt flat (user question):** the physics were already the demo's —
