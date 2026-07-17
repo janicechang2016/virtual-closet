@@ -1,0 +1,20 @@
+{
+  "id": "54-salomon-sneakers",
+  "name": "trail sneakers",
+  "category": "shoes",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "technical mesh",
+  "fit": "low trail runner",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "US 7",
+  "details_to_preserve": [
+    "speed-lace cord with toggle",
+    "chunky lugged sole",
+    "layered panel overlays"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Salomon"
+}

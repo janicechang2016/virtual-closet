@@ -1,0 +1,19 @@
+{
+  "id": "32-personal-language-skirt",
+  "name": "draped column maxi skirt",
+  "category": "bottom",
+  "color": "grey",
+  "pattern": "solid",
+  "fabric": "fluid viscose with a soft sheen",
+  "fit": "straight column, floor length",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "diagonal drape seam across the front",
+    "floor-grazing length"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Personal Language"
+}

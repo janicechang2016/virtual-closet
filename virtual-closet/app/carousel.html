@@ -119,9 +119,11 @@
     <span class="filter" data-f="bottom">Bottoms</span>
     <span class="filter" data-f="dress">Dresses</span>
     <span class="filter" data-f="outerwear">Outerwear</span>
+    <span class="filter" data-f="shoes">Shoes</span>
     <span class="filter" data-f="outfit">Outfits</span>
     <div class="spacer"></div>
     <a href="/fitting-room">Fitting room</a>
+    <a href="/sourcing">Sourcing</a>
   </nav>
   <nav id="nav-right">
     <span class="quiet" id="nav-avatar"></span>
@@ -188,10 +190,12 @@ function swatches(color) {
 function buildItems() {
   ALL_ITEMS = [];
   M.garments.forEach((g) => {
+    const src = g.cutout || (g.renders.length ? g.renders[g.renders.length - 1] : null);
+    if (!src) return;   // not rendered yet — lives in the fitting room racks only
     ALL_ITEMS.push({
       kind: 'garment', cat: g.category, gid: g.id,
       title: g.name, desc: [g.fabric, g.fit].filter(Boolean).join('. '),
-      src: g.cutout || (g.renders.length ? g.renders[g.renders.length - 1] : null),
+      src,
       colors: swatches(g.color),
       size: g.size_owned || null,
     });

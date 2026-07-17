@@ -1,0 +1,19 @@
+{
+  "id": "11-coucou-black-muse-tank",
+  "name": "muse tank",
+  "category": "top",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "rib cotton",
+  "fit": "fitted, sleeveless",
+  "layer_order": 0,
+  "difficulty": 1,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "high rounded crew neck",
+    "clean fitted torso"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Cou Cou Intimates"
+}

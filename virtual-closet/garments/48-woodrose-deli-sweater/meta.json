@@ -1,0 +1,23 @@
+{
+  "id": "48-woodrose-deli-sweater",
+  "name": "off-shoulder sweater",
+  "category": "top",
+  "color": "oatmeal / sand",
+  "pattern": "solid",
+  "fabric": "brushed wool knit",
+  "fit": "slouchy, off-shoulder",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "wide fold-over off-shoulder collar",
+    "blouson body",
+    "long sleeves with deep cuffs"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "on-model: matching tie skirt is a separate garment (47)",
+  "brand": "Woodrose Deli",
+  "exclude_from_photo": [
+    "matching tie-front skirt"
+  ]
+}

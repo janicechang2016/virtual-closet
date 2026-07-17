@@ -1,0 +1,20 @@
+{
+  "id": "45-sundae-gorum-shirt",
+  "name": "gorum wrap-collar shirt",
+  "category": "top",
+  "color": "pale blue",
+  "pattern": "solid",
+  "fabric": "crisp cotton",
+  "fit": "boxy",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "asymmetric wrap collar with bow-tie closure",
+    "off-center button placket",
+    "boxy body"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Sundae School"
+}

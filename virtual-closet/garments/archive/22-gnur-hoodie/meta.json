@@ -1,0 +1,20 @@
+{
+  "id": "22-gnur-hoodie",
+  "name": "terry hoodie",
+  "category": "outerwear",
+  "color": "heather grey",
+  "pattern": "solid",
+  "fabric": "loop-terry towelling",
+  "fit": "oversized",
+  "layer_order": 1,
+  "difficulty": 2,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "oversized pointed hood",
+    "drawcord hem",
+    "napped terry texture"
+  ],
+  "source_photo_type": "flat-lay",
+  "notes": "source photos are cutouts on a BLACK background at 800px - the garment is grey, not black; run extract_garment.py for an onwhite asset before first render",
+  "brand": "gnur"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "26-liniss-dune-pants",
+  "name": "dune draped pants",
+  "category": "bottom",
+  "color": "sand / beige",
+  "pattern": "solid",
+  "fabric": "fluid heavy crepe",
+  "fit": "dramatic draped harem, tapered ankle",
+  "layer_order": 0,
+  "difficulty": 4,
+  "size_owned": "M",
+  "details_to_preserve": [
+    "deep swagged side drapes",
+    "folded sash-like waist",
+    "tapered ankle under the volume"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "difficulty 4 -> FRONT pose only. on-model: black halter bodysuit is NOT part",
+  "brand": "Liniss",
+  "exclude_from_photo": [
+    "black halter bodysuit"
+  ]
+}

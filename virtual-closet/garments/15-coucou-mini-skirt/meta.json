@@ -1,0 +1,19 @@
+{
+  "id": "15-coucou-mini-skirt",
+  "name": "pointelle mini skirt",
+  "category": "bottom",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "pointelle rib cotton",
+  "fit": "low-rise micro-mini",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "picot waist trim",
+    "tiny center bow"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Cou Cou Intimates"
+}

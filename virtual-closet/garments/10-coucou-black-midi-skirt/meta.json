@@ -1,0 +1,22 @@
+{
+  "id": "10-coucou-black-midi-skirt",
+  "name": "pointelle midi skirt",
+  "category": "bottom",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "pointelle rib cotton",
+  "fit": "low-waist, fluid A-line midi",
+  "layer_order": 0,
+  "difficulty": 1,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "delicate picot trim at waist",
+    "soft unstructured hem"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "model crop photo: black tank worn with it is NOT part of this garment",
+  "brand": "Cou Cou Intimates",
+  "exclude_from_photo": [
+    "black tank top"
+  ]
+}

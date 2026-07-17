@@ -1,0 +1,24 @@
+{
+  "id": "09-bunnyhill-white-top",
+  "name": "draped asymmetric top",
+  "category": "top",
+  "color": "white / ivory",
+  "pattern": "solid",
+  "fabric": "fluid satin-back jersey",
+  "fit": "draped, asymmetric",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "single-strap asymmetric neckline",
+    "soft drape folds across the bodice",
+    "low open back"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "on-model: white maxi skirt and bracelet are NOT part of this garment",
+  "brand": "Bunnyhill Concept",
+  "exclude_from_photo": [
+    "white maxi skirt",
+    "bracelets"
+  ]
+}

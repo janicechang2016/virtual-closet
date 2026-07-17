@@ -1,0 +1,20 @@
+{
+  "id": "07-aritzia-suit-vest",
+  "name": "tailored suit vest",
+  "category": "top",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "suiting twill",
+  "fit": "fitted, slightly cropped",
+  "layer_order": 0,
+  "difficulty": 1,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "deep V neckline",
+    "3-button front",
+    "sleeveless tailored armholes"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Aritzia"
+}

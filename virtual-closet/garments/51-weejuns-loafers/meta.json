@@ -1,0 +1,20 @@
+{
+  "id": "51-weejuns-loafers",
+  "name": "weejuns tassel loafers",
+  "category": "shoes",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "polished leather",
+  "fit": "classic loafer",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "US 7",
+  "details_to_preserve": [
+    "front tassels",
+    "moc-toe seam",
+    "low stacked heel"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "G.H. Bass"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "21-frankies-maxi-dress",
+  "name": "tiered maxi dress",
+  "category": "dress",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "smocked jersey bodice, tiered semi-sheer skirt",
+  "fit": "fitted bodice, flared tiers",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "straight smocked neckline with wide straps",
+    "three-tier skirt, sheerest at hem",
+    "raw edge hem"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "",
+  "brand": "Frankies Bikinis"
+}

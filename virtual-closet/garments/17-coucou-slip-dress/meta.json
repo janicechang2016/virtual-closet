@@ -1,0 +1,19 @@
+{
+  "id": "17-coucou-slip-dress",
+  "name": "pointelle slip dress",
+  "category": "dress",
+  "color": "white",
+  "pattern": "solid",
+  "fabric": "pointelle rib cotton",
+  "fit": "slim midi",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "V-neck with seamed bust panels",
+    "thin straps"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Cou Cou Intimates"
+}

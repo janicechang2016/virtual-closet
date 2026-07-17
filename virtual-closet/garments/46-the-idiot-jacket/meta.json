@@ -1,0 +1,24 @@
+{
+  "id": "46-the-idiot-jacket",
+  "name": "blouson jacket",
+  "category": "outerwear",
+  "color": "muted sage / putty grey-green",
+  "pattern": "solid",
+  "fabric": "matte technical cotton",
+  "fit": "cropped blouson, balloon sleeves",
+  "layer_order": 1,
+  "difficulty": 2,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "stand collar with hidden placket",
+    "gathered elastic hem",
+    "balloon sleeves gathered at the cuff"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "source photos are warm-lit editorial (wood paneling) - true color is muted sage-grey; watch for color drift in renders",
+  "brand": "The Idiot",
+  "exclude_from_photo": [
+    "black wide trousers",
+    "shoulder bag"
+  ]
+}

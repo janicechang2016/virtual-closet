@@ -1,0 +1,25 @@
+{
+  "id": "08-bunnyhill-grey-top",
+  "name": "asymmetric strap-detail long-sleeve top",
+  "category": "top",
+  "color": "light grey",
+  "pattern": "solid",
+  "fabric": "stretch jersey",
+  "fit": "fitted",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "cut-out strap details at shoulders/neckline",
+    "asymmetric layered neckline",
+    "extra-long fitted sleeves"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "on-model: beige cargo pants, shoulder bag and necklace are NOT part of this garment",
+  "brand": "Bunnyhill Concept",
+  "exclude_from_photo": [
+    "beige cargo pants",
+    "shoulder bag",
+    "necklace"
+  ]
+}

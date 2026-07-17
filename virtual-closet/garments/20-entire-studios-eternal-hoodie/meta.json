@@ -1,0 +1,21 @@
+{
+  "id": "20-entire-studios-eternal-hoodie",
+  "name": "eternal cropped zip hoodie",
+  "category": "outerwear",
+  "color": "washed black / charcoal",
+  "pattern": "solid",
+  "fabric": "heavy garment-dyed fleece",
+  "fit": "cropped, boxy, oversized",
+  "layer_order": 1,
+  "difficulty": 2,
+  "size_owned": "L",
+  "details_to_preserve": [
+    "cropped boxy body",
+    "oversized hood",
+    "full front zip",
+    "visible contrast overlock stitching"
+  ],
+  "source_photo_type": "flat-lay",
+  "notes": "flat-lay sources may carry alpha; composited on white at ingest if so",
+  "brand": "Entire Studios"
+}

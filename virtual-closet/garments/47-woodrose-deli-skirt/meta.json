@@ -1,0 +1,23 @@
+{
+  "id": "47-woodrose-deli-skirt",
+  "name": "tie-front knit skirt",
+  "category": "bottom",
+  "color": "oatmeal / sand",
+  "pattern": "solid",
+  "fabric": "brushed wool knit",
+  "fit": "handkerchief midi, knotted at the waist",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "knotted tie wrap at the front waist",
+    "asymmetric handkerchief points",
+    "soft knit selvedge edges"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "on-model: black knee boots are NOT part of this garment",
+  "brand": "Woodrose Deli",
+  "exclude_from_photo": [
+    "black knee-high boots"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "42-sagittarius-trousers",
+  "name": "draped barrel trousers",
+  "category": "bottom",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "structured cotton blend",
+  "fit": "exaggerated barrel leg, tapered ankle",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "extreme barrel/balloon leg curve",
+    "folded drape panel at the waist",
+    "tapered cropped ankle"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Sagittarius A+"
+}

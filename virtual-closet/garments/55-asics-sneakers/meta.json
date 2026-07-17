@@ -1,0 +1,20 @@
+{
+  "id": "55-asics-sneakers",
+  "name": "gel runner sneakers",
+  "category": "shoes",
+  "color": "black with silver",
+  "pattern": "solid",
+  "fabric": "mesh and synthetic overlays",
+  "fit": "low runner",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "US 7",
+  "details_to_preserve": [
+    "silver overlay stripes",
+    "black mesh base",
+    "sculpted midsole"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "ASICS"
+}

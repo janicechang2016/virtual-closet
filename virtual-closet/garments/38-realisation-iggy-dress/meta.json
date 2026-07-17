@@ -1,0 +1,20 @@
+{
+  "id": "38-realisation-iggy-dress",
+  "name": "iggy slip dress",
+  "category": "dress",
+  "color": "chocolate brown with gold dots",
+  "pattern": "scattered gold/ochre dots on brown",
+  "fabric": "silk",
+  "fit": "bias-cut slim midi",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "V neckline with thin straps",
+    "bias flare hem",
+    "warm brown ground"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Réalisation Par"
+}

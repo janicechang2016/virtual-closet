@@ -1,0 +1,20 @@
+{
+  "id": "37-realisation-gia-dress",
+  "name": "gia maxi dress",
+  "category": "dress",
+  "color": "red two-tone print",
+  "pattern": "large tonal red floral/animal print",
+  "fabric": "silk",
+  "fit": "fitted, bell sleeves, maxi",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "high round neckline",
+    "long bell/flare sleeves",
+    "floor length"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Réalisation Par"
+}

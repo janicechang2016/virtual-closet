@@ -1,0 +1,19 @@
+{
+  "id": "56-mizuno-sneakers",
+  "name": "wave leather sneakers",
+  "category": "shoes",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "smooth leather",
+  "fit": "low runner",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "US 7.5",
+  "details_to_preserve": [
+    "all-black leather upper",
+    "visible wave plate in the sole"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Mizuno"
+}

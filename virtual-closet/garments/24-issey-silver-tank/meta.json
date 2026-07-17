@@ -1,0 +1,23 @@
+{
+  "id": "24-issey-silver-tank",
+  "name": "pleated high-neck tank",
+  "category": "top",
+  "color": "silver / light grey",
+  "pattern": "solid",
+  "fabric": "knife-pleated polyester (Pleats Please)",
+  "fit": "straight column",
+  "layer_order": 0,
+  "difficulty": 4,
+  "size_owned": "3",
+  "details_to_preserve": [
+    "fine vertical accordion pleats over the entire garment",
+    "stand/funnel neckline",
+    "pale silver-grey tone - not white"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "difficulty 4: pleats -> FRONT pose only per standing rule",
+  "brand": "Issey Miyake Pleats Please",
+  "exclude_from_photo": [
+    "matching pleated trousers"
+  ]
+}

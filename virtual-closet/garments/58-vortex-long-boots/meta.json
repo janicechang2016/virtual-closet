@@ -1,0 +1,20 @@
+{
+  "id": "58-vortex-long-boots",
+  "name": "quilted swirl long boots",
+  "category": "shoes",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "quilted padded leather",
+  "fit": "knee-high, pointed, kitten heel",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "US 7",
+  "details_to_preserve": [
+    "swirl-quilted padded shaft",
+    "sharp pointed toe",
+    "slim kitten heel"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Yello"
+}

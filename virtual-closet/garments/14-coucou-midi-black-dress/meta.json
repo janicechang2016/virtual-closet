@@ -1,0 +1,20 @@
+{
+  "id": "14-coucou-midi-black-dress",
+  "name": "rib midi slip dress",
+  "category": "dress",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "rib knit cotton",
+  "fit": "slim, midi",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "thin straps",
+    "scoop neckline",
+    "clean column silhouette"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Cou Cou Intimates"
+}

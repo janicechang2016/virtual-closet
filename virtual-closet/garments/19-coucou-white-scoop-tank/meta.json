@@ -1,0 +1,19 @@
+{
+  "id": "19-coucou-white-scoop-tank",
+  "name": "scoop tank",
+  "category": "top",
+  "color": "white",
+  "pattern": "solid",
+  "fabric": "pointelle rib cotton",
+  "fit": "fitted",
+  "layer_order": 0,
+  "difficulty": 1,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "scalloped picot trim",
+    "deep scoop neckline"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Cou Cou Intimates"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "25-kotn-samira-tank",
+  "name": "samira draped tank",
+  "category": "top",
+  "color": "cream / off-white",
+  "pattern": "solid",
+  "fabric": "soft draped jersey",
+  "fit": "fitted",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "twisted asymmetric draped neckline",
+    "sleeveless, higher neck"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "on-model: brown bubble mini skirt and sandals are NOT part of this garment",
+  "brand": "Kotn",
+  "exclude_from_photo": [
+    "brown bubble mini skirt",
+    "sandals"
+  ]
+}

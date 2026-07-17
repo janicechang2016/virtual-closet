@@ -1,0 +1,22 @@
+{
+  "id": "27-liniss-pants",
+  "name": "lace-up flare trousers",
+  "category": "bottom",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "stretch suiting",
+  "fit": "low-rise flare",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "M",
+  "details_to_preserve": [
+    "lace-up front waist detail",
+    "long flared hem"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "on-model: pale blue button-up shirt is NOT part of this garment (confirmed)",
+  "brand": "Liniss",
+  "exclude_from_photo": [
+    "pale blue button-up shirt"
+  ]
+}

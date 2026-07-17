@@ -1,0 +1,19 @@
+{
+  "id": "57-puma-ssg-sneakers",
+  "name": "sculpted rubber-cage sneakers",
+  "category": "shoes",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "nubuck with molded rubber overlay",
+  "fit": "low profile",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "US 7",
+  "details_to_preserve": [
+    "swirling molded rubber cage over the upper",
+    "low sleek profile"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Puma"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "35-realisation-delphine-dress",
+  "name": "delphine midi dress",
+  "category": "dress",
+  "color": "black with white polka dots",
+  "pattern": "white polka dots (~1cm) on black",
+  "fabric": "silk crepe",
+  "fit": "bias-cut midi, surplice bodice",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "surplice V bodice",
+    "regular white dot print",
+    "bias flare hem"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Réalisation Par"
+}

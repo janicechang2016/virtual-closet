@@ -1,0 +1,23 @@
+{
+  "id": "30-off-shoulder-top",
+  "name": "off-shoulder sheer top",
+  "category": "top",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "sheer crinkle chiffon",
+  "fit": "relaxed, dropped shoulder",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "dropped single-shoulder neckline",
+    "flutter short sleeve",
+    "semi-sheer body"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "on-model: black wide trousers are NOT part of this garment",
+  "brand": "Find Me Now",
+  "exclude_from_photo": [
+    "black wide-leg trousers"
+  ]
+}

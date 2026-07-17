@@ -1,0 +1,21 @@
+{
+  "id": "06-aritzia-slouch-coat",
+  "name": "slouch double-breasted maxi coat",
+  "category": "outerwear",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "heavy brushed wool-blend, softly structured",
+  "fit": "oversized, slouchy, mid-calf",
+  "layer_order": 2,
+  "difficulty": 2,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "double-breasted front, two columns of buttons",
+    "wide notch lapel",
+    "relaxed dropped shoulders",
+    "mid-calf length"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Aritzia"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "50-yello-heels",
+  "name": "studded mule heels",
+  "category": "shoes",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "cracked patent leather",
+  "fit": "pointed mule, cone kitten heel",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "US 7",
+  "details_to_preserve": [
+    "silver dome studs across the pointed toe",
+    "cracked-texture patent finish",
+    "cone kitten heel"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Yello"
+}

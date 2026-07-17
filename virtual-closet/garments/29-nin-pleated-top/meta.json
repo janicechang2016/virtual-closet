@@ -1,0 +1,24 @@
+{
+  "id": "29-nin-pleated-top",
+  "name": "pleated print halter top",
+  "category": "top",
+  "color": "black multi",
+  "pattern": "abstract feather/ikat print in black, cream, rust",
+  "fabric": "sheer micro-pleated georgette",
+  "fit": "halter, high neck, fitted",
+  "layer_order": 0,
+  "difficulty": 4,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "sheer pleated body",
+    "high halter neckline",
+    "print placement across the chest"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "difficulty 4 -> FRONT pose only. on-model: matching printed shorts and ballet flats are NOT part of this garment",
+  "brand": "Studio Nin",
+  "exclude_from_photo": [
+    "matching printed shorts",
+    "ballet flats"
+  ]
+}

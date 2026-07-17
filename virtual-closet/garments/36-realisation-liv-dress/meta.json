@@ -1,0 +1,19 @@
+{
+  "id": "36-realisation-liv-dress",
+  "name": "liv midi dress",
+  "category": "dress",
+  "color": "violet-blue with dark leopard print",
+  "pattern": "dark leopard/animal print on violet-blue",
+  "fabric": "silk",
+  "fit": "fitted V-neck midi",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "deep V neckline",
+    "fitted silhouette flaring below the knee"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "source had black pillarbox bars - cropped at ingest",
+  "brand": "Réalisation Par"
+}

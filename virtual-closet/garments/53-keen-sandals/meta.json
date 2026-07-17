@@ -1,0 +1,19 @@
+{
+  "id": "53-keen-sandals",
+  "name": "sport thong sandals",
+  "category": "shoes",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "webbing and rubber",
+  "fit": "thong sandal",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "US 7",
+  "details_to_preserve": [
+    "sporty webbing thong strap",
+    "contoured rubber sole"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "884px sources - smallest photo set of the batch; _detail is a sole shot",
+  "brand": "Keen"
+}

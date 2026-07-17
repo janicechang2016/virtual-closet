@@ -1,0 +1,20 @@
+{
+  "id": "40-realisation-sheer-top",
+  "name": "sheer flocked tie-front top",
+  "category": "top",
+  "color": "black",
+  "pattern": "flocked velvet florals on sheer mesh",
+  "fabric": "sheer mesh with velvet flocking",
+  "fit": "fitted, long sleeve",
+  "layer_order": 0,
+  "difficulty": 4,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "two ribbon-tie front closures",
+    "ruffle-trimmed edges",
+    "sheer sleeves with flocked print"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "difficulty 4 -> FRONT pose only",
+  "brand": "Réalisation Par"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "41-sagittarius-top",
+  "name": "cowl halter top",
+  "category": "top",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "slinky matte jersey",
+  "fit": "draped, open back",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "S",
+  "details_to_preserve": [
+    "deep draped cowl front",
+    "halter neck with hanging side ties",
+    "fully open back"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "on-model photos: sunglasses and wide trousers are NOT part of this garment",
+  "brand": "Sagittarius A+",
+  "exclude_from_photo": [
+    "sunglasses",
+    "black wide trousers"
+  ]
+}

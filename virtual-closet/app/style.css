@@ -123,11 +123,22 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 .fb:hover { background: #000; color: #fff; }
 
 /* ── the racks: a disciplined index; images live in the preview ── */
-#closet-panel { border-left: 1px solid #000; }
+/* the index scrolls on its own; the preview stays pinned at the panel's foot
+   (58 items would otherwise push it out of view) */
+#closet-panel {
+  border-left: 1px solid #000;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#closet-panel h2, #filters { flex: none; }
 #filters { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 16px; }
 .filter { background: none; border: 0; padding: 0; cursor: pointer; }
 .filter:hover, .filter.on { text-decoration: underline; }
-#garment-grid { border-bottom: 1px solid #000; }
+#garment-grid {
+  border-bottom: 1px solid #000;
+  flex: 1; min-height: 0; overflow-y: auto;
+}
+#garment-grid::-webkit-scrollbar { width: 6px; }
+#garment-grid::-webkit-scrollbar-thumb { background: #000; }
 .row {
   display: flex; align-items: baseline; gap: 10px;
   padding: 10px 4px; border-top: 1px solid #000; cursor: pointer;
@@ -138,9 +149,10 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 .row-brand { display: block; font-size: 9px; letter-spacing: 0.14em; opacity: 0.5; }
 .row:hover .row-brand { opacity: 0.75; }
 .row-diff { font-size: 8px; letter-spacing: 0.2em; flex: none; }
-#rack-preview { margin-top: 16px; border: 1px solid #000; }
+#rack-preview { margin-top: 12px; border: 1px solid #000; flex: none; }
 #rack-preview img {
-  width: 100%; aspect-ratio: 1/1; object-fit: contain; display: block; padding: 14px;
+  width: 100%; aspect-ratio: 1/1; max-height: min(300px, 34vh);
+  object-fit: contain; display: block; padding: 14px; margin: 0 auto;
 }
 
 /* ── buttons ── */

@@ -43,9 +43,25 @@ TRYON_PROMPT = (
     "seamless studio background and soft even lighting. One single figure, "
     "not a collage. Reproduce the garment exactly: same color, pattern placement, "
     "neckline, sleeve length, buttons, hem length, and construction details. Natural "
-    "fabric drape appropriate to {fabric}. {layer_note}Full-body, {facing}"
-    "photorealistic.{details}{cutout_note}"
+    "fabric drape appropriate to {fabric}. {slot_note}{layer_note}Full-body, {facing}"
+    "photorealistic.{details}{exclude_note}{cutout_note}"
 )
+
+# category -> what the garment replaces and what stays from the base outfit
+# (2026-07-16: without this anchor, skirts became dresses and flats became a
+# printed dress; companion garments in on-model photos leaked in)
+SLOT_NOTES = {
+    "top":       "The garment is a TOP: she keeps her black leggings from Image 1 "
+                 "unchanged. ",
+    "bottom":    "The garment is worn on the LOWER BODY, replacing the leggings: she "
+                 "keeps her gray tank top from Image 1 unchanged. ",
+    "dress":     "The garment is a DRESS, replacing both the tank top and the "
+                 "leggings. ",
+    "outerwear": "She keeps her gray tank top and black leggings from Image 1 "
+                 "visible beneath. ",
+    "shoes":     "The garment is FOOTWEAR only, worn on her feet: her gray tank top "
+                 "and black leggings stay exactly as in Image 1. ",
+}
 
 
 def garment_asset(gid):
@@ -150,9 +166,16 @@ def tryon(gid, arm="nb-pro", suffix="1", pose="front"):
                           "underneath. ")
         facing = ("front-facing, " if pose == "front"
                   else "in the same stance and camera angle as Image 1, ")
+        slot_note = SLOT_NOTES.get(meta.get("category", ""), "")
+        exclude_note = ""
+        if meta.get("exclude_from_photo"):
+            exclude_note = (" In Image 2 the garment is shown worn with other items ("
+                            + ", ".join(meta["exclude_from_photo"])
+                            + ") — those are NOT part of this garment; do not add them.")
         prompt = TRYON_PROMPT.format(fabric=meta.get("fabric") or "the fabric",
                                      details=details, cutout_note=cutout_note,
-                                     layer_note=layer_note, facing=facing)
+                                     layer_note=layer_note, facing=facing,
+                                     slot_note=slot_note, exclude_note=exclude_note)
         generate(model, prompt, [str(base), str(asset)], purpose="tryon", out=str(raw))
 
     face_swap(raw, out)

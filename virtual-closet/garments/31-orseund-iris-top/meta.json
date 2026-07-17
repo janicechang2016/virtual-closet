@@ -1,0 +1,23 @@
+{
+  "id": "31-orseund-iris-top",
+  "name": "corset-back knit top",
+  "category": "top",
+  "color": "cream / ivory",
+  "pattern": "solid",
+  "fabric": "fine soft knit",
+  "fit": "fitted, long sleeve",
+  "layer_order": 0,
+  "difficulty": 3,
+  "size_owned": "L",
+  "details_to_preserve": [
+    "corset lace-up back with long hanging ties",
+    "scooped front neckline",
+    "gently belled sleeves"
+  ],
+  "source_photo_type": "on-model",
+  "notes": "on-model: cream trousers are NOT part of this garment",
+  "brand": "Orseund Iris",
+  "exclude_from_photo": [
+    "cream trousers"
+  ]
+}

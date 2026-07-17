@@ -1,0 +1,19 @@
+{
+  "id": "13-coucou-long-sleeve-top",
+  "name": "long-sleeve top with curved hem",
+  "category": "top",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "rib cotton",
+  "fit": "fitted",
+  "layer_order": 0,
+  "difficulty": 1,
+  "size_owned": "XS",
+  "details_to_preserve": [
+    "wide boat neckline",
+    "curved pointed front hem"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Cou Cou Intimates"
+}

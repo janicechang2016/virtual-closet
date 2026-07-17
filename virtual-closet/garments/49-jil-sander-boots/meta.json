@@ -1,0 +1,20 @@
+{
+  "id": "49-jil-sander-boots",
+  "name": "leather riding boots",
+  "category": "shoes",
+  "color": "black",
+  "pattern": "solid",
+  "fabric": "smooth calf leather",
+  "fit": "knee-high, flat",
+  "layer_order": 0,
+  "difficulty": 2,
+  "size_owned": "EU 38",
+  "details_to_preserve": [
+    "rounded toe",
+    "tall shaft with curved top edge",
+    "low stacked sole"
+  ],
+  "source_photo_type": "product-page",
+  "notes": "",
+  "brand": "Jil Sander"
+}
