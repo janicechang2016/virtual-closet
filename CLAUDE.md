@@ -4,7 +4,20 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-16)
+## Current state (2026-07-17)
+
+- **Mirror reaction (07-17, $0):** while a dragged garment hovers the mirror and the
+  stage shows the base avatar, it crossfades to `avatar/avatar-v3/front-receive.png`
+  (Janice-supplied nano-banana edit of front.png; locally aligned via human-seg
+  bboxes, original at `avatar/avatar-v3-front-receive.png`); drop holds the
+  receiving frame ~220ms before the render lands. **UI frame only — never a render
+  base.** Renders on stage get the CSS breath (scale 1.015 + brighten) instead —
+  per-render hover variants deliberately rejected (cost + face risk). Drag ghost:
+  50/57 items fly as bare transparent silhouettes (`scripts/dragcut.py`, run at
+  every ingest; on-model→cloth-seg only NEVER general fallback [person-ghosts],
+  product shots→general model), 7 fly as framed cards. CDP suite: 11 checks
+  (`scratchpad dnd_test4.py` pattern — synthetic PointerEvents via
+  --remote-allow-origins=*).
 
 - **Catalog is now 57 garments** (22-gnur-hoodie ARCHIVED 07-16 by Janice — strange
   render off the weakest source; folder in `garments/archive/`, renders in
@@ -126,9 +139,9 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   (revert: `git checkout fitting-room-syve-v1 -- virtual-closet/app/`). Garment `meta.json` has a `brand` field (all five
   filled — Peachy Den / In This Era / Nin Studio / Musinsa Standard / Woodrose Deli),
   shown as the first line of the archive detail overlay; fill at ingest for new items.
-- Spend: ~$6.35 of $25 cap (`python3 scripts/genlog.py summary`). Includes Janice's own
-  first live loop 07-14 (published+removed a 02+03 look, one 01 re-render, $0.118 — the
-  publish pipeline's first real end-to-end validation).
+- Spend: **$10.24 of $25 cap** (`python3 scripts/genlog.py summary`). Big items: July
+  catalog batch $3.25 + $0.53 fix round + sundae fixes ~$0.18; Janice's own first live
+  loop 07-14 ($0.118) validated the publish pipeline end-to-end.
 
 ## Standing rules
 
