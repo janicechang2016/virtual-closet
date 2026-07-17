@@ -251,3 +251,11 @@ section::-webkit-scrollbar-thumb { background: #000; }
   animation-duration: 0.55s;
   animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
 }
+
+/* read-only demo (static export, body.demo via manifest): write actions hidden;
+   sourcing is local-only. Feedback bar keeps its footprint — the mirror must
+   sit exactly where it does locally. */
+body.demo a[href="/sourcing"], body.demo #save-outfit, body.demo #render-outfit,
+body.demo .saved .pub, body.demo .saved .del { display: none !important; }
+body.demo .strip-left .strip-dot:last-of-type { display: none; }
+body.demo #feedback-bar { visibility: hidden !important; }

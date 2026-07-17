@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python3 virtual-closet/scripts/export_static.py --out site",
+  "outputDirectory": "site",
+  "rewrites": [
+    { "source": "/", "destination": "/app/carousel.html" },
+    { "source": "/fitting-room", "destination": "/app/index.html" },
+    { "source": "/classic", "destination": "/app/index.html" },
+    { "source": "/api/manifest", "destination": "/api/manifest.json" }
+  ]
+}

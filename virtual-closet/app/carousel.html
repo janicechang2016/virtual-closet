@@ -107,6 +107,9 @@
     animation-duration: 0.55s;
     animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
   }
+  /* read-only demo (static export, body.demo via manifest): sourcing is
+     local-only and the try-on/re-render CTA has no server behind it */
+  body.demo a[href="/sourcing"], body.demo #cta { display: none !important; }
 </style>
 </head>
 <body>
@@ -316,7 +319,8 @@ function updateInfo() {
   $('#sizes').innerHTML = sizes.map((s) =>
     `<span class="${s === it.size ? 'on' : ''}">${s}</span>`).join('');
   $('#colors').innerHTML = it.colors.map((c) => `<div style="background:${c}"></div>`).join('');
-  $('#price').textContent = M.generation_enabled ? '$0.06 / render' : 'copy-prompt mode';
+  $('#price').textContent = M.demo ? 'archive demo'
+    : M.generation_enabled ? '$0.06 / render' : 'copy-prompt mode';
   $('#cta').textContent = it.kind === 'look' ? 'Re-render look' : 'Try on';
 }
 
@@ -466,8 +470,10 @@ document.querySelector('#nav-left a[href="/fitting-room"]').addEventListener('cl
 
 async function boot() {
   M = await (await fetch('/api/manifest')).json();
+  if (M.demo) document.body.classList.add('demo');   // static export: dead-end controls hidden via CSS
   $('#nav-avatar').textContent = M.avatar.locked_version || 'draft';
-  $('#nav-gen').textContent = M.generation_enabled ? 'Generation live' : 'Copy-prompt';
+  $('#nav-gen').textContent = M.demo ? 'Archive demo'
+    : M.generation_enabled ? 'Generation live' : 'Copy-prompt';
   $('#nav-cost').textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
   buildItems();
   buildSlots();

@@ -6,6 +6,19 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
 
 ## Current state (2026-07-17)
 
+- **Repo on GitHub (07-17):** github.com/janicechang2016/virtual-closet — PRIVATE
+  until Janice flips it for the portfolio; all rollback tags pushed. **Static
+  Vercel export ($0):** `python3 scripts/export_static.py --out site` snapshots
+  the manifest (`demo: true`, generation off) + copies referenced assets (~80MB,
+  303 files) into `site/` (gitignored); root `vercel.json` runs it as the build
+  command with rewrites for `/`, `/fitting-room`, `/api/manifest`. The app UIs
+  gate on `M.demo` (body.demo CSS): Sourcing link, feedback bar (visibility —
+  footprint kept, mirror must not shift), SAVE LOOK / RENDER OUTFIT / publish /
+  delete / carousel CTA all hidden; read-only browsing + drag-to-dress instant
+  swaps fully work from static files. `M.demo` is never set locally — zero
+  behavior change for the live server. Vercel import is Janice's (she owns
+  deploys); suggest Deployment Protection until the repo goes public.
+
 - **Mirror reaction (07-17, $0):** while a dragged garment hovers the mirror and the
   stage shows the base avatar, it crossfades to `avatar/avatar-v3/front-receive.png`
   (Janice-supplied nano-banana edit of front.png; locally aligned via human-seg

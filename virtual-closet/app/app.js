@@ -23,8 +23,10 @@ async function refreshManifest() {
 
 async function boot() {
   await refreshManifest();
+  if (M.demo) document.body.classList.add("demo");   // static export: write actions hidden via CSS
   $("#avatar-status").textContent = "avatar: " + (M.avatar.locked_version || "draft (unlocked)");
-  $("#gen-mode").textContent = M.generation_enabled ? "generation: LIVE" : "generation: copy-prompt mode";
+  $("#gen-mode").textContent = M.demo ? "read-only demo"
+    : M.generation_enabled ? "generation: LIVE" : "generation: copy-prompt mode";
   await migrateLegacySaves();
   showAvatar();
   renderFilters();
@@ -38,6 +40,7 @@ async function boot() {
 
 // pre-looks.json saves lived in localStorage; move them to server drafts once
 async function migrateLegacySaves() {
+  if (M.demo) return;   // no server to migrate into
   const legacy = JSON.parse(localStorage.getItem("savedOutfits") || "[]");
   if (!legacy.length) return;
   for (const o of legacy) {
