@@ -247,5 +247,19 @@
     "render": "outfit_09+44+52_1.png",
     "cutout": "outfit_09+44+52_1_cut.png",
     "created": "2026-07-19"
+  },
+  {
+    "id": "look-023",
+    "title": "look 022",
+    "items": [
+      "59-el-hoodie",
+      "42-sagittarius-trousers",
+      "56-mizuno-sneakers"
+    ],
+    "pose": "contrapposto",
+    "state": "published",
+    "render": "outfit_42+56+59_contrapposto_2.png",
+    "cutout": "outfit_42+56+59_contrapposto_2_cut.png",
+    "created": "2026-07-19"
   }
 ]

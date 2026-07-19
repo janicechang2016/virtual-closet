@@ -161,7 +161,9 @@ def tryon(gid, arm="nb-pro", suffix="1", pose="front"):
             cutout_note = (" Image 2 is an isolated garment product shot; any small gaps or "
                            "ragged edges are extraction artifacts — render the garment complete.")
         layer_note = ""
-        if meta.get("layer_order", 0) > 0:
+        if meta.get("wear_note"):  # per-garment override: not every layer is worn open
+            layer_note = meta["wear_note"].strip() + ". "
+        elif meta.get("layer_order", 0) > 0:
             layer_note = ("Layer the garment OPEN over her existing gray tank top, tank visible "
                           "underneath. ")
         facing = ("front-facing, " if pose == "front"
@@ -258,10 +260,15 @@ def tryon_outfit(gids, suffix=None, pose="front"):
     lines, images = [], [str(AVATAR_DIR / f"{pose}.png")]
     for i, (gid, meta) in enumerate(pairs):
         images.append(str(garment_asset(gid)))
-        hint = LAYER_HINTS.get(meta.get("category", ""), "")
+        hint = meta.get("wear_note", "").strip() or LAYER_HINTS.get(meta.get("category", ""), "")
         details = "; ".join(meta.get("details_to_preserve", [])[:3])
-        lines.append(f"Image {i + 2}: {meta.get('name', gid)} ({meta.get('color','')}, "
-                     f"{hint}). Key details: {details}")
+        line = (f"Image {i + 2}: {meta.get('name', gid)} ({meta.get('color','')}, "
+                f"{hint}). Key details: {details}")
+        if meta.get("exclude_from_photo"):
+            line += (" (its reference photo also shows "
+                     + ", ".join(meta["exclude_from_photo"])
+                     + " - NOT part of this garment; do not add them)")
+        lines.append(line)
 
     prompt = (
         "Virtual try-on: show the person from Image 1 wearing ALL of the following garments "

@@ -20,6 +20,20 @@ via one "wrong fit" corrective ("closed pullover, no zipper"). `_1` hidden.
 meta's `exclude_from_photo` now carries "any zipper or open front" so future
 re-renders anchor against it.
 
+**Root cause found via look-023 (Janice's hoodie+sagittarius+mizuno look
+rendered zip-up AGAIN + cropped pants):** the zip invention wasn't random —
+BOTH prompt paths hard-code outer layers "worn OPEN" (single: `layer_note`,
+outfit: `LAYER_HINTS`), which for a pullover means inventing a front opening.
+Fix: per-garment **`wear_note` meta override** honored by both paths (59 says
+"worn CLOSED as a pullover"); the outfit path also now carries each item's
+`exclude_from_photo` (it never did — the 07-16 fix only reached the single
+path). The cropped pants were a WRONG VISION TAG: 42-sagittarius meta said
+"tapered cropped ankle" but Janice's pair is full length (product photo
+agrees) — meta corrected; trust the owner over the auto-tag. look-023
+corrected in ONE batched call ($0.059: pullover + full-length together,
+3-image edit: render + both garment ground truths), `_1` hidden, looks.json
+repointed at `_2`.
+
 ## 2026-07-19 — Carousel shows outfits only
 
 **Decision (user, triggering the 07-16 queued item):** with 19 looks published, the
