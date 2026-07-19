@@ -1,5 +1,18 @@
 # Decision log
 
+## 2026-07-19 — Ingest: 59-el-hoodie (Eckhaus Latta)
+
+Janice staged 4 webp views ("EL-hoodie") via the sourcing flow; ingested as
+**59-el-hoodie**. "EL" resolved to **Eckhaus Latta** from the baked-in shoulder
+print (the uniqlo→Aritzia lesson paying off). Primary = flat-lay on beige
+(1080px — under the ≥1500px preferred bar but above the re-source threshold);
+extras `_model-front/_model-alt/_model-back` (back view banked for the
+turntable idea). Difficulty 3: the painted band must wrap chest→sleeves
+continuously. Dragcut done (general model, 512×447). **size_owned NOT logged —
+ask Janice.** No render yet ($0.059 when approved); it lives on the racks only.
+README gained the sourcing screenshot + a note that the demo excludes
+/sourcing (needs the live server to fetch/rank remote pages).
+
 ## 2026-07-19 — Carousel shows outfits only
 
 **Decision (user, triggering the 07-16 queued item):** with 19 looks published, the

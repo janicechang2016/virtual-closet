@@ -1,0 +1,25 @@
+{
+  "id": "59-el-hoodie",
+  "name": "painted band hoodie",
+  "category": "outerwear",
+  "subcategory": "hoodie",
+  "color": "washed black with green/ecru painted band",
+  "pattern": "hand-painted spotted band wrapping the chest and upper sleeves",
+  "fabric": "heavyweight cotton fleece",
+  "fit": "boxy, slightly cropped",
+  "layer_order": 1,
+  "difficulty": 3,
+  "details_to_preserve": [
+    "painted band continuous across chest and both upper sleeves",
+    "ECKHAUS LATTA print on the right shoulder",
+    "drawstrings with metal aglet tips",
+    "kangaroo pocket"
+  ],
+  "brand": "Eckhaus Latta",
+  "source_photo_type": "flat-lay",
+  "exclude_from_photo": [
+    "black trousers",
+    "model"
+  ],
+  "notes": "primary is a flat-lay on beige - true black may read faded/washed; band placement must stay continuous chest-to-sleeves (difficulty driver). Model front/alt/back views in raw/ (back view banked for the turntable idea). size_owned NOT yet logged - ask Janice."
+}

@@ -51,6 +51,8 @@ between the two pages.
   stages the best ones; cutouts and drag silhouettes are extracted with
   rembg (general model for product shots, cloth-seg for on-model photos).
 
+![sourcing — staged product photos awaiting ingest](virtual-closet/docs/screenshots/sourcing.png)
+
 ## Running it
 
 ```bash
@@ -62,7 +64,9 @@ ENABLE_GENERATION=1 python3 scripts/closet_server.py   # live rendering (fal key
 A read-only demo deploys as a static site: `scripts/export_static.py`
 snapshots the API and referenced assets into `site/`, and the root
 `vercel.json` runs it as the build. Browsing and drag-to-dress work
-entirely from static files; generation stays local.
+entirely from static files; generation stays local. The sourcing page
+isn't part of the demo — it depends on the live server to fetch and rank
+remote product pages, so a static export has nothing to back it.
 
 ## Notes
 
