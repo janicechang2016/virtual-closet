@@ -13,6 +13,13 @@ ask Janice.** No render yet ($0.059 when approved); it lives on the racks only.
 README gained the sourcing screenshot + a note that the demo excludes
 /sourcing (needs the live server to fetch/rank remote pages).
 
+**Rendered same day** (size M logged; Janice approved render + corrective,
+$0.118 total): `_1` invented a full-zip worn open — new failure flavor:
+**nb2 can invent garment construction, not just leak clothing**; `_2` fixed
+via one "wrong fit" corrective ("closed pullover, no zipper"). `_1` hidden.
+meta's `exclude_from_photo` now carries "any zipper or open front" so future
+re-renders anchor against it.
+
 ## 2026-07-19 — Carousel shows outfits only
 
 **Decision (user, triggering the 07-16 queued item):** with 19 looks published, the

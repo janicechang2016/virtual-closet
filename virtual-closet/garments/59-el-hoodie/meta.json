@@ -16,10 +16,12 @@
     "kangaroo pocket"
   ],
   "brand": "Eckhaus Latta",
+  "size_owned": "M",
   "source_photo_type": "flat-lay",
   "exclude_from_photo": [
     "black trousers",
-    "model"
+    "model",
+    "any zipper or open front (the hoodie is a closed pullover)"
   ],
-  "notes": "primary is a flat-lay on beige - true black may read faded/washed; band placement must stay continuous chest-to-sleeves (difficulty driver). Model front/alt/back views in raw/ (back view banked for the turntable idea). size_owned NOT yet logged - ask Janice."
+  "notes": "primary is a flat-lay on beige - true black may read faded/washed; band placement must stay continuous chest-to-sleeves (difficulty driver). Model front/alt/back views in raw/ (back view banked for the turntable idea)."
 }
