@@ -258,8 +258,8 @@
     ],
     "pose": "contrapposto",
     "state": "published",
-    "render": "outfit_42+56+59_contrapposto_2.png",
-    "cutout": "outfit_42+56+59_contrapposto_2_cut.png",
+    "render": "outfit_42+56+59_contrapposto_hood-up_1.png",
+    "cutout": "outfit_42+56+59_contrapposto_hood-up_1_cut.png",
     "created": "2026-07-19"
   }
 ]
