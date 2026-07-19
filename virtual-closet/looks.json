@@ -247,19 +247,5 @@
     "render": "outfit_09+44+52_1.png",
     "cutout": "outfit_09+44+52_1_cut.png",
     "created": "2026-07-19"
-  },
-  {
-    "id": "look-023",
-    "title": "look 022",
-    "items": [
-      "11-coucou-black-muse-tank",
-      "58-vortex-long-boots",
-      "27-liniss-pants"
-    ],
-    "pose": "34turn",
-    "state": "draft",
-    "render": "outfit_11+27+58_34turn_1.png",
-    "cutout": "outfit_11+27+58_34turn_1_cut.png",
-    "created": "2026-07-19"
   }
 ]
