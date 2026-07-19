@@ -42,7 +42,13 @@ h2 { font-size: 12px; font-weight: 800; margin-bottom: 14px; }
 h2::after { content: ""; display: block; height: 1px; background: #000; margin-top: 8px; }
 
 /* ── outfit rail: a garment manifest, not boxes ── */
-#outfit-panel { border-right: 1px solid #000; }
+/* slots + actions stay pinned; the looks index scrolls on its own, same
+   discipline as the racks (a growing archive would otherwise scroll the rail) */
+#outfit-panel {
+  border-right: 1px solid #000;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#outfit-panel h2, #outfit-slots, #outfit-panel .btn, #saved-head { flex: none; }
 #outfit-slots { border-bottom: 1px solid #000; margin-bottom: 16px; }
 .slot {
   display: flex; align-items: baseline; gap: 10px;
@@ -57,7 +63,10 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 #saved-head {
   font-size: 10px; letter-spacing: 0.28em; margin: 22px 0 0;
 }
+#saved-outfits { flex: 1; min-height: 0; overflow-y: auto; }
 #saved-outfits:not(:empty) { border-bottom: 1px solid #000; }
+#saved-outfits::-webkit-scrollbar { width: 6px; }
+#saved-outfits::-webkit-scrollbar-thumb { background: #000; }
 .saved {
   padding: 10px 2px; border-top: 1px solid #000; cursor: pointer;
   display: flex; justify-content: space-between; align-items: center; gap: 8px;
@@ -66,7 +75,6 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 .saved:hover .saved-title { text-decoration: underline; }
 .saved-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .saved-tags { display: flex; align-items: center; gap: 6px; flex: none; }
-.saved .badge { font-size: 9px; letter-spacing: 0.08em; opacity: 0.45; }
 .saved .pub {
   border: 1px solid #000; background: #fff; font-size: 9px; letter-spacing: 0.08em;
   padding: 3px 7px; cursor: pointer;

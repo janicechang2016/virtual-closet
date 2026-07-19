@@ -116,15 +116,6 @@
 <div id="viewport">
   <div id="logo">the archive.</div>
   <nav id="nav-left">
-    <span class="filter on" data-f="all">All</span>
-    <div class="spacer"></div>
-    <span class="filter" data-f="top">Tops</span>
-    <span class="filter" data-f="bottom">Bottoms</span>
-    <span class="filter" data-f="dress">Dresses</span>
-    <span class="filter" data-f="outerwear">Outerwear</span>
-    <span class="filter" data-f="shoes">Shoes</span>
-    <span class="filter" data-f="outfit">Outfits</span>
-    <div class="spacer"></div>
     <a href="/fitting-room">Fitting room</a>
     <a href="/sourcing">Sourcing</a>
   </nav>
@@ -167,6 +158,7 @@ const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
   '<rect width="620" height="835" fill="#E8DDD3"/></svg>');
 const REF_W = 1440, REF_H = 900;
 const DWELL = 80, EASE = 0.08;
+const START_LOOK = 'look-006';   // landing hero: "look 005" (Janice 07-19)
 
 let M = null;          // manifest
 let ALL_ITEMS = [];    // every item
@@ -180,29 +172,9 @@ let entranceActive = false;   // ASCII entrance cover is up (blocks carousel scr
 
 const $ = (s) => document.querySelector(s);
 
-function swatches(color) {
-  const c = (color || '').toLowerCase();
-  const out = [];
-  if (c.includes('black')) out.push('#141414');
-  if (c.includes('charcoal') || c.includes('grey') || c.includes('gray')) out.push('#4a4d52');
-  if (c.includes('red') || c.includes('crimson')) out.push('#8e1f2f');
-  if (c.includes('blue') || c.includes('cobalt')) out.push('#1f3f8e');
-  return out.length ? out.slice(0, 4) : ['#141414'];
-}
-
 function buildItems() {
+  // outfits only (Janice 07-19) — single garments stay in the fitting room racks
   ALL_ITEMS = [];
-  M.garments.forEach((g) => {
-    const src = g.cutout || (g.renders.length ? g.renders[g.renders.length - 1] : null);
-    if (!src) return;   // not rendered yet — lives in the fitting room racks only
-    ALL_ITEMS.push({
-      kind: 'garment', cat: g.category, gid: g.id,
-      title: g.name, desc: [g.fabric, g.fit].filter(Boolean).join('. '),
-      src,
-      colors: swatches(g.color),
-      size: g.size_owned || null,
-    });
-  });
   (M.looks || []).forEach((l) => {
     if (l.state !== 'published') return;   // drafts live in the fitting room
     const names = l.items.map((gid) => {
@@ -263,8 +235,8 @@ function normalizeOffset(offset) {
   return offset;
 }
 
-function mount(filter) {
-  items = ALL_ITEMS.filter((it) => filter === 'all' || it.cat === filter);
+function mount() {
+  items = ALL_ITEMS.slice();
   const host = $('#stage-items');
   host.innerHTML = '';
   els = items.map((it, i) => {
@@ -281,7 +253,8 @@ function mount(filter) {
     host.appendChild(d);
     return d;
   });
-  scrollPos = target = 0; isSnapped = true; dwellAccum = 0;
+  const start = items.findIndex((it) => it.lookId === START_LOOK);
+  scrollPos = target = Math.max(0, start); isSnapped = true; dwellAccum = 0;
   updateInfo();
 }
 
@@ -373,13 +346,6 @@ function tick() {
   layout();
   requestAnimationFrame(tick);
 }
-
-document.addEventListener('click', (e) => {
-  const f = e.target.closest('.filter');
-  if (!f) return;
-  document.querySelectorAll('.filter').forEach((x) => x.classList.toggle('on', x === f));
-  mount(f.dataset.f);
-});
 
 async function renderHero() {
   const it = items[centeredIndex()];
@@ -477,7 +443,7 @@ async function boot() {
   $('#nav-cost').textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
   buildItems();
   buildSlots();
-  mount('all');
+  mount();
   tick();
 }
 boot();

@@ -341,9 +341,7 @@ function renderSaved() {
     <div class="saved" data-id="${l.id}">
       <span class="saved-title">${l.title}</span>
       <span class="saved-tags">
-        ${l.state === "draft"
-          ? `<button class="pub" data-id="${l.id}">publish</button>`
-          : `<span class="badge">in archive</span>`}
+        ${l.state === "draft" ? `<button class="pub" data-id="${l.id}">publish</button>` : ""}
         <button class="del" data-id="${l.id}" title="remove look">×</button>
       </span>
     </div>`).join("");
@@ -441,6 +439,8 @@ $("#save-outfit").addEventListener("click", async () => {
   if (!r.ok) { toast("save failed"); return; }
   await refreshManifest();
   renderSaved();
+  const list = $("#saved-outfits");
+  list.scrollTop = list.scrollHeight;   // the new draft lands at the foot of the index
   toast(`saved as a draft — publish it to appear in the archive`);
 });
 

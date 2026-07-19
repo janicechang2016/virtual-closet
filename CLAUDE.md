@@ -106,13 +106,16 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   ENABLE_GENERATION.
 - **One brand ("the archive."), two views, one SYVE language** (white void, black 1px
   hairlines, uppercase Helvetica, italic lowercase wordmark):
-  - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): figure cutouts
-    (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
-    interpolation + infinite wrap + 80px snap/dwell, x-axis scroll + click-to-center,
-    TRY ON wired to the live pipeline; hero slot at 85% of spec size (Janice: full size
+  - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): **OUTFITS ONLY
+    as of 07-19** (queued item triggered by Janice with 19 looks published — buildItems
+    shows published looks exclusively, category filter nav removed, nav-left = Fitting
+    room / Sourcing links; single garments stay in the fitting room racks). Figure
+    cutouts (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
+    interpolation + infinite wrap + 80px snap/dwell, x-axis scroll + click-to-center;
+    hero slot at 85% of spec size (Janice: full size
     too big); snap ease slowed to 0.08 (07-14); hero click opens the detail overlay
-    (brand headline for garments, item rows + pose for looks, OPEN IN FITTING ROOM as
-    the black primary — no TRY ON button there). Spec: `virtual-closet/design-inspo/`
+    (item rows + pose, RE-RENDER LOOK wired to the publish pipeline, OPEN IN FITTING
+    ROOM as the black primary). Spec: `virtual-closet/design-inspo/`
     (docx + reel).
     A **runway-procession variant** (single-file line receding to a vanishing point, per
     `design-inspo/runway-inspo.avif`) was built and shelved same night — saved at tag
@@ -196,11 +199,6 @@ The liminal-wardrobe venv (Python 3.9) has rembg/cv2/PIL; system python3 is 3.9 
 actually look at the PNG.
 
 ## Queued next (do not build until asked)
-
-- **Carousel → outfits only (Janice 07-16):** once she starts creating/publishing
-  looks in volume, the archive carousel should display ONLY created outfits (no
-  single-garment figures — those stay browsable in the fitting room racks). Not yet:
-  wait until looks exist; revisit the trigger with her.
 
 - **Look cards, remaining half:** the content-unit half shipped with publish (rembg
   cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**

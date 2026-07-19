@@ -1,5 +1,43 @@
 # Decision log
 
+## 2026-07-19 — Carousel shows outfits only
+
+**Decision (user, triggering the 07-16 queued item):** with 19 looks published, the
+archive carousel now displays ONLY created outfits — no single-garment figures.
+`buildItems()` in `carousel.html` drops the garment loop (published looks only, as
+before); the category filter nav (All/Tops/…/Outfits) is removed since every entry
+is an outfit — nav-left keeps just the Fitting room / Sourcing links. Single
+garments remain fully browsable in the fitting room racks, and the look detail
+overlay / re-render / OPEN IN FITTING ROOM handoff are unchanged. Garment cutouts
+stay on disk (fitting room hover previews still use them). Revert = restore the
+garment loop + filter spans from git history.
+
+**Same-day follow-ups (user):** duplicate "look 017" titles fixed (look-019 →
+"look 018", everything after shifted down one — titles only, ids/filenames
+untouched; note title ≠ id number now, and the server's default title for the next
+new look is keyed to the id, so it'll suggest "look 024"). look-023 (coucou tank +
+vortex boots + liniss pants) unpublished to draft ("look 022") — Janice confirmed
+the pre-renumber reading of "look 021"; entry + renders kept, republish restores
+it. Carousel lands centered on look 005 (`START_LOOK = 'look-006'` in
+carousel.html, falls back to first item if missing).
+
+**README demo GIF (user, 07-19):** the README's fitting-room visual is now
+`docs/screenshots/fitting-room-drag.gif` (800px, ~5MB, per-frame palettes —
+shared/128-color palettes speckle the face): a CDP-driven drag of 03-plissé
+from the rack to the mirror — receive frame, drop, render lands. Captured $0
+(all renders pre-existing) via Page.screencast + synthetic pointer events;
+capture script kept in the session scratchpad (`capture_drag_gif.py` pattern —
+rebuildable from decisions here if needed). `fitting-room.png` stays on disk,
+now unreferenced. A look-preview frame for the looks index was built, shown,
+and REJECTED by Janice same day — do not rebuild.
+
+**Looks index scrolls (user, 07-19):** the fitting room's Looks list now scrolls
+on its own with the racks' discipline — outfit slots + action buttons pinned,
+`#saved-outfits` gets `flex: 1` + the same 6px black scrollbar (`#outfit-panel`
+became the same flex column as `#closet-panel`). The repeated "in archive" badge
+is gone — a publish button marks the draft rows, published rows are the quiet
+default. Saving a look scrolls the new draft into view at the foot of the index.
+
 ## 2026-07-17 — The mirror reacts: avatar "receive" frame on drag-hover
 
 **Decision (user, photo supplied):** the ISC demo's ModelHover mechanic, done our way.
