@@ -14,20 +14,22 @@ mixed into outfits, and "worn" without touching the physical rack.
 
 Two views, one brand:
 
-- **`/` — the archive.** A carousel of figure cutouts with an ASCII-art
-  entrance sequence. Clicking a figure opens a detail overlay (brand, sizes,
-  pose) with a door into the fitting room.
+- **`/` — the archive.** A carousel of published looks — complete outfits
+  worn by the avatar — behind an ASCII-art entrance sequence. Clicking a
+  look opens a detail overlay (its garments, sizes, pose) with a door into
+  the fitting room.
 - **`/fitting-room`** — outfit rail, mirror stage, and index racks.
   Garments can be clicked or **dragged onto the mirror**: the cutout rides
   the cursor with grab-lift and directional tilt, the avatar raises her hands
   to receive it, and the render lands on the stage.
 
-![fitting room — drag-to-dress](virtual-closet/docs/screenshots/fitting-room.png)
+![fitting room — the avatar receives a dragged garment, then wears it](virtual-closet/docs/screenshots/fitting-room-drag.gif)
 
 Outfits are saved as **looks** (free drafts), then **published** — one
 render in a chosen pose plus a cutout pass — to appear in the archive
-carousel. Cross-document view transitions morph the figure between the two
-pages.
+carousel. The carousel shows only published looks; individual garments stay
+on the fitting-room racks. Cross-document view transitions morph the figure
+between the two pages.
 
 ![entrance — ASCII glyphs tracing the room](virtual-closet/docs/screenshots/entrance.png)
 
