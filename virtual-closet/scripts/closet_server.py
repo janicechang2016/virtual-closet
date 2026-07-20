@@ -358,6 +358,32 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"error": "unknown look"}, 404)
             save_looks(keep)   # render files stay on disk
             return self._json({"ok": True})
+        if url.path == "/api/looks/reorder":
+            # Carousel order IS looks.json array order (nothing sorts downstream),
+            # so a drag in the index lens is a $0 rewrite of this list.
+            order = [str(i) for i in data.get("order", [])]
+            looks = load_looks()
+            by = {l["id"]: l for l in looks}
+            unknown = [i for i in order if i not in by]
+            if unknown:
+                return self._json({"error": f"unknown look(s): {', '.join(unknown)}"}, 404)
+            if len(set(order)) != len(order):
+                return self._json({"error": "duplicate ids in order"}, 400)
+            moved = [by[i] for i in order]
+            # Looks absent from the payload (drafts) hold their absolute slots;
+            # only the dragged set is permuted among the slots it already owned.
+            slots = [i for i, l in enumerate(looks) if l["id"] in set(order)]
+            new = list(looks)
+            for slot, lk in zip(slots, moved):
+                new[slot] = lk
+            if data.get("renumber", True):
+                n = 0
+                for lk in moved:          # auto-titles follow position; custom names stay
+                    if re.match(r"^look \d+$", lk.get("title", "")):
+                        n += 1
+                        lk["title"] = "look %03d" % n
+            save_looks(new)
+            return self._json({"ok": True, "looks": looks_list()})
         if url.path == "/api/publish":
             if not GENERATION_ENABLED:
                 return self._json({"error": "generation disabled",

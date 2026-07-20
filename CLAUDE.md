@@ -15,6 +15,17 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   the titles were renumbered top-to-bottom a **third** time; drift is now
   "look 001"=look-014, 002=look-005, 003=look-013, 004=look-022, rest in prior
   relative order. Renders/cutouts untouched; a browser refresh is enough.
+  **DRAG-TO-REORDER SHIPPED 07-20** (index lens only — the grid is the one place
+  order is legible): pointer-driven cell drag w/ floating ghost card, dimmed
+  source, 3px black insertion bar; 6px threshold keeps a plain click opening the
+  detail overlay (a committed drag rebuilds the grid so no trailing click fires;
+  an aborted one is swallowed by a one-shot capture listener); ESC aborts.
+  Optimistic reorder → `POST /api/looks/reorder {order:[ids], renumber:true}`,
+  reverts + alerts on failure. Server permutes only the payload's ids among the
+  slots they already own (drafts hold absolute positions) and renumbers titles
+  matching `^look \d+$` by position — custom names survive. **`START_LOOK` is now
+  `null`** = land on whatever is FIRST; it was pinned to `look-006`, which is
+  exactly why the 07-20 reorder looked like it "didn't work". CDP 13/13.
   Carousel = **outfits only**
   (see below). Vortex-boots look deleted by her via the UI (renders on disk).
   **look-019** (59-el-hoodie + 42-sagittarius + 56-mizuno) went through the full

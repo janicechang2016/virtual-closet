@@ -61,6 +61,30 @@
   .gcap .gt { font-size: 11px; font-weight: 700; white-space: nowrap; }
   .gcap .gm { font-size: 8px; letter-spacing: 0.14em; opacity: 0.5; text-align: right; }
 
+  /* ── drag-to-reorder in the index lens (07-20) ─────────────────────────
+     The grid is the only place order is legible, so it is the only place
+     order is editable. Pointer-driven like drag-to-dress; the carousel
+     itself stays read-only. */
+  #grid.reordering { cursor: grabbing; }
+  #grid.reordering .gcell:hover { background: none; }   /* silver wash off mid-drag */
+  .gcell.drag-src { opacity: 0.25; }
+  .gcell.drop-before { box-shadow: inset 3px 0 0 #000; }
+  .gcell.drop-after  { box-shadow: inset -3px 0 0 #000; }
+  #drag-ghost {
+    position: fixed; z-index: 40; pointer-events: none; opacity: 0.9;
+    background: #fff; border: 1px solid #000; padding: 10px 8px 0;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+  }
+  #drag-ghost img { display: block; max-width: 100%; max-height: 190px;
+    object-fit: contain; margin: 0 auto; }
+  #drag-ghost .gt { font-size: 10px; font-weight: 700; text-align: center;
+    border-top: 1px solid #000; margin-top: 8px; padding: 6px 0 8px; }
+  #grid-hint {
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    opacity: 0.45; padding: 0 2px 10px;
+  }
+  body.demo #grid-hint { display: none; }
+
   .carousel-img { position: absolute; will-change: transform; cursor: pointer; }
   .carousel-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
@@ -161,7 +185,10 @@
     <span class="quiet" id="nav-cost"></span>
   </nav>
   <div id="stage-items"></div>
-  <div id="grid-view" hidden><div id="grid"></div></div>
+  <div id="grid-view" hidden>
+    <div id="grid-hint">drag a look to reorder · the carousel follows this order</div>
+    <div id="grid"></div>
+  </div>
   <div id="info"><div class="title" id="info-title"></div><div class="desc" id="info-desc"></div></div>
   <div id="controls">
     <div class="ctrl-row"><div id="sizes"></div><div id="colors"></div></div>
@@ -194,7 +221,10 @@ const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
   '<rect width="620" height="835" fill="#E8DDD3"/></svg>');
 const REF_W = 1440, REF_H = 900;
 const DWELL = 80, EASE = 0.08;
-const START_LOOK = 'look-006';   // landing hero: the plissé-dress look — "look 002" since the 07-19 renumber
+/* Landing hero. null = whatever sits FIRST in looks.json order, so a drag in the
+   index lens actually changes what you land on (Janice 07-20 — this was pinned to
+   'look-006', which silently swallowed the 07-20 reorder). Set to a look id to pin. */
+const START_LOOK = null;
 
 let M = null;          // manifest
 let ALL_ITEMS = [];    // every item
@@ -272,7 +302,7 @@ function normalizeOffset(offset) {
   return offset;
 }
 
-function mount() {
+function mount(keepPos) {
   items = ALL_ITEMS.slice();
   const host = $('#stage-items');
   host.innerHTML = '';
@@ -290,8 +320,10 @@ function mount() {
     host.appendChild(d);
     return d;
   });
-  const start = items.findIndex((it) => it.lookId === START_LOOK);
-  scrollPos = target = Math.max(0, start); isSnapped = true; dwellAccum = 0;
+  const start = START_LOOK ? items.findIndex((it) => it.lookId === START_LOOK) : 0;
+  if (keepPos == null) scrollPos = target = Math.max(0, start);
+  else scrollPos = target = Math.min(Math.max(0, keepPos), Math.max(0, items.length - 1));
+  isSnapped = true; dwellAccum = 0;
   updateInfo();
 }
 
@@ -378,7 +410,7 @@ window.addEventListener('touchend', () => { touchLastX = null; });
 function buildGrid() {
   $('#grid').innerHTML = items.map((it, i) => `
     <div class="gcell" data-i="${i}">
-      <div class="gfig"><img src="${it.src || PLACEHOLDER}" alt="" loading="lazy"></div>
+      <div class="gfig"><img src="${it.src || PLACEHOLDER}" alt="" loading="lazy" draggable="false"></div>
       <div class="gcap"><span class="gt">${it.title}</span>
         <span class="gm">${it.items.length} items · ${it.pose || 'front'}</span></div>
     </div>`).join('');
@@ -387,6 +419,131 @@ function buildGrid() {
     c.addEventListener('click', () => openDetail(items[+c.dataset.i]));
   });
 }
+
+/* ── drag-to-reorder (07-20) ───────────────────────────────────────────────
+   Order is just the looks.json array, so this is a $0 edit — no re-renders.
+   Pointer-driven (same family as drag-to-dress); a 6px threshold keeps plain
+   clicks opening the detail overlay. Read-only in the static demo. */
+let dragSrc = null;        // index being dragged
+let dragMoved = false;     // crossed the threshold — suppress the click
+let dragGhost = null;
+let dropIdx = null;        // insertion index in the ORIGINAL array
+
+/* A drag ends with a click event on the cell under the cursor; eat exactly that
+   one (and only if it actually arrives — a committed drag rebuilds the grid, so
+   the original target is gone and no click fires at all). */
+function swallowNextClick() {
+  const grid = $('#grid');
+  const eat = (ev) => { ev.stopPropagation(); ev.preventDefault(); done(); };
+  const done = () => { grid.removeEventListener('click', eat, true); clearTimeout(t); };
+  const t = setTimeout(done, 300);
+  grid.addEventListener('click', eat, true);
+}
+
+function clearDropMarks() {
+  document.querySelectorAll('.gcell').forEach((c) =>
+    c.classList.remove('drop-before', 'drop-after'));
+}
+
+function computeDrop(x, y) {
+  const cells = [...document.querySelectorAll('.gcell')];
+  let best = null, bestD = Infinity;
+  cells.forEach((c) => {
+    const r = c.getBoundingClientRect();
+    const dx = x - (r.left + r.width / 2), dy = y - (r.top + r.height / 2);
+    const d = dx * dx + dy * dy;
+    if (d < bestD) { bestD = d; best = { cell: c, r, after: dx > 0 }; }
+  });
+  if (!best) return;
+  clearDropMarks();
+  const i = +best.cell.dataset.i;
+  best.cell.classList.add(best.after ? 'drop-after' : 'drop-before');
+  dropIdx = best.after ? i + 1 : i;
+}
+
+function endDrag(commit) {
+  if (dragGhost) { dragGhost.remove(); dragGhost = null; }
+  $('#grid').classList.remove('reordering');
+  document.querySelectorAll('.gcell').forEach((c) => c.classList.remove('drag-src'));
+  clearDropMarks();
+  const from = dragSrc, to = dropIdx;
+  dragSrc = null; dropIdx = null;
+  if (!commit || from == null || to == null) return;
+  let ins = to > from ? to - 1 : to;          // account for the removed cell
+  if (ins === from) return;                   // dropped where it started
+  const next = items.slice();
+  next.splice(ins, 0, next.splice(from, 1)[0]);
+  commitOrder(next, ins);
+}
+
+async function commitOrder(next, focusIdx) {
+  const prev = (M.looks || []).slice();
+  const rank = new Map(next.map((it, i) => [it.lookId, i]));
+  M.looks = (M.looks || []).slice().sort((a, b) => {   // published follow the drag
+    const ra = rank.has(a.id) ? rank.get(a.id) : Infinity;
+    const rb = rank.has(b.id) ? rank.get(b.id) : Infinity;
+    return ra - rb;
+  });
+  buildItems(); mount(focusIdx); buildGrid();          // optimistic
+  try {
+    const r = await fetch('/api/looks/reorder', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order: next.map((it) => it.lookId) }),
+    });
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || `HTTP ${r.status}`);
+    M.looks = j.looks;                                 // server renumbered the titles
+    buildItems(); mount(focusIdx); buildGrid();
+  } catch (e) {
+    M.looks = prev;
+    buildItems(); mount(); buildGrid();
+    alert('Reorder failed — order restored.\n' + e.message);
+  }
+}
+
+$('#grid').addEventListener('pointerdown', (e) => {
+  if (M && M.demo) return;                    // static export is read-only
+  const cell = e.target.closest('.gcell');
+  if (!cell || e.button !== 0) return;
+  dragSrc = +cell.dataset.i;
+  dragMoved = false;
+  const sx = e.clientX, sy = e.clientY;
+  const onMove = (ev) => {
+    if (dragSrc == null) return;
+    if (!dragMoved) {
+      if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) < 6) return;
+      dragMoved = true;
+      const r = cell.getBoundingClientRect();
+      dragGhost = document.createElement('div');
+      dragGhost.id = 'drag-ghost';
+      dragGhost.style.width = r.width + 'px';
+      dragGhost.innerHTML = `<img src="${items[dragSrc].src || PLACEHOLDER}" alt="">
+        <div class="gt">${items[dragSrc].title}</div>`;
+      document.body.appendChild(dragGhost);
+      cell.classList.add('drag-src');
+      $('#grid').classList.add('reordering');
+    }
+    dragGhost.style.left = (ev.clientX - dragGhost.offsetWidth / 2) + 'px';
+    dragGhost.style.top = (ev.clientY - 40) + 'px';
+    computeDrop(ev.clientX, ev.clientY);
+  };
+  const onUp = () => {
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    const dragged = dragMoved;
+    endDrag(dragged);
+    dragMoved = false;
+    if (dragged) swallowNextClick();   // the trailing click must not open the detail
+  };
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+});
+
+window.addEventListener('keydown', (e) => {     // ESC aborts a drag in flight
+  // endDrag clears dragSrc, so the pending pointerup commits nothing; dragMoved
+  // stays set only so that gesture's trailing click is swallowed too.
+  if (e.key === 'Escape' && dragSrc != null) { endDrag(false); dragMoved = true; }
+});
 
 function setView(v) {
   gridActive = v === 'index';
