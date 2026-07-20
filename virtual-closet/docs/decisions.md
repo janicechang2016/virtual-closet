@@ -1,5 +1,19 @@
 # Decision log
 
+## 2026-07-19 (later) — Index lens SHIPPED; looks renumbered 001–019
+
+The grid/index view (queued since the look-cards spec, trigger long passed)
+is live: a **Carousel / Index toggle** in carousel.html's nav-left — the index
+is a hairline-ruled SYVE grid over the carousel (z-6, native scroll; wheel/
+touch handlers and the hero morph name are guarded while it's up; #info/
+#controls hidden — they're z-10). Cells reuse ALL_ITEMS and open the same
+detail overlay; `?view=index` deep-links it. CARD-PIPELINE's transferable
+polish kept (one figure height, bottom baseline, min-height captions); the
+Holo Mirror skin deliberately not carried over — SYVE only. **All look titles
+renumbered to start at 001** (shift −3; 001–019, hoodie look = 019). Note
+title ≠ id: landing hero look-006 is now titled "look 002" (START_LOOK
+unchanged — it pins the plissé look itself, flagged to Janice).
+
 ## 2026-07-19 (later) — 360 spin BUILT ($0, awaiting avatar bases); cap → $45
 
 Janice approved +$20 (genlog cap 25→45; $33.22 headroom) and full pre-generation
