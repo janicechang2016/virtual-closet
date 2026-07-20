@@ -9,7 +9,13 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
 - **THE LOOKS ERA (07-19, Janice's session):** she published **19 looks** (~$1.19);
   titles renumbered twice on her ask, now **"look 001"–"look 019"** (title ≠ id —
   ids run look-005…023; server default-titles new looks from the id number, so the
-  next save suggests "look 024" — rename at the prompt). Carousel = **outfits only**
+  next save suggests "look 024" — rename at the prompt). **Reordered 07-20 ($0):**
+  carousel order IS `looks.json` array order (nothing sorts — `load_looks` preserves
+  it, `buildItems` walks it), so she moved old 010→slot 1, 001→2, 009→3, 018→4 and
+  the titles were renumbered top-to-bottom a **third** time; drift is now
+  "look 001"=look-014, 002=look-005, 003=look-013, 004=look-022, rest in prior
+  relative order. Renders/cutouts untouched; a browser refresh is enough.
+  Carousel = **outfits only**
   (see below). Vortex-boots look deleted by her via the UI (renders on disk).
   **look-019** (59-el-hoodie + 42-sagittarius + 56-mizuno) went through the full
   gauntlet: zip-up invention corrected, pants length corrected (meta was wrong, not
