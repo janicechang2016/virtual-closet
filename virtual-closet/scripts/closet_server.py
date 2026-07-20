@@ -61,8 +61,11 @@ def hidden_stems():
 
 
 # pose-tagged render stems stay out of the fitting room (front pose only there);
-# the carousel shows poses via each garment's cutout / the outfit list instead
-POSE_TAGS = ("_contrapposto_", "_hand-on-hip_", "_34turn_")
+# the carousel shows poses via each garment's cutout / the outfit list instead.
+# Angle-tagged spin frames (_a045_ etc., fitting-room 360) also stay out of the
+# normal render lists — the spin viewer fetches them explicitly via /api/spin.
+POSE_TAGS = ("_contrapposto_", "_hand-on-hip_", "_34turn_",
+             "_a045_", "_a090_", "_a135_", "_a180_", "_a225_", "_a270_", "_a315_")
 
 
 def is_posed(stem):
@@ -290,6 +293,49 @@ class Handler(SimpleHTTPRequestHandler):
                 except Exception as e:
                     result["error"] = f"{type(e).__name__}: {e}"
             return self._json(result)
+        if url.path == "/api/spin":
+            # 360 spin (fitting room): probe = frame status + cost for the confirm
+            # modal; angle = generate that one frame (client iterates, so each
+            # request stays ~1 render long and progress is visible)
+            from tryon import (ANGLES, ANGLE_FACED, spin_existing, spin_frame,
+                               spin_stem, garment_back_asset)
+            items = [g for g in data.get("items", [])
+                     if (ROOT / "garments" / g / "meta.json").is_file()]
+            if not items:
+                return self._json({"error": "spin needs at least one garment"}, 400)
+            if data.get("probe"):
+                frames, missing_faced, missing_plain = {}, 0, 0
+                for a in ANGLES:
+                    p = spin_existing(items, a)
+                    hidden = hidden_stems()
+                    if p and p.stem in hidden:
+                        p = None
+                    frames[a] = f"/assets/renders/{p.name}" if p else None
+                    if not p:
+                        if a in ANGLE_FACED:
+                            missing_faced += 1
+                        else:
+                            missing_plain += 1
+                no_back = [g for g in items if not garment_back_asset(g)]
+                est = round(missing_faced * 0.059 + missing_plain * 0.039, 3)
+                return self._json({
+                    "frames": frames, "missing": missing_faced + missing_plain,
+                    "est_usd": est, "no_back": no_back,
+                    "generation_enabled": GENERATION_ENABLED,
+                })
+            angle = data.get("angle")
+            if angle not in ANGLES:
+                return self._json({"error": f"unknown angle (one of {', '.join(ANGLES)})"}, 400)
+            existing = spin_existing(items, angle)
+            if existing and existing.stem not in hidden_stems():
+                return self._json({"frame": f"/assets/renders/{existing.name}"})
+            if not GENERATION_ENABLED:
+                return self._json({"error": "generation is gated off (ENABLE_GENERATION=1)"}, 403)
+            try:
+                out = spin_frame(items, angle)
+                return self._json({"frame": f"/assets/renders/{out.name}"})
+            except Exception as e:
+                return self._json({"error": f"{type(e).__name__}: {e}"}, 500)
         if url.path == "/api/looks":
             items = [g for g in data.get("items", [])
                      if (ROOT / "garments" / g / "meta.json").is_file()]

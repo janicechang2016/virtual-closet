@@ -1,17 +1,27 @@
 let M = null;                 // manifest
 let currentGarment = null;    // garment shown on stage
 let currentRender = null;     // render path shown on stage
+let stageOutfit = null;       // gids when the stage shows an outfit render
 let filter = "all";
+
+/* 360 spin state (fitting room only, 2026-07-19 — angles amended out of the
+   archive-only rule; the archive itself is untouched) */
+const ANGLES = ["a045", "a090", "a135", "a180", "a225", "a270", "a315"];
+let spinning = false;         // spin mode active (frames loaded)
+let spinFrames = [];          // 8 URLs, [front, a045, ... a315]
+let spinIdx = 0;
+let spinReturning = false;    // easing back to front (the "she turns to you" beat)
 const POSES = ["front", "contrapposto", "hand-on-hip", "34turn"];
 const SLOTS = ["top", "bottom", "layer", "shoes"];
 const outfit = JSON.parse(localStorage.getItem("outfit") || "{}");
 
 const $ = (s) => document.querySelector(s);
 
-// crossfade the mirror whenever its image changes
+// crossfade the mirror whenever its image changes — except while scrubbing a
+// spin, where the per-frame opacity dip would strobe
 window.addEventListener("DOMContentLoaded", () => {
   const img = $("#stage-img");
-  new MutationObserver(() => img.classList.add("loading"))
+  new MutationObserver(() => { if (!spinning) img.classList.add("loading"); })
     .observe(img, { attributes: true, attributeFilter: ["src"] });
   img.addEventListener("load", () => img.classList.remove("loading"));
 });
@@ -83,8 +93,10 @@ function consumeIncomingLook() {
 }
 
 function showAvatar() {
+  if (spinning) exitSpin(true);
   currentRender = null;
   currentGarment = null;
+  stageOutfit = null;
   if (M.avatar.draft) {
     $("#stage-img").src = M.avatar.draft;
     const v = M.avatar.locked_version || "draft";
@@ -128,8 +140,10 @@ function previewGarment(id) {
 }
 
 function tryOn(id) {
+  if (spinning) exitSpin(true);   // a new garment lands front-facing
   const g = M.garments.find((x) => x.id === id);
   currentGarment = g;
+  stageOutfit = null;
   if (g.renders.length) {
     // newest render for this garment goes on stage
     currentRender = g.renders[g.renders.length - 1];
@@ -262,6 +276,7 @@ function beginRowDrag(e, row) {
     const slotEl = under && under.closest(".slot");
     if (frame) {
       frame.classList.add("drop-hot");
+      if (spinning) spinToFront();   // she turns to face you before receiving
       baseHover(true);
       if (savedCaption === null) savedCaption = $("#stage-caption").textContent;
       $("#stage-caption").textContent = `drop to wear — ${g.name}`;
@@ -418,6 +433,148 @@ $("#publish-go").addEventListener("click", async () => {
   }
 });
 
+/* ── 360 spin: scrub the mirror to rotate her (fitting room only) ─────────
+   Frames are 45-degree composes on the avatar turn bases; the front frame is
+   the render already on stage. Generation is a billed batch behind a confirm
+   (frames persist — re-spinning a known outfit is $0). While spinning, a
+   garment dragged over the mirror turns her back to front first ("she turns
+   to face you"), then the normal receive behavior takes over. */
+
+function spinItems() {
+  if (stageOutfit) return stageOutfit;
+  if (currentGarment && currentRender) return [currentGarment.id];
+  return null;
+}
+
+function setSpinFrame(i) {
+  spinIdx = ((i % 8) + 8) % 8;
+  $("#stage-img").src = spinFrames[spinIdx];
+  $("#stage-caption").textContent =
+    `360° — drag the mirror to spin · ${spinIdx * 45}° (frame ${spinIdx + 1}/8)`;
+}
+
+function enterSpin(frames) {
+  spinFrames = frames;
+  frames.forEach((u) => { const im = new Image(); im.src = u; });  // preload
+  spinning = true;
+  $("#stage-frame").classList.add("spinning");
+  $("#spin-360").textContent = "Exit 360°";
+  $("#feedback-bar").hidden = true;   // correctives stay front-frame-only
+  setSpinFrame(0);
+}
+
+function exitSpin(quiet) {
+  spinning = false;
+  spinReturning = false;
+  $("#stage-frame").classList.remove("spinning");
+  $("#spin-360").textContent = "360° spin";
+  if (!quiet && spinFrames.length) {
+    $("#stage-img").src = spinFrames[0];
+    if (currentRender) $("#feedback-bar").hidden = false;
+    $("#stage-caption").textContent = "front view";
+  }
+  spinFrames = []; spinIdx = 0;
+}
+
+// the "she turns to face you" beat: step frames back to front, shortest way
+function spinToFront(then) {
+  if (!spinning || spinIdx === 0 || spinReturning) { if (then) then(); return; }
+  spinReturning = true;
+  const dir = spinIdx <= 4 ? -1 : 1;
+  const step = () => {
+    if (!spinning || spinIdx === 0) { spinReturning = false; if (then) then(); return; }
+    setSpinFrame(spinIdx + dir);
+    if (spinIdx !== 0) setTimeout(step, 70);
+    else { spinReturning = false; if (then) then(); }
+  };
+  step();
+}
+
+// scrub: horizontal drag on the mirror while in spin mode
+(() => {
+  let dragX = null, acc = 0;
+  const frame = document.getElementById("stage-frame");
+  frame.addEventListener("pointerdown", (e) => {
+    if (!spinning || spinReturning) return;
+    dragX = e.clientX; acc = 0;
+    frame.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  frame.addEventListener("pointermove", (e) => {
+    if (dragX == null) return;
+    acc += e.clientX - dragX;
+    dragX = e.clientX;
+    while (acc > 40)  { setSpinFrame(spinIdx + 1); acc -= 40; }
+    while (acc < -40) { setSpinFrame(spinIdx - 1); acc += 40; }
+  });
+  const up = () => { dragX = null; };
+  frame.addEventListener("pointerup", up);
+  frame.addEventListener("pointercancel", up);
+})();
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && spinning) exitSpin();
+});
+
+$("#spin-360").addEventListener("click", async () => {
+  if (spinning) { exitSpin(); return; }
+  const items = spinItems();
+  if (!items) { toast("render a garment or outfit on the mirror first"); return; }
+  const r = await fetch("/api/spin", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items, probe: true }),
+  });
+  const p = await r.json();
+  if (!r.ok) { toast(p.error || "spin probe failed"); return; }
+  if (p.missing > 0 && !p.generation_enabled) {
+    toast("generation is gated off (ENABLE_GENERATION=1)"); return;
+  }
+  const note = p.missing === 0
+    ? "all 8 frames are on disk — viewing is free."
+    : `${p.missing} of 7 angle frames need rendering ≈ $${p.est_usd.toFixed(2)} `
+      + `(the front view is the render already on stage).`;
+  const backWarn = p.no_back.length
+    ? ` No back photo for: ${p.no_back.join(", ")} — their rear frames are the model's guess.`
+    : "";
+  $("#spin-note").textContent = note + backWarn;
+  $("#spin-go").textContent = p.missing === 0 ? "View spin"
+    : `Generate — $${p.est_usd.toFixed(2)}`;
+  $("#spin-modal").showModal();
+
+  $("#spin-go").onclick = async () => {
+    $("#spin-modal").close();
+    const frames = [currentRender];
+    const btn = $("#spin-360");
+    btn.disabled = true;
+    try {
+      let k = 0;
+      for (const a of ANGLES) {
+        if (p.frames[a]) { frames.push(p.frames[a]); continue; }
+        k += 1;
+        $("#stage-caption").textContent =
+          `spin — rendering ${parseInt(a.slice(1), 10)}° (${k}/${p.missing}, ~1 min each, billed)`;
+        const fr = await fetch("/api/spin", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items, angle: a }),
+        });
+        const j = await fr.json();
+        if (!fr.ok) throw new Error(j.error || `frame ${a} failed`);
+        frames.push(j.frame);
+      }
+      if (p.missing > 0) {
+        await refreshManifest();   // cost meter reflects the batch
+      }
+      enterSpin(frames);
+    } catch (e) {
+      toast("spin failed: " + e.message);
+      $("#stage-caption").textContent = "spin incomplete — finished frames are kept; try again to resume";
+    } finally {
+      btn.disabled = false;
+    }
+  };
+});
+$("#spin-cancel").addEventListener("click", () => $("#spin-modal").close());
+
 $("#clear-outfit").addEventListener("click", () => {
   SLOTS.forEach((s) => delete outfit[s]);
   localStorage.setItem("outfit", JSON.stringify(outfit));
@@ -483,6 +640,7 @@ document.querySelectorAll(".fb").forEach((b) =>
   }));
 
 $("#render-outfit").addEventListener("click", async () => {
+  if (spinning) exitSpin(true);
   const ids = [...new Set(Object.values(outfit))].filter(Boolean);
   if (ids.length < 2) { toast("equip at least 2 items first"); return; }
   $("#stage-caption").textContent = `rendering outfit (${ids.length} items)… (~1 min, billed)`;
@@ -499,6 +657,7 @@ $("#render-outfit").addEventListener("click", async () => {
     $("#cost-meter").textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
     currentRender = j.render;
     currentGarment = null;
+    stageOutfit = ids;
     $("#stage-img").src = j.render;
     $("#stage-caption").textContent = `outfit — ${ids.join(" + ")}`;
     $("#feedback-bar").hidden = false;

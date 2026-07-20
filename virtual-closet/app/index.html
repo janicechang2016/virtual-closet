@@ -31,6 +31,7 @@
     <button id="render-outfit" class="btn">Render outfit</button>
     <button id="save-outfit" class="btn btn-ghost">Save look</button>
     <button id="clear-outfit" class="btn btn-ghost">Clear — back to base</button>
+    <button id="spin-360" class="btn btn-ghost">360° spin</button>
     <div id="saved-head">Looks</div>
     <div id="saved-outfits"></div>
   </section>
@@ -67,6 +68,15 @@
   <div class="modal-row">
     <button id="copy-prompt" class="btn">Copy prompt</button>
     <button id="close-modal" class="btn btn-ghost">Close</button>
+  </div>
+</dialog>
+
+<dialog id="spin-modal">
+  <h3>360° spin</h3>
+  <p class="modal-note" id="spin-note"></p>
+  <div class="modal-row">
+    <button id="spin-go" class="btn"></button>
+    <button id="spin-cancel" class="btn btn-ghost">Cancel</button>
   </div>
 </dialog>
 

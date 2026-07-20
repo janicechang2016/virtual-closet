@@ -108,6 +108,9 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 }
 /* she notices the garment: a breath of scale/light when one hovers the mirror */
 #stage-frame.drop-hot #stage-img { transform: scale(1.015); filter: brightness(1.05); }
+/* 360 spin mode: the mirror itself becomes the scrub surface */
+#stage-frame.spinning { cursor: ew-resize; }
+#stage-frame.spinning #stage-img { transition: none; }
 #stage-img.loading { opacity: 0.25; }
 #stage-caption {
   text-align: center; margin-top: 20px; padding-top: 10px;
@@ -265,5 +268,6 @@ section::-webkit-scrollbar-thumb { background: #000; }
    sit exactly where it does locally. */
 body.demo a[href="/sourcing"], body.demo #save-outfit, body.demo #render-outfit,
 body.demo .saved .pub, body.demo .saved .del { display: none !important; }
+body.demo #spin-360 { display: none !important; }
 body.demo .strip-left .strip-dot:last-of-type { display: none; }
 body.demo #feedback-bar { visibility: hidden !important; }

@@ -36,6 +36,35 @@ POSES = ("front", "contrapposto", "hand-on-hip", "34turn")
 IMG_EXT = {".png", ".jpg", ".jpeg", ".webp"}
 ARMS = ("nb-pro", "nb2", "idm-vton")
 
+# 360 spin (fitting room, 2026-07-19): 45-degree frames on neutral turn bases
+# (avatar/avatar-v3/turn-###.png, Janice-supplied like front-receive). Face-swap
+# only where the face is frontal enough for the swap model; rear frames carry
+# identity via hair/build. Rear frames get each garment's back photo as extra
+# ground truth when one exists.
+ANGLES = ("a045", "a090", "a135", "a180", "a225", "a270", "a315")
+ANGLE_BASE = {a: f"turn-{a[1:]}.png" for a in ANGLES}
+ANGLE_VIEW = {
+    "a045": "a front three-quarter view, her right shoulder nearer the camera",
+    "a090": "a full right-side profile view",
+    "a135": "a back three-quarter view, her right shoulder nearer the camera",
+    "a180": "a view directly from behind, her back to the camera",
+    "a225": "a back three-quarter view, her left shoulder nearer the camera",
+    "a270": "a full left-side profile view",
+    "a315": "a front three-quarter view, her left shoulder nearer the camera",
+}
+ANGLE_FACED = {"a045", "a315"}          # frames that get the face-swap finish
+ANGLE_REAR = {"a135", "a180", "a225"}   # frames that want garment back photos
+
+
+def garment_back_asset(gid):
+    """Back-view photo for rear spin frames (product back preferred), or None."""
+    raw = ROOT / "garments" / gid / "raw"
+    hits = [p for p in sorted(raw.glob("*back*")) if p.suffix.lower() in IMG_EXT]
+    if not hits:
+        return None
+    product = [p for p in hits if "model" not in p.stem]
+    return product[0] if product else hits[0]
+
 TRYON_PROMPT = (
     "Virtual try-on: show the person from Image 1 wearing the garment from Image 2. "
     "Keep the person EXACTLY as in Image 1: same face, same hair (black, soft parted "
@@ -294,6 +323,77 @@ def tryon_outfit(gids, suffix=None, pose="front"):
     return out
 
 
+def spin_stem(gids, angle):
+    """Render stem for one spin frame; single-garment stems keep the gid prefix."""
+    if len(gids) == 1:
+        return f"{gids[0]}_nb2_{AVA_VER}_{angle}"
+    return "outfit_" + "+".join(g.split("-")[0] for g in sorted(gids)) + f"_{angle}"
+
+
+def spin_frame(gids, angle):
+    """One 45-degree spin frame: compose all garments on the matching turn base."""
+    base = AVATAR_DIR / ANGLE_BASE[angle]
+    if not base.is_file():
+        raise FileNotFoundError(f"missing avatar turn base: {base.name} (Janice supplies these)")
+    metas = [json.loads((ROOT / "garments" / g / "meta.json").read_text()) for g in gids]
+    order = {"dress": 0, "bottom": 1, "top": 2, "layer": 3, "outerwear": 3, "shoes": 4}
+    pairs = sorted(zip(gids, metas), key=lambda p: order.get(p[1].get("category"), 2))
+
+    lines, images = [], [str(base)]
+    backs = []
+    for i, (gid, meta) in enumerate(pairs):
+        images.append(str(garment_asset(gid)))
+        hint = meta.get("wear_note", "").strip() or LAYER_HINTS.get(meta.get("category", ""), "")
+        details = "; ".join(meta.get("details_to_preserve", [])[:3])
+        line = (f"Image {i + 2}: {meta.get('name', gid)} ({meta.get('color','')}, "
+                f"{hint}). Key details: {details}")
+        if meta.get("exclude_from_photo"):
+            line += (" (its reference photo also shows "
+                     + ", ".join(meta["exclude_from_photo"])
+                     + " - NOT part of this garment; do not add them)")
+        lines.append(line)
+        if angle in ANGLE_REAR:
+            back = garment_back_asset(gid)
+            if back:
+                backs.append((meta.get("name", gid), back))
+    for name, back in backs:  # back refs follow the garment images
+        images.append(str(back))
+        lines.append(f"Image {len(images)}: the BACK of the {name} - ground truth "
+                     "for how that garment looks from behind")
+
+    prompt = (
+        "Virtual try-on: show the person from Image 1 wearing ALL of the following "
+        "garments together as one complete outfit, layered naturally: "
+        + " | ".join(lines) + ". "
+        f"Image 1 shows the person in {ANGLE_VIEW[angle]}; render the garments "
+        "correctly for exactly that viewpoint. Keep the person EXACTLY as in Image 1: "
+        "same body proportions, same stance and camera angle, same hair, same "
+        "light-gray seamless studio background and soft even lighting. One single "
+        "figure, not a collage. Reproduce every garment exactly as in its reference "
+        "image: colors, patterns, lengths, construction. The garment reference images "
+        "are isolated product shots; any small gaps or ragged edges are extraction "
+        "artifacts - render each garment complete. Full-body, photorealistic."
+    )
+    stem = spin_stem(gids, angle)
+    out = ROOT / "renders" / f"{stem}_{next_suffix(stem)}.png"
+    raw = out.with_name(out.stem + "_raw.png")
+    generate("fal-ai/nano-banana-2/edit", prompt, images, purpose="tryon-spin", out=str(raw))
+    if angle in ANGLE_FACED:
+        face_swap(raw, out)
+    else:  # no frontal face to restore; the raw IS the frame
+        out.write_bytes(raw.read_bytes())
+    print(f"done {out.name}")
+    return out
+
+
+def spin_existing(gids, angle):
+    """Newest non-raw render for a spin stem, or None."""
+    stem = spin_stem(gids, angle)
+    hits = [p for p in sorted((ROOT / "renders").glob(f"{stem}_*.png"))
+            if not p.stem.endswith("_raw")]
+    return hits[-1] if hits else None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("garment", nargs="?")
@@ -305,7 +405,23 @@ def main():
     ap.add_argument("--correct", metavar="BUTTON", help="corrective edit; pass the feedback button text")
     ap.add_argument("--note", default="", help="freeform correction note (with --correct)")
     ap.add_argument("--outfit", nargs="+", metavar="GID", help="compose several garments in one render")
+    ap.add_argument("--spin", action="store_true",
+                    help="generate the 7 missing 45-degree spin frames for the garment/outfit")
     args = ap.parse_args()
+
+    if args.spin:
+        gids = args.outfit or ([args.garment] if args.garment else None)
+        if not gids:
+            ap.error("--spin needs a garment id or --outfit")
+        for angle in ANGLES:
+            if spin_existing(gids, angle):
+                print(f"skip {angle}: frame exists")
+                continue
+            try:
+                spin_frame(gids, angle)
+            except Exception as e:  # keep the batch going
+                print(f"FAIL {angle}: {e}")
+        return
 
     if args.outfit:
         tryon_outfit(args.outfit, pose=args.pose)

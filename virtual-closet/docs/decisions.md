@@ -1,5 +1,48 @@
 # Decision log
 
+## 2026-07-19 (later) — 360 spin BUILT ($0, awaiting avatar bases); cap → $45
+
+Janice approved +$20 (genlog cap 25→45; $33.22 headroom) and full pre-generation
+scope. Real per-spin cost is **$0.313** (2 faced frames × $0.059 + 5 unfaced ×
+$0.039 — no face to swap on rear/profile frames), so everything ≈ $24: 58
+garments ~$18.15 + 19 outfits ~$5.95, comfortably inside cap with fix margin.
+Built and CDP-tested (11/11, stub frames, $0): `tryon.py` ANGLES/spin_frame
+(back photos auto-attached as ground truth on rear frames; `--spin` CLI),
+`/api/spin` (probe = frames/cost/no-back warnings; per-angle generate so
+progress is visible and an aborted batch resumes), angle stems filtered like
+pose tags, mirror scrub viewer (40px/frame, ESC exits, crossfade suppressed
+while scrubbing), billed-batch confirm modal, spinToFront "she turns to face
+you" on drag-hover (front-receive untouched, still the only receive frame).
+Feedback bar hides during spin (correctives stay front-only). Run batches as
+`tryon.py <gid> --spin` / `--outfit ... --spin` once bases land. **Janice's
+running server needs a restart to pick up /api/spin.** Stub frames deleted
+after testing (they would have made real batches skip generation).
+
+## 2026-07-19 — 360 spin: PLANNED, fitting-room only (rule amendment)
+
+**Decision (user):** the 360 turntable lives in the FITTING ROOM, not the
+archive — this amends the 07-14 "poses/angles are archive-only" rule for
+angle frames specifically (the posed-look system in the archive is unchanged;
+correctives stay front-frame-only). Design: 8-frame spin at 45° steps, scrub
+the mirror to rotate; "360" control beside RENDER OUTFIT with a billed-batch
+confirm (~$0.42/spin: 7 new frames, face-swap only on the two front-quarter
+frames); frames persist (re-spin = $0); angle-tagged stems (`_a045` etc.)
+filtered from normal render lists like pose tags. **Receive gesture kept:**
+dragging a garment over a mid-spin mirror eases the viewer back to the front
+frame first, THEN the front-receive swap plays ("she turns to face you to
+take it") — front-receive.png stays the single UI-only frame, no per-angle
+receive variants (rejected same grounds as per-render hovers). **Scope
+(user):** ALL outfits get full-rendering spins AND every individual garment
+gets its own spin — architecturally same pipeline (garment spin = 1-item
+compose per angle), but pre-generating everything ≈ $32 (19 outfits ~$8 +
+58 garments ~$24) vs $13.22 left under the $25 cap → default is lazy
+on-demand generation with per-spin confirm; full pre-generation needs a cap
+decision. **Coverage gap: 38/58 garments (all 10 shoes) have NO back view**
+— rear frames would be invented; spin-enable back-covered items first,
+source backs via /sourcing. **Blocked on assets from Janice:** 7 avatar
+angle bases (turn-045…turn-315, nano-banana single edits of front.png,
+prompts delivered 07-19 in-session) + mizuno side/heel photos for the pilot.
+
 ## 2026-07-19 — Ingest: 59-el-hoodie (Eckhaus Latta)
 
 Janice staged 4 webp views ("EL-hoodie") via the sourcing flow; ingested as
