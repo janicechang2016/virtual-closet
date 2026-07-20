@@ -114,6 +114,25 @@ def save_looks(looks):
     LOOKS_PATH.write_text(json.dumps(looks, indent=2) + "\n")
 
 
+def renumber_looks(looks):
+    """Auto-titles follow carousel position: the nth published look is 'look 00n'.
+
+    Both reorder and delete call this, so the two paths cannot drift apart —
+    deleting used to leave a hole in the numbering (Janice 07-20: look 012)
+    that the next drag would then silently close. Custom names survive, but
+    still consume their slot number so the rest stay true to position. Drafts
+    aren't in the carousel and are left alone.
+    """
+    n = 0
+    for lk in looks:
+        if lk.get("state") != "published":
+            continue
+        n += 1
+        if re.match(r"^look \d+$", lk.get("title", "")):
+            lk["title"] = "look %03d" % n
+    return looks
+
+
 def looks_list():
     """looks.json entries with render/cutout resolved to asset URLs (or None)."""
     out = []
@@ -356,8 +375,10 @@ class Handler(SimpleHTTPRequestHandler):
             keep = [l for l in looks if l["id"] != data.get("id")]
             if len(keep) == len(looks):
                 return self._json({"error": "unknown look"}, 404)
+            if data.get("renumber", True):
+                renumber_looks(keep)
             save_looks(keep)   # render files stay on disk
-            return self._json({"ok": True})
+            return self._json({"ok": True, "looks": looks_list()})
         if url.path == "/api/looks/reorder":
             # Carousel order IS looks.json array order (nothing sorts downstream),
             # so a drag in the index lens is a $0 rewrite of this list.
@@ -377,11 +398,7 @@ class Handler(SimpleHTTPRequestHandler):
             for slot, lk in zip(slots, moved):
                 new[slot] = lk
             if data.get("renumber", True):
-                n = 0
-                for lk in moved:          # auto-titles follow position; custom names stay
-                    if re.match(r"^look \d+$", lk.get("title", "")):
-                        n += 1
-                        lk["title"] = "look %03d" % n
+                renumber_looks(new)
             save_looks(new)
             return self._json({"ok": True, "looks": looks_list()})
         if url.path == "/api/publish":

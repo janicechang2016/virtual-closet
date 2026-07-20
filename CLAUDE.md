@@ -20,7 +20,12 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   source, 3px black insertion bar; 6px threshold keeps a plain click opening the
   detail overlay (a committed drag rebuilds the grid so no trailing click fires;
   an aborted one is swallowed by a one-shot capture listener); ESC aborts.
-  Optimistic reorder → `POST /api/looks/reorder {order:[ids], renumber:true}`,
+  **Delete renumbers too (07-20):** both paths share `renumber_looks()` — the nth
+  published look is "look 00n", custom names survive but still consume their slot
+  number, drafts untouched. (Deleting used to leave a hole the next drag would
+  silently close; that's how look-015's gap at "look 012" appeared.) `/api/looks/delete`
+  now returns the refreshed `looks` too. Optimistic reorder →
+  `POST /api/looks/reorder {order:[ids], renumber:true}`,
   reverts + alerts on failure. Server permutes only the payload's ids among the
   slots they already own (drafts hold absolute positions) and renumbers titles
   matching `^look \d+$` by position — custom names survive. **`START_LOOK` is now
