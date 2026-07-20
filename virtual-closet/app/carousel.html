@@ -28,6 +28,35 @@
   nav .spacer { height: 16px; }
   nav .on { text-decoration: underline; }
   nav .quiet { cursor: default; }
+  .viewtab { cursor: pointer; }
+  .viewtab:hover { text-decoration: underline; }
+
+  /* ── index: the dense second lens (SYVE grid, approved 07-19) ── */
+  #grid-view {
+    position: absolute; inset: 0; z-index: 6; background: #fff;
+    overflow-y: auto; padding: 88px 12px 24px;
+  }
+  #grid-view::-webkit-scrollbar { width: 6px; }
+  #grid-view::-webkit-scrollbar-thumb { background: #000; }
+  #grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+    border-top: 1px solid #000; border-left: 1px solid #000;
+  }
+  .gcell {
+    border-right: 1px solid #000; border-bottom: 1px solid #000;
+    padding: 18px 10px 0; cursor: pointer;
+  }
+  .gcell:hover { background: #000; color: #fff; }
+  .gfig { height: 250px; display: flex; align-items: flex-end; justify-content: center; }
+  .gfig img { max-height: 97%; max-width: 88%; object-fit: contain; display: block; }
+  .gcap {
+    border-top: 1px solid #000; margin-top: 14px; padding: 8px 2px 10px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 8px; min-height: 34px;
+  }
+  .gcell:hover .gcap { border-top-color: #fff; }
+  .gcap .gt { font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .gcap .gm { font-size: 8px; letter-spacing: 0.14em; opacity: 0.5; text-align: right; }
 
   .carousel-img { position: absolute; will-change: transform; cursor: pointer; }
   .carousel-img img { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -116,6 +145,9 @@
 <div id="viewport">
   <div id="logo">the archive.</div>
   <nav id="nav-left">
+    <span class="viewtab on" data-v="carousel">Carousel</span>
+    <span class="viewtab" data-v="index">Index</span>
+    <div class="spacer"></div>
     <a href="/fitting-room">Fitting room</a>
     <a href="/sourcing">Sourcing</a>
   </nav>
@@ -126,6 +158,7 @@
     <span class="quiet" id="nav-cost"></span>
   </nav>
   <div id="stage-items"></div>
+  <div id="grid-view" hidden><div id="grid"></div></div>
   <div id="info"><div class="title" id="info-title"></div><div class="desc" id="info-desc"></div></div>
   <div id="controls">
     <div class="ctrl-row"><div id="sizes"></div><div id="colors"></div></div>
@@ -158,7 +191,7 @@ const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent(
   '<rect width="620" height="835" fill="#E8DDD3"/></svg>');
 const REF_W = 1440, REF_H = 900;
 const DWELL = 80, EASE = 0.08;
-const START_LOOK = 'look-006';   // landing hero: "look 005" (Janice 07-19)
+const START_LOOK = 'look-006';   // landing hero: the plissé-dress look — "look 002" since the 07-19 renumber
 
 let M = null;          // manifest
 let ALL_ITEMS = [];    // every item
@@ -169,6 +202,7 @@ let SLOTS = {};
 let detailOpen = false;       // while open, #detail-img carries the morph name
 let suppressFigure = false;   // plain nav links crossfade instead of morphing
 let entranceActive = false;   // ASCII entrance cover is up (blocks carousel scroll)
+let gridActive = false;       // index lens is up (carousel paused underneath)
 
 const $ = (s) => document.querySelector(s);
 
@@ -272,8 +306,9 @@ function layout() {
     el.style.transform = `translate(${s.cx - s.w / 2}px, ${s.cy - s.h / 2}px)`;
     // only ONE element may carry the cross-page transition name: the hero —
     // unless the detail overlay is open (its image anchors the morph instead)
+    // or the index lens covers the carousel (no visible hero to morph)
     el.style.viewTransitionName =
-      (!suppressFigure && !detailOpen && Math.abs(off) < 0.5) ? 'figure' : 'none';
+      (!suppressFigure && !detailOpen && !gridActive && Math.abs(off) < 0.5) ? 'figure' : 'none';
   });
 }
 
@@ -321,6 +356,7 @@ function handleScroll(delta) {
 }
 
 window.addEventListener('wheel', (e) => {
+  if (gridActive) return;   // the index scrolls natively
   e.preventDefault();   // keep horizontal swipes from firing the browser back/forward gesture
   const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
   handleScroll(d);
@@ -329,11 +365,37 @@ window.addEventListener('wheel', (e) => {
 let touchLastX = null;
 window.addEventListener('touchstart', (e) => { touchLastX = e.touches[0].clientX; }, { passive: true });
 window.addEventListener('touchmove', (e) => {
-  if (touchLastX == null) return;
+  if (touchLastX == null || gridActive) return;
   handleScroll(touchLastX - e.touches[0].clientX);
   touchLastX = e.touches[0].clientX;
 }, { passive: true });
 window.addEventListener('touchend', () => { touchLastX = null; });
+
+/* ── the index lens: dense grid over the carousel, same items, same doors ── */
+function buildGrid() {
+  $('#grid').innerHTML = items.map((it, i) => `
+    <div class="gcell" data-i="${i}">
+      <div class="gfig"><img src="${it.src || PLACEHOLDER}" alt="" loading="lazy"></div>
+      <div class="gcap"><span class="gt">${it.title}</span>
+        <span class="gm">${it.items.length} items · ${it.pose || 'front'}</span></div>
+    </div>`).join('');
+  document.querySelectorAll('.gcell').forEach((c) => {
+    c.querySelector('img').onerror = (e) => { e.target.src = PLACEHOLDER; };
+    c.addEventListener('click', () => openDetail(items[+c.dataset.i]));
+  });
+}
+
+function setView(v) {
+  gridActive = v === 'index';
+  if (gridActive) buildGrid();
+  $('#grid-view').hidden = !gridActive;
+  $('#info').hidden = gridActive;      // z-10 chrome would float over the lens
+  $('#controls').hidden = gridActive;
+  document.querySelectorAll('.viewtab').forEach((t) =>
+    t.classList.toggle('on', t.dataset.v === v));
+}
+document.querySelectorAll('.viewtab').forEach((t) =>
+  t.addEventListener('click', () => setView(t.dataset.v)));
 
 function tick() {
   if (!isSnapped) {
@@ -444,6 +506,7 @@ async function boot() {
   buildItems();
   buildSlots();
   mount();
+  if (new URLSearchParams(location.search).get('view') === 'index') setView('index');
   tick();
 }
 boot();
