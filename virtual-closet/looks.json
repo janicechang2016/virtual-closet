@@ -1,7 +1,20 @@
 [
   {
-    "id": "look-014",
+    "id": "look-006",
     "title": "look 001",
+    "items": [
+      "03-patterned-dress",
+      "52-camper-flats"
+    ],
+    "pose": "front",
+    "state": "published",
+    "render": "outfit_03+52_1.png",
+    "cutout": "outfit_03+52_1_cut.png",
+    "created": "2026-07-19"
+  },
+  {
+    "id": "look-014",
+    "title": "look 002",
     "items": [
       "48-woodrose-deli-sweater",
       "47-woodrose-deli-skirt",
@@ -11,20 +24,6 @@
     "state": "published",
     "render": "outfit_47+48+49_hand-on-hip_1.png",
     "cutout": "outfit_47+48+49_hand-on-hip_1_cut.png",
-    "created": "2026-07-19"
-  },
-  {
-    "id": "look-005",
-    "title": "look 002",
-    "items": [
-      "01-plain-tee",
-      "02-jeans",
-      "50-yello-heels"
-    ],
-    "pose": "34turn",
-    "state": "published",
-    "render": "outfit_01+02+50_34turn_1.png",
-    "cutout": "outfit_01+02+50_34turn_1_cut.png",
     "created": "2026-07-19"
   },
   {
@@ -42,49 +41,22 @@
     "created": "2026-07-19"
   },
   {
-    "id": "look-022",
+    "id": "look-005",
     "title": "look 004",
     "items": [
-      "09-bunnyhill-white-top",
-      "44-subtle-mermaid-skirt",
-      "52-camper-flats"
+      "01-plain-tee",
+      "02-jeans",
+      "50-yello-heels"
     ],
-    "pose": "front",
+    "pose": "34turn",
     "state": "published",
-    "render": "outfit_09+44+52_1.png",
-    "cutout": "outfit_09+44+52_1_cut.png",
-    "created": "2026-07-19"
-  },
-  {
-    "id": "look-006",
-    "title": "look 005",
-    "items": [
-      "03-patterned-dress",
-      "52-camper-flats"
-    ],
-    "pose": "front",
-    "state": "published",
-    "render": "outfit_03+52_1.png",
-    "cutout": "outfit_03+52_1_cut.png",
-    "created": "2026-07-19"
-  },
-  {
-    "id": "look-007",
-    "title": "look 006",
-    "items": [
-      "11-coucou-black-muse-tank",
-      "10-coucou-black-midi-skirt",
-      "52-camper-flats"
-    ],
-    "pose": "hand-on-hip",
-    "state": "published",
-    "render": "outfit_10+11+52_hand-on-hip_1.png",
-    "cutout": "outfit_10+11+52_hand-on-hip_1_cut.png",
+    "render": "outfit_01+02+50_34turn_1.png",
+    "cutout": "outfit_01+02+50_34turn_1_cut.png",
     "created": "2026-07-19"
   },
   {
     "id": "look-008",
-    "title": "look 007",
+    "title": "look 005",
     "items": [
       "23-issey-black-tank",
       "02-jeans",
@@ -97,8 +69,21 @@
     "created": "2026-07-19"
   },
   {
+    "id": "look-017",
+    "title": "look 006",
+    "items": [
+      "35-realisation-delphine-dress",
+      "52-camper-flats"
+    ],
+    "pose": "34turn",
+    "state": "published",
+    "render": "outfit_35+52_34turn_1.png",
+    "cutout": "outfit_35+52_34turn_1_cut.png",
+    "created": "2026-07-19"
+  },
+  {
     "id": "look-009",
-    "title": "look 008",
+    "title": "look 007",
     "items": [
       "24-issey-silver-tank",
       "32-personal-language-skirt",
@@ -112,7 +97,7 @@
   },
   {
     "id": "look-010",
-    "title": "look 009",
+    "title": "look 008",
     "items": [
       "29-nin-pleated-top",
       "15-coucou-mini-skirt",
@@ -126,7 +111,7 @@
   },
   {
     "id": "look-011",
-    "title": "look 010",
+    "title": "look 009",
     "items": [
       "08-bunnyhill-grey-top",
       "26-liniss-dune-pants",
@@ -136,6 +121,20 @@
     "state": "published",
     "render": "outfit_08+26+52_1.png",
     "cutout": "outfit_08+26+52_1_cut.png",
+    "created": "2026-07-19"
+  },
+  {
+    "id": "look-007",
+    "title": "look 010",
+    "items": [
+      "11-coucou-black-muse-tank",
+      "10-coucou-black-midi-skirt",
+      "52-camper-flats"
+    ],
+    "pose": "hand-on-hip",
+    "state": "published",
+    "render": "outfit_10+11+52_hand-on-hip_1.png",
+    "cutout": "outfit_10+11+52_hand-on-hip_1_cut.png",
     "created": "2026-07-19"
   },
   {
@@ -153,22 +152,8 @@
     "created": "2026-07-19"
   },
   {
-    "id": "look-015",
-    "title": "look 012",
-    "items": [
-      "43-subtle-mermaid-top",
-      "44-subtle-mermaid-skirt",
-      "52-camper-flats"
-    ],
-    "pose": "front",
-    "state": "published",
-    "render": "outfit_43+44+52_1.png",
-    "cutout": "outfit_43+44+52_1_cut.png",
-    "created": "2026-07-19"
-  },
-  {
     "id": "look-016",
-    "title": "look 013",
+    "title": "look 012",
     "items": [
       "05-hardest-item",
       "52-camper-flats"
@@ -180,21 +165,8 @@
     "created": "2026-07-19"
   },
   {
-    "id": "look-017",
-    "title": "look 014",
-    "items": [
-      "35-realisation-delphine-dress",
-      "52-camper-flats"
-    ],
-    "pose": "34turn",
-    "state": "published",
-    "render": "outfit_35+52_34turn_1.png",
-    "cutout": "outfit_35+52_34turn_1_cut.png",
-    "created": "2026-07-19"
-  },
-  {
     "id": "look-018",
-    "title": "look 015",
+    "title": "look 013",
     "items": [
       "37-realisation-gia-dress",
       "52-camper-flats"
@@ -207,7 +179,7 @@
   },
   {
     "id": "look-019",
-    "title": "look 016",
+    "title": "look 014",
     "items": [
       "38-realisation-iggy-dress",
       "52-camper-flats"
@@ -220,7 +192,7 @@
   },
   {
     "id": "look-020",
-    "title": "look 017",
+    "title": "look 015",
     "items": [
       "46-the-idiot-jacket",
       "25-kotn-samira-tank",
@@ -235,7 +207,7 @@
   },
   {
     "id": "look-021",
-    "title": "look 018",
+    "title": "look 016",
     "items": [
       "06-aritzia-slouch-coat",
       "02-jeans",
@@ -249,8 +221,22 @@
     "created": "2026-07-19"
   },
   {
+    "id": "look-022",
+    "title": "look 017",
+    "items": [
+      "09-bunnyhill-white-top",
+      "44-subtle-mermaid-skirt",
+      "52-camper-flats"
+    ],
+    "pose": "front",
+    "state": "published",
+    "render": "outfit_09+44+52_1.png",
+    "cutout": "outfit_09+44+52_1_cut.png",
+    "created": "2026-07-19"
+  },
+  {
     "id": "look-023",
-    "title": "look 019",
+    "title": "look 018",
     "items": [
       "59-el-hoodie",
       "42-sagittarius-trousers",
