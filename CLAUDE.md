@@ -4,7 +4,72 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-19)
+## Current state (2026-07-19 late)
+
+- **THE LOOKS ERA (07-19, Janice's session):** she published **19 looks** (~$1.19);
+  titles renumbered twice on her ask, now **"look 001"–"look 019"** (title ≠ id —
+  ids run look-005…023; server default-titles new looks from the id number, so the
+  next save suggests "look 024" — rename at the prompt). Carousel = **outfits only**
+  (see below). Vortex-boots look deleted by her via the UI (renders on disk).
+  **look-019** (59-el-hoodie + 42-sagittarius + 56-mizuno) went through the full
+  gauntlet: zip-up invention corrected, pants length corrected (meta was wrong, not
+  the render), **hood-up variant is its carousel figure** (Janice's pick; hood-down
+  `_2` kept unhidden as chain reference).
+
+- **360 SPIN (07-19, BUILT + pilot CLEAN; full batch HOLDING):** fitting-room ONLY —
+  Janice amended her "poses/angles are archive-only" rule for angle frames; archive
+  posed-look system untouched; correctives stay front-frame-only. 8 frames at 45°
+  (`avatar/avatar-v3/turn-045…315.png` — Janice-supplied nano-banana singles off
+  front.png, originals in `avatar/turn-bases-original/`, aligned via human-seg
+  bboxes to front.png geometry; quarters run shallow ~20°, accepted). Pipeline:
+  `tryon.py` ANGLES/`spin_frame` (rear frames auto-attach garment `*back*` raw
+  photos as ground truth; face-swap ONLY on a045/a315 — no face on rear/profile
+  frames, so those cost $0.039 not $0.059; `--spin` CLI), `/api/spin` (probe =
+  frames/cost/no-back warnings; then per-angle generate so progress shows and
+  aborts resume free), angle stems (`_a###_`) filtered like pose tags, mirror
+  scrub viewer (drag 40px/frame, ESC exits), billed-batch confirm modal, and the
+  **receive gesture baked in**: garment dragged over a mid-spin mirror steps her
+  back to front first, then front-receive plays. CDP 11/11 with stubs. **Pilot
+  (look-019 combo, $0.31) CLEAN** — band continuity via back photos, profiles
+  correctly handed (small contact sheets MISLEAD on handedness; verify full-size).
+  **Cap raised to $45 (Janice +$20, credits confirmed). Full batch = 58 garments +
+  19 outfits ≈ $24.10 — HOLDING until her back photos land** (else ~35 invented
+  rears get paid twice). Back-photo priority list delivered 07-19 (A: distinct
+  backs — 03/05/06/07/37/43/44, dresses; B: all shoes need heel views; C: symmetric
+  basics skippable); 3 backs + 2 sides rescued from mislabeled `_alt` files ($0).
+  Fitting-room spin of a look needs its front-pose outfit render first (~$0.059).
+  **Her running server may predate `/api/spin` — needs a restart.**
+
+- **Index lens (07-19, SHIPPED):** `/?view=index` or the **Carousel / Index toggle**
+  in carousel.html nav-left — dense SYVE hairline grid of all published looks over
+  the carousel (native scroll; wheel/touch/morph guarded; #info/#controls hidden
+  while up; cells open the shared detail overlay). Hover = **chrome-silver gradient
+  wash** (Janice rejected the black invert as too heavy; the silver is a deliberate
+  whisper of the shelved Holo Mirror skin). CARD-PIPELINE's transferable polish
+  kept (one figure height, bottom baseline, min-height captions).
+
+- **59-el-hoodie ingested + rendered (07-19):** Janice's "EL-hoodie" webps =
+  **Eckhaus Latta** (baked-in shoulder print identified it), painted-band pullover,
+  size M, difficulty 3, model front/alt/back views banked. Render `_1` invented a
+  full-zip worn open → **new failure flavor: nb2 invents garment CONSTRUCTION** —
+  root cause: BOTH prompt paths hard-coded outer layers "worn OPEN". Fix: per-garment
+  **`wear_note` meta override** (59: "worn CLOSED as a pullover — no zipper") honored
+  by single AND outfit paths; outfit path also finally carries `exclude_from_photo`
+  (the 07-16 fix had only reached the single path). Also: 42-sagittarius meta said
+  "cropped ankle" — WRONG vision tag, pants are full length (owner's word + product
+  photo override auto-tags; meta corrected).
+
+- **README (07-19):** outfits-only carousel copy; fitting-room visual is now an
+  **animated drag-to-dress GIF** (`docs/screenshots/fitting-room-drag.gif`, CDP
+  screencast capture at $0, ~5MB — per-frame palettes REQUIRED, shared palettes
+  speckle the face red); sourcing screenshot added + note that the static demo
+  excludes /sourcing (live-server dependent). Fresh 1440×900 captures of both views.
+
+- **Fitting room looks rail (07-19):** looks index scrolls independently (slots +
+  action buttons pinned, racks' 6px black scrollbar), per-row "in archive" badge
+  dropped (publish button marks drafts), save scrolls the new draft into view.
+  A look hover-preview frame was built, shown, and **REJECTED by Janice — do not
+  rebuild.**
 
 - **Repo on GitHub (07-17):** github.com/janicechang2016/virtual-closet — PRIVATE
   until Janice flips it for the portfolio; all rollback tags pushed. **README
@@ -36,14 +101,11 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   (`scratchpad dnd_test4.py` pattern — synthetic PointerEvents via
   --remote-allow-origins=*).
 
-- **Catalog is now 57 garments** (22-gnur-hoodie ARCHIVED 07-16 by Janice — strange
-  render off the weakest source; folder in `garments/archive/`, renders in
-  `renders/archive/`, restore = move back) (01–05 benchmark + **53 ingested 07-16**: 43 clothing
-  + 10 shoes — sizes/brands per `docs/ingest-worksheet.md`, Janice-filled; ingest
-  details in decisions.md). New items have NO renders yet — they appear in the
-  fitting-room racks but not the carousel (buildItems skips unrendered garments;
-  carousel got a Shoes filter). **Render batch pending Janice's approval: 53 fronts
-  × $0.059 ≈ $3.13.** raw/ naming: primary view = plain slug (sorts first for
+- **Catalog is now 58 active garments** (01–05 benchmark + 53 ingested 07-16 +
+  59-el-hoodie 07-19; 22-gnur-hoodie ARCHIVED 07-16 by Janice — folder in
+  `garments/archive/`, renders in `renders/archive/`, restore = move back;
+  sizes/brands per `docs/ingest-worksheet.md`, Janice-filled; ingest
+  details in decisions.md). raw/ naming: primary view = plain slug (sorts first for
   garment_asset), extras `_back/_side/_alt/_model-*/_detail`; avif→png at ingest;
   transparent sources composited on white (transparency reads as black downstream).
   Difficulty-4/5 (front-only): 23/24 issey, 26 liniss dune, 29 nin, 40 sheer top,
@@ -74,7 +136,9 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   cutout_render.py), 04 34turn, 05 front, look 01+02 34turn, look 01+02+04 hand-on-hip.
   One pose per saved look; difficulty-4/5 garments stay on front. **Poses are
   archive-only (Janice 07-14): the fitting room shows/corrects front renders exclusively**
-  (server filters pose-tagged stems from `renders`). Front v3 renders exist for all five
+  (server filters pose-tagged stems from `renders`). **AMENDED 07-19 for angle
+  frames only:** the 360 spin's `_a###_` frames live in the FITTING ROOM (scrub
+  viewer); posed looks remain archive-only and correctives remain front-only. Front v3 renders exist for all five
   garments (01–04 batch $0.235, approved 07-14; 02 corrected twice via the feedback
   loop — navy→pure black, then waistband removed → `02-jeans_nb2_v3_4.png`).
   **Lesson (07-14): chained correctives compound face drift** — two stacked nb2 edits
@@ -159,9 +223,10 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   (revert: `git checkout fitting-room-syve-v1 -- virtual-closet/app/`). Garment `meta.json` has a `brand` field (all five
   filled — Peachy Den / In This Era / Nin Studio / Musinsa Standard / Woodrose Deli),
   shown as the first line of the archive detail overlay; fill at ingest for new items.
-- Spend: **$10.24 of $25 cap** (`python3 scripts/genlog.py summary`). Big items: July
-  catalog batch $3.25 + $0.53 fix round + sundae fixes ~$0.18; Janice's own first live
-  loop 07-14 ($0.118) validated the publish pipeline end-to-end.
+- Spend: **$12.09 of $45 cap** (`python3 scripts/genlog.py summary`; cap raised from
+  $25 on 07-19, Janice +$20 for the spin batches). Big items: July catalog batch
+  $3.25 + $0.53 fix round; Janice's 19-look publish run ~$1.19; hoodie saga $0.24;
+  pilot spin $0.31. Reserved: ~$24.10 for the full spin batch (holding).
 
 ## Standing rules
 
@@ -188,6 +253,8 @@ python3 scripts/tryon.py <garment-id>                    # one try-on render
 python3 scripts/tryon.py <gid> --pose contrapposto       # render on an avatar-v3 pose base
 python3 scripts/tryon.py --outfit 01-plain-tee 02-jeans  # multi-item compose
 python3 scripts/tryon.py <gid> --correct "wrong fit" --note "…"  # corrective edit
+python3 scripts/tryon.py <gid> --spin                    # 7 missing 45° spin frames (garment)
+python3 scripts/tryon.py --outfit <gid> <gid> --spin     # spin frames for an outfit combo
 python3 scripts/genlog.py summary                        # spend vs cap
 /Users/janice.chang/liminal-wardrobe/.venv/bin/python scripts/extract_garment.py  # cloth-seg cutouts
 /Users/janice.chang/liminal-wardrobe/.venv/bin/python scripts/ingest_fetch.py URL [SLUG]  # $0: pull best product image from an ecomm page into garments/raw/ (--list to rank, --pick N to choose, --keep N for extra views)
@@ -200,22 +267,18 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
-- **Look cards, remaining half:** the content-unit half shipped with publish (rembg
-  cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**
-  of all looks (second lens beside the carousel) once the archive grows past ~10 looks,
-  plus any coverflow treatment from `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`.
-- **Pose rollout DONE** (see current state) — going forward: assign one pose per saved
-  look at creation (~$0.06/render). Do NOT re-pose via nb2/edit prompt language alone
-  (it's an editor; re-posing fights it). Difficulty-4/5 garments stay on the front pose
-  (03 plissé AND 05 draped maxi — check `difficulty` in meta.json, not folder names;
-  03's drifted contrapposto rejected by Janice 07-14, hidden not deleted).
-- **Render batch for items 06–58** (53 × $0.059 ≈ $3.13) — Janice said no exclusions
-  (worksheet Q7) but the spend envelope itself is NOT yet explicitly approved. Run as
-  ONE batch when approved; difficulty-4/5 stay front (they all only get front anyway);
-  after renders, run cutout_render.py so the carousel picks the new figures up.
-- **Drag-to-dress** (fitting room): next build after the render batch. Sourcing notes:
-  `scripts/ingest_fetch.py` / the `/sourcing` page pull best-res product images;
-  source-photo bar ≥1500px long side, ghost-mannequin/flat-lay > on-model > editorial;
-  grab BACK views for the future turntable idea. Dropped items (in `_discarded/`, can
-  be re-sourced any time): bitter-cells jacket, realisation scarlet, the "uniqlo"
-  parka (actually Aritzia per baked-in tooltip), reformation leather dress.
+- **FULL SPIN BATCH (approved, HOLDING):** 58 garments + 19 outfits × ~$0.313 ≈
+  $24.10 via `tryon.py … --spin`. Fire when Janice's back photos arrive (she's
+  sourcing per the 07-19 priority list — A: distinct backs, B: shoe heel views,
+  C: skippable symmetric basics) OR on her explicit "fire anyway". Ingest incoming
+  backs into each `garments/<id>/raw/` as `*_back.*`; QA one batch tranche before
+  the next. Items still lacking backs render invented rears — flag them for QA.
+- **Pose rollout DONE** — going forward: one pose per saved look at creation
+  (~$0.06/render). Do NOT re-pose via nb2/edit prompt language alone. Difficulty-4/5
+  garments stay on the front pose (check `difficulty` in meta.json, not folder names).
+- **Look cards, coverflow remainder:** the grid/index lens SHIPPED 07-19; any
+  coverflow treatment from `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`
+  remains available if she ever wants a third lens.
+- Sourcing notes: source-photo bar ≥1500px long side, ghost-mannequin/flat-lay >
+  on-model > editorial; grab BACK views (spin rears use them as ground truth).
+  Dropped items live in `garments/raw/_discarded/`, re-sourceable any time.
