@@ -166,8 +166,10 @@
   /* read-only demo (static export, body.demo via manifest): sourcing is
      local-only and the try-on/re-render CTA has no server behind it */
   body.demo a[href="/sourcing"], body.demo #cta { display: none !important; }
-  /* budget meter is a working instrument, not portfolio copy (Janice 07-20) */
-  body.demo #nav-cost { display: none !important; }
+  /* budget meter is a working instrument, not portfolio copy (Janice 07-20);
+     the "Archive demo" status line goes with it — the export shouldn't
+     announce itself as a demo on the way in. Local keeps both. */
+  body.demo #nav-cost, body.demo #nav-gen { display: none !important; }
 </style>
 </head>
 <body>
