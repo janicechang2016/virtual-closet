@@ -271,3 +271,7 @@ body.demo .saved .pub, body.demo .saved .del { display: none !important; }
 body.demo #spin-360 { display: none !important; }
 body.demo .strip-left .strip-dot:last-of-type { display: none; }
 body.demo #feedback-bar { visibility: hidden !important; }
+/* The budget meter is a working instrument, not portfolio copy — nothing is
+   spendable from the export anyway, so a frozen $/cap only invites questions
+   (Janice 07-20). Local keeps it. */
+body.demo #cost-meter, body.demo .dot-cost { display: none !important; }
