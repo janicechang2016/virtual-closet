@@ -4,39 +4,60 @@ Photorealistic virtual try-on with a persistent personal avatar. Single-user, lo
 Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
 decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
 
-## Current state (2026-07-19 late)
+## Current state (2026-07-20)
 
-- **THE LOOKS ERA (07-19, Janice's session):** she published **19 looks** (~$1.19);
-  titles renumbered twice on her ask, now **"look 001"–"look 019"** (title ≠ id —
-  ids run look-005…023; server default-titles new looks from the id number, so the
-  next save suggests "look 024" — rename at the prompt). **Reordered 07-20 ($0):**
-  carousel order IS `looks.json` array order (nothing sorts — `load_looks` preserves
-  it, `buildItems` walks it), so she moved old 010→slot 1, 001→2, 009→3, 018→4 and
-  the titles were renumbered top-to-bottom a **third** time; drift is now
-  "look 001"=look-014, 002=look-005, 003=look-013, 004=look-022, rest in prior
-  relative order. Renders/cutouts untouched; a browser refresh is enough.
-  **DRAG-TO-REORDER SHIPPED 07-20** (index lens only — the grid is the one place
-  order is legible): pointer-driven cell drag w/ floating ghost card, dimmed
-  source, 3px black insertion bar; 6px threshold keeps a plain click opening the
-  detail overlay (a committed drag rebuilds the grid so no trailing click fires;
-  an aborted one is swallowed by a one-shot capture listener); ESC aborts.
-  **Delete renumbers too (07-20):** both paths share `renumber_looks()` — the nth
-  published look is "look 00n", custom names survive but still consume their slot
-  number, drafts untouched. (Deleting used to leave a hole the next drag would
-  silently close; that's how look-015's gap at "look 012" appeared.) `/api/looks/delete`
-  now returns the refreshed `looks` too. Optimistic reorder →
-  `POST /api/looks/reorder {order:[ids], renumber:true}`,
-  reverts + alerts on failure. Server permutes only the payload's ids among the
-  slots they already own (drafts hold absolute positions) and renumbers titles
-  matching `^look \d+$` by position — custom names survive. **`START_LOOK` is now
-  `null`** = land on whatever is FIRST; it was pinned to `look-006`, which is
-  exactly why the 07-20 reorder looked like it "didn't work". CDP 13/13.
-  Carousel = **outfits only**
-  (see below). Vortex-boots look deleted by her via the UI (renders on disk).
-  **look-019** (59-el-hoodie + 42-sagittarius + 56-mizuno) went through the full
-  gauntlet: zip-up invention corrected, pants length corrected (meta was wrong, not
-  the render), **hood-up variant is its carousel figure** (Janice's pick; hood-down
-  `_2` kept unhidden as chain reference).
+- **THE LOOKS ERA (07-19–20):** she published 19 looks (~$1.19) and then deleted one,
+  so the archive is **18 published looks**, titled **"look 001"–"look 018"**. Title ≠ id
+  and the drift is now large — carousel order is her 07-20 drag pass: **look-006 leads**,
+  then look-014, look-013, … look-023 last (read `looks.json` for the live mapping;
+  don't assume title order matches id order). `look-015` (43+44 subtle-mermaid set +
+  52 flats) **deleted by her via the UI 07-20** — renders stay on disk
+  (`outfit_43+44+52_1*.png`) and the entry survives in commit `8b309cc`, so restoring
+  is $0. Server default-titles new looks from the *id* number, so the next save
+  suggests "look 024" — rename at the prompt.
+
+- **ORDER IS THE `looks.json` ARRAY (07-20):** nothing sorts anywhere — `load_looks`
+  preserves file order, `buildItems` walks it — so reordering is a **$0 edit, no
+  re-renders**. **`START_LOOK` is now `null`** = land on whatever is FIRST; it had been
+  pinned to `look-006`, which silently swallowed a manual reorder and made it look
+  like reordering "didn't work". Set it to a look id only if you want a fixed hero
+  again — and know that it hides order changes when you do.
+  - **DRAG-TO-REORDER SHIPPED 07-20** — index lens only (the grid is the one place
+    order is legible; the carousel stays read-only). Pointer-driven cell drag w/
+    floating ghost card, dimmed source, 3px black insertion bar; 6px threshold keeps
+    a plain click opening the detail overlay (a committed drag rebuilds the grid so no
+    trailing click fires; an aborted one is swallowed by a one-shot capture listener);
+    ESC aborts. Optimistic → `POST /api/looks/reorder {order:[ids], renumber:true}`,
+    reverts + alerts on failure. Server permutes only the payload's ids among the slots
+    they already own, so drafts hold absolute positions. CDP 13/13
+    (drag mechanics, persistence, renumbering, click-vs-drag, hero-follows-order).
+  - **Titles follow position, on BOTH write paths (07-20):** shared `renumber_looks()`
+    — the nth *published* look is "look 00n"; custom names survive but still consume
+    their slot number; drafts untouched. Delete used to skip renumbering and leave a
+    hole (that's how look-015's gap at "look 012" appeared) which the next drag would
+    then silently close; the two paths now agree by construction. `/api/looks/delete`
+    returns the refreshed `looks`, and the fitting room already re-fetches the manifest.
+
+- **DEMO CHROME PARED BACK (07-20, static export only):** `body.demo` now also hides the
+  **budget meter** (`#nav-cost` + `#cost-meter`, plus its dangling separator dot in the
+  fitting-room strip) and the carousel's **"Archive demo" status line** (`#nav-gen`) —
+  nothing is spendable from the export, so a frozen $/cap is just a question generator,
+  and the public build shouldn't announce itself as a demo. The deployed carousel's
+  top-right now carries only the avatar version. **Local is unchanged** (meter live,
+  line reads "Generation live"/"Copy-prompt"). The fitting room still shows
+  "read-only demo" in its strip — left deliberately, rewording is an open offer.
+  **Why the deploy is read-only at all:** it's a static snapshot with no Python process
+  and no `FAL_KEY`, so renders/publish/save/delete/reorder/sourcing/spin are all
+  server-dependent and gated off; browsing, index lens, detail overlay and
+  drag-to-dress swaps work fully. Hosting it truly live would put a public endpoint in
+  front of the fal budget — **declined 07-20** as against the standing $0-first rule.
+
+- Carousel = **outfits only** (see the two-views section). A vortex-boots look was
+  deleted by her via the UI 07-19 (renders stayed on disk), as was look-015 on 07-20.
+  **`look-023`** (59-el-hoodie + 42-sagittarius + 56-mizuno — titled "look 018" as of
+  the 07-20 renumber) went through the full gauntlet: zip-up invention corrected, pants
+  length corrected (meta was wrong, not the render), **hood-up variant is its carousel
+  figure** (Janice's pick; hood-down `_2` kept unhidden as chain reference).
 
 - **360 SPIN (07-19, BUILT + pilot CLEAN; full batch HOLDING):** fitting-room ONLY —
   Janice amended her "poses/angles are archive-only" rule for angle frames; archive
@@ -52,15 +73,17 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   scrub viewer (drag 40px/frame, ESC exits), billed-batch confirm modal, and the
   **receive gesture baked in**: garment dragged over a mid-spin mirror steps her
   back to front first, then front-receive plays. CDP 11/11 with stubs. **Pilot
-  (look-019 combo, $0.31) CLEAN** — band continuity via back photos, profiles
+  (`look-023` hoodie combo, $0.31) CLEAN** — band continuity via back photos, profiles
   correctly handed (small contact sheets MISLEAD on handedness; verify full-size).
   **Cap raised to $45 (Janice +$20, credits confirmed). Full batch = 58 garments +
-  19 outfits ≈ $24.10 — HOLDING until her back photos land** (else ~35 invented
+  18 outfits ≈ $23.79 — HOLDING until her back photos land** (else ~35 invented
   rears get paid twice). Back-photo priority list delivered 07-19 (A: distinct
   backs — 03/05/06/07/37/43/44, dresses; B: all shoes need heel views; C: symmetric
   basics skippable); 3 backs + 2 sides rescued from mislabeled `_alt` files ($0).
   Fitting-room spin of a look needs its front-pose outfit render first (~$0.059).
-  **Her running server may predate `/api/spin` — needs a restart.**
+  Her server was restarted 07-20 and now carries `/api/spin` and
+  `/api/looks/reorder` — but it came back up **without `ENABLE_GENERATION`**, so
+  restart it with the env var before any billed run.
 
 - **Index lens (07-19, SHIPPED):** `/?view=index` or the **Carousel / Index toggle**
   in carousel.html nav-left — dense SYVE hairline grid of all published looks over
@@ -193,7 +216,7 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
 - **One brand ("the archive."), two views, one SYVE language** (white void, black 1px
   hairlines, uppercase Helvetica, italic lowercase wordmark):
   - `/` — **SYVE-style carousel** (`app/carousel.html`, single-file): **OUTFITS ONLY
-    as of 07-19** (queued item triggered by Janice with 19 looks published — buildItems
+    as of 07-19** (queued item triggered by Janice with 19 looks published, 18 now — buildItems
     shows published looks exclusively, category filter nav removed, nav-left = Fitting
     room / Sourcing links; single garments stay in the fitting room racks). Figure
     cutouts (from `scripts/cutout_render.py`, rembg u2net_human_seg), spec-faithful slot
@@ -248,7 +271,8 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
 - Spend: **$12.09 of $45 cap** (`python3 scripts/genlog.py summary`; cap raised from
   $25 on 07-19, Janice +$20 for the spin batches). Big items: July catalog batch
   $3.25 + $0.53 fix round; Janice's 19-look publish run ~$1.19; hoodie saga $0.24;
-  pilot spin $0.31. Reserved: ~$24.10 for the full spin batch (holding).
+  pilot spin $0.31. Reserved: ~$23.79 for the full spin batch (holding — one fewer
+  outfit since look-015's deletion).
 
 ## Standing rules
 
@@ -289,8 +313,8 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
-- **FULL SPIN BATCH (approved, HOLDING):** 58 garments + 19 outfits × ~$0.313 ≈
-  $24.10 via `tryon.py … --spin`. Fire when Janice's back photos arrive (she's
+- **FULL SPIN BATCH (approved, HOLDING):** 58 garments + 18 outfits × ~$0.313 ≈
+  $23.79 via `tryon.py … --spin`. Fire when Janice's back photos arrive (she's
   sourcing per the 07-19 priority list — A: distinct backs, B: shoe heel views,
   C: skippable symmetric basics) OR on her explicit "fire anyway". Ingest incoming
   backs into each `garments/<id>/raw/` as `*_back.*`; QA one batch tranche before
