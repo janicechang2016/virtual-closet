@@ -108,9 +108,16 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 }
 /* she notices the garment: a breath of scale/light when one hovers the mirror */
 #stage-frame.drop-hot #stage-img { transform: scale(1.015); filter: brightness(1.05); }
-/* 360 spin mode: the mirror itself becomes the scrub surface */
+/* 360 spin mode: the mirror itself becomes the scrub surface.
+   Frames arrive on differing nb2 canvases (560x1835, 843x1264, ...) — lock the
+   mirror to one box and letterbox each frame so the glass never changes size. */
 #stage-frame.spinning { cursor: ew-resize; }
-#stage-frame.spinning #stage-img { transition: none; }
+#stage-frame.spinning #stage-img {
+  transition: none;
+  height: calc(78vh - 130px);
+  width: calc((78vh - 130px) * 0.55);
+  object-fit: contain;
+}
 #stage-img.loading { opacity: 0.25; }
 #stage-caption {
   text-align: center; margin-top: 20px; padding-top: 10px;
