@@ -1,5 +1,28 @@
 # Decision log
 
+## 2026-07-22 (later) — Spin batch COMPLETE: 58 garments + 18 looks × 7 frames
+
+All spins rendered and QA'd (~$26.9 total, genlog $38.97/$45, 1071 gens).
+Closing-phase lessons on top of the morning's:
+- **Outfit spins drift differently than garment spins:** backgrounds shift
+  (look-006 a225), skin tone can drift (look-010 a090), a 4-item look can
+  drop its outermost layer on rear frames (look-021 — took a wear_note
+  pinning the coat "ON her body, arms through sleeves" + re-rolls), and an
+  editorial source photo without anchoring reads as a simpler garment
+  (look-022's draped top became a plain cami in 6 frames; canon won).
+- **Tops whose canon is worn-alone need the wear_note** or every spin frame
+  layers the gray base tank under them (11/12/13/16/19 re-spun; 23/24 caught
+  earlier). Canon front render = the reference for every spin QA call.
+- **fal balance flapping:** two mid-batch "Exhausted balance" locks; top-ups
+  take minutes to unlock submits, and a 202 from a status endpoint does NOT
+  prove the account can spend — only a real submit does. The retry loop
+  (probe with a needed frame every 10 min) is the right resume shape.
+- 07-suit-vest was silently missing from the tranche lists (my count error) —
+  caught by the final completeness sweep; sweep by enumerating garments/ and
+  looks.json, never by trusting the plan's arithmetic.
+Invented rears flagged for Janice's scrub-through; known aesthetic leftovers:
+26 drape wobble, 31 long laces, 48 bare back, look-010 a180 rear print.
+
 ## 2026-07-22 — Full spin batch: garments done + QA'd; halted on fal balance
 
 Back-photo drop ingested (24 files → per-garment raw/, avif→png via sips;
