@@ -363,12 +363,32 @@ def spin_frame(gids, angle):
         lines.append(f"Image {len(images)}: the BACK of the {name} - ground truth "
                      "for how that garment looks from behind")
 
+    # anchor what the base outfit keeps (2026-07-21: without it, a lone bottom
+    # garment reads as undress to nb2's content checker, and unanchored slots
+    # drift — same root cause as the 07-16 SLOT_NOTES fix)
+    cats = {m.get("category") for _, m in pairs}
+    keep = []
+    if not cats & {"top", "dress", "outerwear", "layer"}:
+        keep.append("her gray tank top")
+    if not cats & {"bottom", "dress"}:
+        keep.append("her black leggings")
+    keep_note = (f"She keeps {' and '.join(keep)} from Image 1 on, unchanged. "
+                 if keep else "")
+    # bottoms: silent prompts flicker between bare legs and kept leggings across
+    # frames — state the default (SLOT_NOTES canon: replaced) unless the garment's
+    # wear_note carries its own legwear ruling (47: canon keeps leggings)
+    bottoms = [m for _, m in pairs if m.get("category") == "bottom"]
+    if bottoms and "dress" not in cats and not any(b.get("wear_note") for b in bottoms):
+        keep_note += ("The lower-body garment replaces her black leggings - "
+                      "her legs are bare below its hem. ")
+
     prompt = (
         "Virtual try-on: show the person from Image 1 wearing ALL of the following "
         "garments together as one complete outfit, layered naturally: "
         + " | ".join(lines) + ". "
         f"Image 1 shows the person in {ANGLE_VIEW[angle]}; render the garments "
-        "correctly for exactly that viewpoint. Keep the person EXACTLY as in Image 1: "
+        f"correctly for exactly that viewpoint. {keep_note}"
+        "Keep the person EXACTLY as in Image 1: "
         "same body proportions, same stance and camera angle, same hair, same "
         "light-gray seamless studio background and soft even lighting. One single "
         "figure, not a collage. Reproduce every garment exactly as in its reference "
