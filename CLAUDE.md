@@ -59,6 +59,26 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   length corrected (meta was wrong, not the render), **hood-up variant is its carousel
   figure** (Janice's pick; hood-down `_2` kept unhidden as chain reference).
 
+- **360 SPIN FULL BATCH FIRED 07-21/22 — HALTED ON FAL BALANCE, garments DONE:**
+  Janice's back-photo drop (24 files) ingested into per-garment raw/ (avif→png,
+  woodrose 47/48 upgrades demoted old shots to `_back2`); retention tag
+  **`pre-spin-full-batch`**; progress pushed at `3e73a8c`. **All 41 back-covered
+  garment spins rendered + QA'd clean** (~29 corrective frames). Systemic fixes
+  shipped in `spin_frame` (see decisions.md 07-22): base-outfit **keep anchor**
+  (lone bottoms tripped nb2's content checker as implied undress), **legwear
+  rulings** (bottoms replace leggings unless the garment's `wear_note` says
+  otherwise — 47's canon keeps them; dresses replace tank+leggings), per-garment
+  `wear_note`/`back_note` meta overrides (43/44 Subtle Le Nguyen: plain-white
+  mirrored backs per Janice; 36-liv meta color was a WRONG vision tag — product
+  photos are black w/ red roses, corrected). `fal_generate` now polls 15 min
+  (the old ~4-min window abandoned ~5 billed jobs on the slow queue before the
+  real cause surfaced). **Outfit spins: 7/18 done** (006/014/013/005/008/017 +
+  023 pilot; 009 at 6/7). **HALT CAUSE: fal 403 "User is locked. Exhausted
+  balance"** — genlog $28.33/$45 tracks OUR cap, not her fal balance (account
+  shared with older projects). **Resume after she tops up** (fal.ai/dashboard/
+  billing): rerun the 12-look list (skip-safe) then tranche 3 = 15 no-back
+  basics + 43/44 (~$4.7). Contact sheets in the 07-22 session scratchpad;
+  QA verdicts logged in decisions.md.
 - **360 SPIN (07-19, BUILT + pilot CLEAN; full batch HOLDING):** fitting-room ONLY —
   Janice amended her "poses/angles are archive-only" rule for angle frames; archive
   posed-look system untouched; correctives stay front-frame-only. 8 frames at 45°

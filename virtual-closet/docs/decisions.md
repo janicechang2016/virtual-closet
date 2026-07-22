@@ -1,5 +1,37 @@
 # Decision log
 
+## 2026-07-22 — Full spin batch: garments done + QA'd; halted on fal balance
+
+Back-photo drop ingested (24 files → per-garment raw/, avif→png via sips;
+47/48 higher-res upgrades demote old shots to `_back2/_side2`). All 41
+back-covered garment spins rendered and QA'd on contact sheets + full-size
+profile checks. **What QA taught (now encoded in spin_frame):**
+- **Base-outfit keep anchor:** a lone bottom garment with no mention of the
+  tank read as undress to nb2's content checker (47's 422); prompts now state
+  what the base outfit keeps, mirroring the 07-16 SLOT_NOTES lesson.
+- **Legwear rulings:** silent prompts flickered between bare legs and kept
+  leggings across frames. Default: bottoms replace leggings, dresses replace
+  tank+leggings; a garment `wear_note` overrides (47 keeps leggings — its
+  canon front render wears the skirt over them; 41 keeps the tank visible
+  through its open back).
+- **Meta text can poison turn-base frames:** 36-liv's color field said
+  "violet-blue leopard" (wrong vision tag) — five frames followed the text
+  while the canon front render followed the photos (black, red roses). Owner
+  photos > auto-tags, again. Also: spin details carry only the top 3
+  `details_to_preserve` — promote construction-critical notes (03's
+  "sleeveless" was #4 and a270 invented a sleeve).
+- **Model-back photos leak companions** (24's black under-sleeves) —
+  exclude_from_photo applies to back refs too.
+- Left as canon: 30 sheer-over-tank, 48 bare back (matches product photo),
+  26 drape wobble, 31 long corset laces (Janice to judge in the scrub).
+`fal_generate` polls 15 min now — the old ~4-min window abandoned ~5 billed
+jobs when the queue slowed; timeouts also log the request_id.
+**Outfits 7/18 done** (006/013/014/005/008/017 + 023's pilot; 009 at 6/7).
+**HALT: fal 403 "User is locked. Exhausted balance"** — genlog ($28.33/$45)
+tracks Janice's cap, not the fal account balance (shared with older
+projects). Resume after top-up: 12-look rerun (skip-safe) + tranche 3
+(15 no-back basics + 43/44 with `back_note`). Tag `pre-spin-full-batch`.
+
 ## 2026-07-19 (later) — Index lens SHIPPED; looks renumbered 001–019
 
 The grid/index view (queued since the look-cards spec, trigger long passed)
