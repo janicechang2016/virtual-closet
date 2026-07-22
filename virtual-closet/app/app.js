@@ -10,6 +10,7 @@ const ANGLES = ["a045", "a090", "a135", "a180", "a225", "a270", "a315"];
 let spinning = false;         // spin mode active (frames loaded)
 let spinFrames = [];          // 8 URLs, [front, a045, ... a315]
 let spinIdx = 0;
+let spinPos = 0;              // fractional scrub position (crossfaded)
 let spinReturning = false;    // easing back to front (the "she turns to you" beat)
 const POSES = ["front", "contrapposto", "hand-on-hip", "34turn"];
 const SLOTS = ["top", "bottom", "layer", "shoes"];
@@ -448,9 +449,26 @@ function spinItems() {
 
 function setSpinFrame(i) {
   spinIdx = ((i % 8) + 8) % 8;
+  spinPos = spinIdx;
   $("#stage-img").src = spinFrames[spinIdx];
+  $("#stage-img-b").style.opacity = 0;
   $("#stage-caption").textContent =
     `360° — drag the mirror to spin · ${spinIdx * 45}° (frame ${spinIdx + 1}/8)`;
+}
+
+// fractional scrub position: base frame + crossfaded next frame, so a drag
+// reads as continuous rotation instead of 45-degree steps
+function setSpinPos(p) {
+  spinPos = ((p % 8) + 8) % 8;
+  const base = Math.floor(spinPos) % 8, next = (base + 1) % 8;
+  const frac = spinPos - Math.floor(spinPos);
+  spinIdx = frac < 0.5 ? base : next;
+  const img = $("#stage-img"), b = $("#stage-img-b");
+  if (img.getAttribute("src") !== spinFrames[base]) img.src = spinFrames[base];
+  if (b.getAttribute("src") !== spinFrames[next]) b.src = spinFrames[next];
+  b.style.opacity = frac;
+  $("#stage-caption").textContent =
+    `360° — drag the mirror to spin · ${Math.round(spinPos * 45) % 360}°`;
 }
 
 function enterSpin(frames) {
@@ -473,7 +491,9 @@ function exitSpin(quiet) {
     if (currentRender) $("#feedback-bar").hidden = false;
     $("#stage-caption").textContent = "front view";
   }
-  spinFrames = []; spinIdx = 0;
+  spinFrames = []; spinIdx = 0; spinPos = 0;
+  const b = $("#stage-img-b");
+  b.style.opacity = 0; b.removeAttribute("src");
 }
 
 // the "she turns to face you" beat: step frames back to front, shortest way
@@ -492,22 +512,23 @@ function spinToFront(then) {
 
 // scrub: horizontal drag on the mirror while in spin mode
 (() => {
-  let dragX = null, acc = 0;
+  let dragX = null;
   const frame = document.getElementById("stage-frame");
   frame.addEventListener("pointerdown", (e) => {
     if (!spinning || spinReturning) return;
-    dragX = e.clientX; acc = 0;
+    dragX = e.clientX;
     frame.setPointerCapture(e.pointerId);
     e.preventDefault();
   });
   frame.addEventListener("pointermove", (e) => {
     if (dragX == null) return;
-    acc += e.clientX - dragX;
+    setSpinPos(spinPos + (e.clientX - dragX) / 40);   // 40px per 45° detent
     dragX = e.clientX;
-    while (acc > 40)  { setSpinFrame(spinIdx + 1); acc -= 40; }
-    while (acc < -40) { setSpinFrame(spinIdx - 1); acc += 40; }
   });
-  const up = () => { dragX = null; };
+  const up = () => {
+    if (dragX != null && spinning) setSpinFrame(Math.round(spinPos));  // settle on a detent
+    dragX = null;
+  };
   frame.addEventListener("pointerup", up);
   frame.addEventListener("pointercancel", up);
 })();

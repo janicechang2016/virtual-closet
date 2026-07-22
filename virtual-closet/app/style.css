@@ -111,12 +111,21 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 /* 360 spin mode: the mirror itself becomes the scrub surface.
    Frames arrive on differing nb2 canvases (560x1835, 843x1264, ...) — lock the
    mirror to one box and letterbox each frame so the glass never changes size. */
+#stage-view { position: relative; }
+#stage-img-b { display: none; }
 #stage-frame.spinning { cursor: ew-resize; }
 #stage-frame.spinning #stage-img {
   transition: none;
   height: calc(78vh - 130px);
   width: calc((78vh - 130px) * 0.55);
   object-fit: contain;
+}
+/* scrub crossfade: the next frame sits above the current one and fades in as
+   the drag travels the 40px between detents — rotation reads as one motion */
+#stage-frame.spinning #stage-img-b {
+  display: block; position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: contain;
+  opacity: 0; pointer-events: none;
 }
 #stage-img.loading { opacity: 0.25; }
 #stage-caption {
