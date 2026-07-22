@@ -351,11 +351,13 @@ def spin_frame(gids, angle):
             line += (" (its reference photo also shows "
                      + ", ".join(meta["exclude_from_photo"])
                      + " - NOT part of this garment; do not add them)")
-        lines.append(line)
         if angle in ANGLE_REAR:
             back = garment_back_asset(gid)
             if back:
                 backs.append((meta.get("name", gid), back))
+            elif meta.get("back_note"):
+                line += f" From behind: {meta['back_note']}"
+        lines.append(line)
     for name, back in backs:  # back refs follow the garment images
         images.append(str(back))
         lines.append(f"Image {len(images)}: the BACK of the {name} - ground truth "
