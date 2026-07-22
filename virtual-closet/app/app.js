@@ -485,6 +485,9 @@ function enterSpin(frames, smooth) {
   spinSmooth = smooth && smooth.length === 64 ? smooth : null;
   (spinSmooth || frames).forEach((u) => { const im = new Image(); im.src = u; });  // preload
   spinning = true;
+  // raw (unaligned) frames arrive on differing nb2 canvases — lock the mirror
+  // box for those; aligned sequences share the canon's canvas and need no lock
+  $("#stage-frame").classList.toggle("raw-frames", !frames[0].includes("/spin/") && !spinSmooth);
   $("#stage-frame").classList.add("spinning");
   $("#spin-360").textContent = "Exit 360°";
   $("#feedback-bar").hidden = true;   // correctives stay front-frame-only
@@ -494,7 +497,7 @@ function enterSpin(frames, smooth) {
 function exitSpin(quiet) {
   spinning = false;
   spinReturning = false;
-  $("#stage-frame").classList.remove("spinning");
+  $("#stage-frame").classList.remove("spinning", "raw-frames");
   $("#spin-360").textContent = "360° spin";
   if (!quiet && spinFrames.length) {
     $("#stage-img").src = spinFrames[0];
@@ -595,7 +598,9 @@ $("#spin-360").addEventListener("click", async () => {
       if (p.missing > 0) {
         await refreshManifest();   // cost meter reflects the batch
       }
-      enterSpin(frames, p.smooth);
+      // aligned detents (p.norm) share the canon's canvas and figure scale —
+      // the mirror stays exactly as it was when the spin opened
+      enterSpin(p.norm && p.missing === 0 ? p.norm : frames, p.smooth);
     } catch (e) {
       toast("spin failed: " + e.message);
       $("#stage-caption").textContent = "spin incomplete — finished frames are kept; try again to resume";

@@ -81,6 +81,25 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   08/09/10/15/18/27/29 + 43/44-by-note. Known leftovers for her judgment:
   26 drape wobble, 31 long corset laces, 48 bare-back-per-product-photo,
   look-010 a180 invented rear print.
+- **SPIN VIEWER SMOOTHING (07-22, $0): aligned detents, NOT interpolation.**
+  `scripts/spin_smooth.py` normalizes the 8 real frames onto one shared canvas —
+  nb2 draws the figure 974–1755px tall on differing canvases (560×1835, 843×1264…),
+  which was BOTH the "grey square / mirror changes size" complaint AND why naive
+  RIFE interpolation ghosted. Fix: frame 0 = untouched canon (entering spin
+  changes nothing on the mirror); frames 1–7 rescaled via rembg human-seg to the
+  canon's figure height, feet on its baseline, centered on its axis/canvas, padded
+  with each frame's own edge tone. Output `renders/spin/<key>/f00..f07.jpg`
+  (gitignored, rebuild `spin_smooth.py --all`; key = garment id or outfit stem).
+  `/api/spin` probe returns `norm` (8 aligned); viewer scrubs them with the
+  crossfade (app.js `setSpinPos`), mirror stays rock-constant (CDP: 618×603 all
+  frames). Posed-front looks (hand-on-hip/contrapposto/34turn — no neutral front
+  render) fall back to the posed render as frame 0: mirror still constant, but the
+  pose carries into the 0° detent (34turn reads as a slight pre-turn — flag for
+  Janice). **RIFE interpolation PARKED** (`tools/rife-ncnn-vulkan`, gitignored;
+  `spin_smooth.py --interp` still runs it): the turn-base quarters run shallow
+  (~20°), so the a045→a090 gap is a ~70° rotation — optical flow smears the face
+  mid-gap (Janice saw it "wrong ~frame 10 on"). True continuous rotation would
+  need image-to-video segments (tier 3, unpriced — declined for now).
 - **360 SPIN (07-19, BUILT + pilot CLEAN; full batch HOLDING):** fitting-room ONLY —
   Janice amended her "poses/angles are archive-only" rule for angle frames; archive
   posed-look system untouched; correctives stay front-frame-only. 8 frames at 45°

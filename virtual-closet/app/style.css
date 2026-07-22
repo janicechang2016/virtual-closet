@@ -114,8 +114,9 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
 #stage-view { position: relative; }
 #stage-img-b { display: none; }
 #stage-frame.spinning { cursor: ew-resize; }
-#stage-frame.spinning #stage-img {
-  transition: none;
+#stage-frame.spinning #stage-img { transition: none; }
+/* raw (unaligned) fallback frames only — aligned sequences share one canvas */
+#stage-frame.spinning.raw-frames #stage-img {
   height: calc(78vh - 130px);
   width: calc((78vh - 130px) * 0.55);
   object-fit: contain;

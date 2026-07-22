@@ -1,5 +1,39 @@
 # Decision log
 
+## 2026-07-22 (later) — Spin viewer: aligned detents beat interpolation
+
+Janice wanted the 360 scrub to be a smooth photoreal animation, and flagged
+that the mirror's grey square changed size per frame. Both trace to one cause:
+**nb2 draws the figure at wildly different scales (974–1755px tall) on
+differing canvases (560×1835, 843×1264, …).** So the visible photo-canvas
+changed shape in the mirror, and naive frame interpolation ghosted.
+
+Tried tier-2 **RIFE interpolation** (rife-ncnn-vulkan, local, $0) to synthesize
+64 in-between frames → real ghosting from ~frame 10 on (Janice caught it). Root
+cause: the avatar turn-base quarters run shallow (~20°, noted back on 07-19), so
+the a045→a090 gap is a ~70° rotation — too big for optical flow, it smears the
+face mid-gap. **PARKED** behind `spin_smooth.py --interp`; `tools/rife-ncnn-vulkan`
+kept (gitignored). True continuous rotation needs image-to-video segments
+(tier 3, per-segment $ + identity risk) — declined for now.
+
+**Shipped instead: aligned detents (`spin_smooth.py`, default mode, $0).**
+rembg human-seg measures the figure per frame; frame 0 is the untouched canon
+(entering spin changes nothing on the mirror), frames 1–7 are rescaled to the
+canon's figure height, feet on its baseline, centered on its axis, on a canvas
+of the canon's exact size padded with each frame's own edge tone. 8 frames →
+`renders/spin/<key>/f00..f07.jpg` (gitignored; rebuild `--all`). Mirror now
+CDP-constant across all frames (measure load-synced — a raw getBoundingClientRect
+mid-src-swap reads a collapsed box and lies). Scrub still uses the crossfade,
+now dissolving between properly-aligned frames instead of scale-jumping ones.
+Honest limit told to Janice: this is clean stepped rotation with soft blends,
+not true continuous motion.
+
+Posed-front looks (9 of 18 have hand-on-hip / contrapposto / 34turn published
+renders, no neutral front): `frame_paths` falls back to the posed render as
+frame 0 — mirror stays constant, but the pose carries into the 0° detent
+(contrapposto/hand-on-hip read fine; 34turn is a slight pre-turn). Fixing those
+properly = a neutral front outfit render each (~$0.06×5), deferred to Janice.
+
 ## 2026-07-22 (later) — Spin batch COMPLETE: 58 garments + 18 looks × 7 frames
 
 All spins rendered and QA'd (~$26.9 total, genlog $38.97/$45, 1071 gens).

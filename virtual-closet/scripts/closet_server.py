@@ -337,19 +337,20 @@ class Handler(SimpleHTTPRequestHandler):
                             missing_plain += 1
                 no_back = [g for g in items if not garment_back_asset(g)]
                 est = round(missing_faced * 0.059 + missing_plain * 0.039, 3)
-                # smooth sequence (scripts/spin_smooth.py): 64 normalized RIFE
-                # frames make the scrub a continuous rotation; key matches the
-                # script's (garment id, or the outfit stem)
+                # aligned sequences (scripts/spin_smooth.py): 8 canon-anchored
+                # detents ("norm") keep the mirror constant; 64 = the parked
+                # RIFE interp mode ("smooth"). Key = garment id or outfit stem.
                 key = items[0] if len(items) == 1 else \
                     "outfit_" + "+".join(g.split("-")[0] for g in sorted(items))
                 sdir = ROOT / "renders" / "spin" / key
-                smooth = sorted(sdir.glob("f*.jpg")) if sdir.is_dir() else []
+                seq = sorted(sdir.glob("f*.jpg")) if sdir.is_dir() else []
+                urls = [f"/assets/renders/spin/{key}/{p.name}" for p in seq]
                 return self._json({
                     "frames": frames, "missing": missing_faced + missing_plain,
                     "est_usd": est, "no_back": no_back,
                     "generation_enabled": GENERATION_ENABLED,
-                    "smooth": [f"/assets/renders/spin/{key}/{p.name}" for p in smooth]
-                              if len(smooth) == 64 else None,
+                    "norm": urls if len(urls) == 8 else None,
+                    "smooth": urls if len(urls) == 64 else None,
                 })
             angle = data.get("angle")
             if angle not in ANGLES:
