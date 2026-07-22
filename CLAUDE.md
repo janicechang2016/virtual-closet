@@ -99,7 +99,35 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   `spin_smooth.py --interp` still runs it): the turn-base quarters run shallow
   (~20°), so the a045→a090 gap is a ~70° rotation — optical flow smears the face
   mid-gap (Janice saw it "wrong ~frame 10 on"). True continuous rotation would
-  need image-to-video segments (tier 3, unpriced — declined for now).
+  need image-to-video segments (tier 3, below).
+- **TIER-3 SPIN VIDEO (07-22, BUILT + wired; BLOCKED on fal balance):** for a few
+  chosen HERO looks only (tier 3 costs real $; most items/looks stay on the $0
+  tier-2 detent scrub). Architecture Janice chose: hero looks auto-play a slow
+  360 loop when opened from the carousel. **All built, presence-gated, dormant
+  until a `loop.mp4` exists:**
+  - `scripts/spin_video.py` — feeds each adjacent pair of a look's 8 aligned
+    detent frames (`renders/spin/<key>/`) to **Wan-2.1 FLF2V** (`fal-ai/wan-flf2v`,
+    both endpoints are our QA'd frames so identity can't drift far), stitches the
+    8 segments (cv2, no ffmpeg — dropping each seam's dup frame) into
+    `renders/spin_video/<key>/loop.mp4`. Cost **$0.40/seg @720p = $3.20/look**
+    ($1.60 @480p). `fal_generate.generate_flf2v()` carries the budget gate + genlog
+    + 15-min poll; genlog `COST_TABLE` has `wan-flf2v: 0.40`.
+  - Server `looks_list()` sets `spin_video` URL when the loop exists; carousel
+    `openDetail` swaps in `#detail-video` (autoplay, loop, muted, playsinline,
+    `playbackRate 0.5`) for those looks, still image otherwise. `.mp4` serves
+    fine via the existing `/assets/` route (guess_type → video/mp4).
+  - **STATUS:** 1 pilot segment (05 f00→f01, 720p, $0.40) generated but
+    UNRECOVERED — fal `wan-flf2v` queue was badly congested (~40 min IN_QUEUE),
+    then the account **locked on exhausted balance** before the result could be
+    fetched. request_id `019f8b35-0d15-7f41-99fa-2556b24f03fd` — recover its
+    result URL for $0 once unlocked (`generate_flf2v` logged it).
+  - **BLOCKER = fal balance, not code.** Janice's fal balance sat at **-$0.08**
+    (hovering at zero all day — the real cause of ALL the mid-batch locks; NOT
+    shared with other projects, she confirmed). Plan: small top-up → recover the
+    paid pilot seg → she judges motion quality → if good, $15-20 top-up + raise
+    genlog cap (>$45, currently $38.97) + build her 2-3 chosen hero looks
+    (candidates floated: look-023 hoodie set, look-014 sweater/skirt/boots, a
+    dress like 017/022). Queue slowness means hero builds are background-and-wait.
 - **360 SPIN (07-19, BUILT + pilot CLEAN; full batch HOLDING):** fitting-room ONLY —
   Janice amended her "poses/angles are archive-only" rule for angle frames; archive
   posed-look system untouched; correctives stay front-frame-only. 8 frames at 45°

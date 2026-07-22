@@ -134,7 +134,9 @@ def renumber_looks(looks):
 
 
 def looks_list():
-    """looks.json entries with render/cutout resolved to asset URLs (or None)."""
+    """looks.json entries with render/cutout resolved to asset URLs (or None).
+    `spin_video` is set for tier-3 hero looks (scripts/spin_video.py built a
+    loop.mp4) — the carousel auto-plays it slowly on open."""
     out = []
     for lk in load_looks():
         d = dict(lk)
@@ -142,6 +144,9 @@ def looks_list():
         c = ROOT / "renders" / "cutouts" / (lk.get("cutout") or "_")
         d["render"] = f"/assets/renders/{r.name}" if r.is_file() else None
         d["cutout"] = f"/assets/renders/cutouts/{c.name}" if c.is_file() else None
+        vkey = "outfit_" + "+".join(g.split("-")[0] for g in sorted(lk.get("items", [])))
+        loop = ROOT / "renders" / "spin_video" / vkey / "loop.mp4"
+        d["spin_video"] = f"/assets/renders/spin_video/{vkey}/loop.mp4" if loop.is_file() else None
         out.append(d)
     return out
 

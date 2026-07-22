@@ -123,6 +123,8 @@
     padding: 24px; max-width: 860px; max-height: 84vh;
   }
   #detail-img { max-height: calc(84vh - 48px); max-width: 440px; object-fit: contain; }
+  #detail-video { max-height: calc(84vh - 48px); max-width: 440px; object-fit: contain; }
+  #detail-video[hidden] { display: none; }
   #detail-side { width: 280px; display: flex; flex-direction: column; }
   #detail-title { font-weight: 800; margin-bottom: 16px; }
   .d-row { border-top: 1px solid #000; padding: 8px 0; }
@@ -201,6 +203,7 @@
   <div id="detail" hidden>
     <div id="detail-box">
       <img id="detail-img" alt="">
+      <video id="detail-video" hidden loop muted playsinline preload="auto"></video>
       <div id="detail-side">
         <div id="detail-title"></div>
         <div id="detail-items"></div>
@@ -256,7 +259,7 @@ function buildItems() {
     ALL_ITEMS.push({
       kind: 'look', cat: 'outfit', lookId: l.id, items: l.items, pose: l.pose,
       title: l.title, desc: names.join('. '),
-      src: l.cutout || l.render, colors: ['#141414'],
+      src: l.cutout || l.render, spinVideo: l.spin_video || null, colors: ['#141414'],
     });
   });
 }
@@ -614,6 +617,19 @@ let detailItem = null;
 function openDetail(it) {
   detailItem = it;
   $('#detail-img').src = it.src || PLACEHOLDER;
+  // tier-3 hero looks auto-play a slow rotation loop in place of the still
+  const vid = $('#detail-video');
+  if (it.spinVideo) {
+    vid.src = it.spinVideo;
+    vid.hidden = false;
+    $('#detail-img').hidden = true;
+    vid.style.viewTransitionName = 'figure';
+    vid.playbackRate = 0.5;            // slow spin
+    vid.play().catch(() => {});        // autoplay policies: muted+playsinline allow it
+  } else {
+    vid.hidden = true; vid.removeAttribute('src');
+    $('#detail-img').hidden = false;
+  }
   const gids = it.kind === 'look' ? it.items : [it.gid];
   if (it.kind === 'look') {
     $('#detail-title').textContent = it.title;
@@ -634,12 +650,16 @@ function openDetail(it) {
   }
   $('#detail').hidden = false;
   detailOpen = true;
-  $('#detail-img').style.viewTransitionName = 'figure';
+  // morph the still; the video (tier-3) just appears — no img↔video morph
+  $('#detail-img').style.viewTransitionName = it.spinVideo ? 'none' : 'figure';
 }
 function closeDetail() {
   $('#detail').hidden = true;
   detailOpen = false;
   $('#detail-img').style.viewTransitionName = 'none';
+  const vid = $('#detail-video');
+  vid.pause(); vid.hidden = true; vid.removeAttribute('src');
+  $('#detail-img').hidden = false;
 }
 $('#detail-close').addEventListener('click', closeDetail);
 $('#detail').addEventListener('click', (e) => { if (e.target.id === 'detail') closeDetail(); });

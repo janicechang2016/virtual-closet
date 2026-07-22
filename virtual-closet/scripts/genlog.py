@@ -29,6 +29,7 @@ COST_TABLE = {
     "fal-ai/flux-2-pro": 0.06,
     "fal-ai/idm-vton": 0.03,
     "fal-ai/face-swap": 0.02,
+    "fal-ai/wan-flf2v": 0.40,       # first-last-frame video, 720p (480p is 0.20)
     "default": 0.134,  # assume worst case for unknown models
 }
 

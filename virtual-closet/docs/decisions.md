@@ -1,5 +1,36 @@
 # Decision log
 
+## 2026-07-22 (later) — Tier-3 spin video for hero looks (built, blocked on balance)
+
+**Decision (Janice):** keep tier-2 aligned detents ($0) as the default for
+almost everything; pick a few HERO looks for a real image-to-video 360, and for
+those, **auto-play a slow spin when the look is opened from the carousel.**
+
+Built the whole path, presence-gated so it's dormant until a loop exists:
+- `scripts/spin_video.py`: each adjacent detent-frame pair → **Wan-2.1 FLF2V**
+  (`fal-ai/wan-flf2v`) → 8 segments stitched (cv2) into
+  `renders/spin_video/<key>/loop.mp4`. Both endpoints of every segment are our
+  own QA'd frames, so identity/garment can only drift within one 45° gap. Chose
+  FLF2V over a single orbit-prompt video precisely for that anchoring. **$0.40/seg
+  @720p ($3.20/look), $0.20 @480p.** `fal_generate.generate_flf2v()` reuses the
+  budget gate + genlog + poll; `COST_TABLE["fal-ai/wan-flf2v"]=0.40`.
+- Server `looks_list()` exposes `spin_video`; carousel `openDetail` swaps a
+  `#detail-video` (autoplay/loop/muted/playsinline, `playbackRate 0.5`) in for
+  hero looks. No ffmpeg on this box — cv2 does the stitch and the frame reads.
+
+**Blocked, and the root cause is finally pinned:** the pilot (05 f00→f01, 720p)
+sat ~40 min IN_QUEUE (fal video congestion), completed, but the account locked
+before we could fetch it. Janice checked: **fal balance was -$0.08.** It had been
+hovering at exactly zero all day — THAT is why the balance "kept exhausting"
+across the whole spin batch, not a per-render overcharge or a shared-account
+drain (she confirmed it's not shared). Fix is a real top-up with margin, not the
+small ones that got nibbled back to zero. Pilot seg request_id
+`019f8b35-0d15-7f41-99fa-2556b24f03fd` is $0-recoverable once unlocked.
+
+Next: small top-up → recover + show the one segment → Janice judges motion → if
+good, bigger top-up + raise genlog cap (>$45) + build 2-3 hero looks. Tier 3 is
+NOT catalog-wide ($3.20 × 76 ≈ $243); hero looks only.
+
 ## 2026-07-22 (later) — Spin viewer: aligned detents beat interpolation
 
 Janice wanted the 360 scrub to be a smooth photoreal animation, and flagged

@@ -129,6 +129,60 @@ def generate(model, prompt, image_paths=(), purpose="tryon", out=None, extra_arg
     return saved
 
 
+def generate_flf2v(first_path, last_path, prompt, out, resolution="720p",
+                   purpose="spin-video", model="fal-ai/wan-flf2v"):
+    """First-last-frame video: bridge two real spin frames into rotation motion.
+    Reuses the budget gate, queue poll, and genlog of generate(). Output is one
+    video file at `out`; result JSON is {"video": {"url": ...}}."""
+    key = load_key()
+    cost = 0.20 if resolution == "480p" else 0.40
+    check_budget(model)  # gate uses the 720p worst case in COST_TABLE
+
+    payload = {"prompt": prompt, "resolution": resolution,
+               "first_frame_url": image_to_data_uri(first_path),
+               "last_frame_url": image_to_data_uri(last_path)}
+    sub = _req(f"{QUEUE}/{model}", key, payload)
+    req_id = sub["request_id"]
+    status_url = sub.get("status_url", f"{QUEUE}/{model}/requests/{req_id}/status")
+    resp_url = sub.get("response_url", f"{QUEUE}/{model}/requests/{req_id}")
+
+    for _ in range(300):
+        st = _req(status_url, key)
+        if st["status"] == "COMPLETED":
+            break
+        if st["status"] in ("FAILED", "CANCELLED"):
+            log_generation(model, prompt, purpose, ref_images=[first_path, last_path],
+                           request_id=req_id, outcome="failed", cost_usd=0.0)
+            sys.exit(f"Video {st['status']}: {json.dumps(st)[:400]}")
+        time.sleep(3)
+    else:
+        log_generation(model, prompt, purpose, ref_images=[first_path, last_path],
+                       request_id=req_id, outcome=f"timeout-abandoned: {resp_url}",
+                       cost_usd=0.0)
+        sys.exit(f"Timed out; request logged: {req_id}")
+
+    result = _req(resp_url, key)
+    url = (result.get("video") or {}).get("url")
+    if not url:
+        sys.exit(f"No video in result: {json.dumps(result)[:400]}")
+    Path(out).parent.mkdir(parents=True, exist_ok=True)
+    for attempt in range(4):
+        try:
+            urllib.request.urlretrieve(url, out)
+            break
+        except OSError as e:
+            if attempt == 3:
+                log_generation(model, prompt, purpose, ref_images=[first_path, last_path],
+                               request_id=req_id, cost_usd=cost,
+                               outcome=f"completed-download-failed: {url}")
+                sys.exit(f"Download failed ({e}); URL logged: {url}")
+            time.sleep(3 * (attempt + 1))
+    log_generation(model, prompt, purpose, ref_images=[first_path, last_path],
+                   output_path=out, cost_usd=cost, request_id=req_id)
+    print(f"video saved {out} (${cost})")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke-test", action="store_true",
