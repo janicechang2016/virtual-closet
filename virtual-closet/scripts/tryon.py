@@ -381,6 +381,10 @@ def spin_frame(gids, angle):
     if bottoms and "dress" not in cats and not any(b.get("wear_note") for b in bottoms):
         keep_note += ("The lower-body garment replaces her black leggings - "
                       "her legs are bare below its hem. ")
+    if "dress" in cats:
+        keep_note += ("The dress replaces both her gray tank top and her black "
+                      "leggings - no gray or black base clothing shows anywhere, "
+                      "her legs are bare below the hem. ")
 
     prompt = (
         "Virtual try-on: show the person from Image 1 wearing ALL of the following "
