@@ -82,7 +82,10 @@ def generate(model, prompt, image_paths=(), purpose="tryon", out=None, extra_arg
     status_url = sub.get("status_url", f"{QUEUE}/{model}/requests/{req_id}/status")
     resp_url = sub.get("response_url", f"{QUEUE}/{model}/requests/{req_id}")
 
-    for _ in range(120):
+    # slow-queue nights (2026-07-22) put nb2 jobs well past the old ~4-minute
+    # window; abandoning a submitted job loses billed work, so poll up to 15 min
+    # and log the request_id if we still give up
+    for _ in range(300):
         st = _req(status_url, key)
         if st["status"] == "COMPLETED":
             break
@@ -90,9 +93,12 @@ def generate(model, prompt, image_paths=(), purpose="tryon", out=None, extra_arg
             log_generation(model, prompt, purpose, ref_images=list(image_paths),
                            request_id=req_id, outcome="failed", cost_usd=0.0)
             sys.exit(f"Generation {st['status']}: {json.dumps(st)[:500]}")
-        time.sleep(2)
+        time.sleep(3)
     else:
-        sys.exit("Timed out waiting for generation")
+        log_generation(model, prompt, purpose, ref_images=list(image_paths),
+                       request_id=req_id, outcome=f"timeout-abandoned: {resp_url}",
+                       cost_usd=0.0)
+        sys.exit(f"Timed out waiting for generation; request logged: {req_id}")
 
     result = _req(resp_url, key)
     images = result.get("images") or [result.get("image")] if result.get("image") else result.get("images", [])
