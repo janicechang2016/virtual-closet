@@ -11,6 +11,7 @@ let spinning = false;         // spin mode active (frames loaded)
 let spinFrames = [];          // 8 URLs, [front, a045, ... a315]
 let spinIdx = 0;
 let spinPos = 0;              // fractional scrub position (crossfaded)
+let spinSmooth = null;        // 64 interpolated URLs (spin_smooth.py) when built
 let spinReturning = false;    // easing back to front (the "she turns to you" beat)
 const POSES = ["front", "contrapposto", "hand-on-hip", "34turn"];
 const SLOTS = ["top", "bottom", "layer", "shoes"];
@@ -450,30 +451,39 @@ function spinItems() {
 function setSpinFrame(i) {
   spinIdx = ((i % 8) + 8) % 8;
   spinPos = spinIdx;
-  $("#stage-img").src = spinFrames[spinIdx];
+  $("#stage-img").src = spinSmooth ? spinSmooth[spinIdx * 8] : spinFrames[spinIdx];
   $("#stage-img-b").style.opacity = 0;
   $("#stage-caption").textContent =
     `360° — drag the mirror to spin · ${spinIdx * 45}° (frame ${spinIdx + 1}/8)`;
 }
 
-// fractional scrub position: base frame + crossfaded next frame, so a drag
-// reads as continuous rotation instead of 45-degree steps
+// fractional scrub position. With a smooth build (64 RIFE frames) the drag
+// steps real in-between frames — continuous rotation; otherwise the next
+// 45-degree frame crossfades in over the current one.
 function setSpinPos(p) {
   spinPos = ((p % 8) + 8) % 8;
-  const base = Math.floor(spinPos) % 8, next = (base + 1) % 8;
-  const frac = spinPos - Math.floor(spinPos);
-  spinIdx = frac < 0.5 ? base : next;
   const img = $("#stage-img"), b = $("#stage-img-b");
-  if (img.getAttribute("src") !== spinFrames[base]) img.src = spinFrames[base];
-  if (b.getAttribute("src") !== spinFrames[next]) b.src = spinFrames[next];
-  b.style.opacity = frac;
+  if (spinSmooth) {
+    const f = Math.round(spinPos * 8) % 64;
+    spinIdx = Math.round(spinPos) % 8;
+    if (img.getAttribute("src") !== spinSmooth[f]) img.src = spinSmooth[f];
+    b.style.opacity = 0;
+  } else {
+    const base = Math.floor(spinPos) % 8, next = (base + 1) % 8;
+    const frac = spinPos - Math.floor(spinPos);
+    spinIdx = frac < 0.5 ? base : next;
+    if (img.getAttribute("src") !== spinFrames[base]) img.src = spinFrames[base];
+    if (b.getAttribute("src") !== spinFrames[next]) b.src = spinFrames[next];
+    b.style.opacity = frac;
+  }
   $("#stage-caption").textContent =
     `360° — drag the mirror to spin · ${Math.round(spinPos * 45) % 360}°`;
 }
 
-function enterSpin(frames) {
+function enterSpin(frames, smooth) {
   spinFrames = frames;
-  frames.forEach((u) => { const im = new Image(); im.src = u; });  // preload
+  spinSmooth = smooth && smooth.length === 64 ? smooth : null;
+  (spinSmooth || frames).forEach((u) => { const im = new Image(); im.src = u; });  // preload
   spinning = true;
   $("#stage-frame").classList.add("spinning");
   $("#spin-360").textContent = "Exit 360°";
@@ -491,7 +501,7 @@ function exitSpin(quiet) {
     if (currentRender) $("#feedback-bar").hidden = false;
     $("#stage-caption").textContent = "front view";
   }
-  spinFrames = []; spinIdx = 0; spinPos = 0;
+  spinFrames = []; spinIdx = 0; spinPos = 0; spinSmooth = null;
   const b = $("#stage-img-b");
   b.style.opacity = 0; b.removeAttribute("src");
 }
@@ -585,7 +595,7 @@ $("#spin-360").addEventListener("click", async () => {
       if (p.missing > 0) {
         await refreshManifest();   // cost meter reflects the batch
       }
-      enterSpin(frames);
+      enterSpin(frames, p.smooth);
     } catch (e) {
       toast("spin failed: " + e.message);
       $("#stage-caption").textContent = "spin incomplete — finished frames are kept; try again to resume";

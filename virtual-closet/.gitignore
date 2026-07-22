@@ -4,3 +4,4 @@ avatar/reference-photos/
 __pycache__/
 node_modules/
 logs/server.log
+tools/rife-ncnn-vulkan/
