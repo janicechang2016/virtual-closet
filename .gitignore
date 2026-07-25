@@ -1,3 +1,17 @@
 .DS_Store
 virtual-closet/logs/server.log
 site/
+virtual-closet/tools/mpfb2-src/
+virtual-closet/tools/mpfb2-*.zip
+virtual-closet/tools/makehuman-assets/
+virtual-closet/tools/makehuman-system-assets-pack/
+virtual-closet/tools/makehuman_system_assets_cc0.zip
+virtual-closet/tools/shirts01-pack/
+virtual-closet/tools/shirts01_cc0.zip
+virtual-closet/tools/hair01-pack/
+virtual-closet/tools/hair01_cc0.zip
+virtual-closet/tools/shirts03-pack/
+virtual-closet/tools/shirts03_ccby.zip
+virtual-closet/tools/hair02-pack/
+virtual-closet/tools/hair02_ccby.zip
+virtual-closet/avatar/avatar-v4/*.blend1

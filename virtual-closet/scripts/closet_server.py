@@ -251,6 +251,16 @@ class Handler(SimpleHTTPRequestHandler):
             return self._file(ROOT / "app" / "index.html")
         if url.path == "/sourcing":
             return self._file(ROOT / "app" / "sourcing.html")
+        if url.path == "/avatar-v4":
+            return self._file(ROOT / "app" / "avatar-v4.html")
+        if url.path == "/avatar-v4-runtime":
+            return self._file(ROOT / "app" / "avatar-v4-runtime.html")
+        if url.path == "/avatar-v4-material-candidate":
+            return self._file(ROOT / "app" / "avatar-v4-material-candidate.html")
+        if url.path == "/avatar-v4-face-diagnostic":
+            return self._file(ROOT / "app" / "avatar-v4-face-diagnostic.html")
+        if url.path == "/avatar-v4-face-references":
+            return self._file(ROOT / "app" / "avatar-v4-face-references.html")
         if url.path == "/api/source/img":
             try:
                 item = SCAN["items"][int(parse_qs(url.query).get("i", ["-1"])[0])]

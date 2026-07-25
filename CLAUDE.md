@@ -6,6 +6,429 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
 
 ## Current state (2026-07-20)
 
+- **360 MOTION-CONTROL PILOT READY (07-22, restart handoff):** after reviewing the
+  completed 8-detent spin system, Janice chose to preserve the existing
+  ChatGPT-generated `avatar-v3` and test a privacy-safe motion-control workflow
+  instead of filming or exposing her real face. **Do not resume the old
+  Wan-2.1 FLF2V eight-segment plan** and do not add more Fal credit for this
+  pilot: independent video segments cannot fix the inaccurate turn geometry
+  and are prone to seam/speed/identity/fabric drift. Fal is a usable inference
+  marketplace, but `fal-ai/wan-flf2v` was the wrong endpoint/architecture.
+  - **Chosen platform:** Kling AI native web app, **Kling VIDEO 3.0 Motion
+    Control, Standard mode**. Janice confirmed she subscribed to Kling Standard
+    (660 monthly credits advertised; Standard Motion Control = 9 credits/sec).
+    First pilot is 10 seconds = **90 credits**. Do not fund Runway or Fal for
+    this test. Native Kling was selected over Runway because it is cheaper and
+    exposes facial Element binding/multi-angle identity references directly.
+  - **Pilot look:** `look-006`, titled **look 001** —
+    `03-patterned-dress + 52-camper-flats`. Its bold dress pattern and clean
+    front/back references make garment crawling, rear invention, and temporal
+    drift easy to judge. Character image =
+    `renders/spin/outfit_03+52/f00.jpg`; appearance references = `f01..f07.jpg`.
+  - **Privacy-safe driver built locally ($0):**
+    `pilots/spin-motion-control/mannequin-turn-360.mp4` — procedural,
+    appearance-free human mannequin, locked camera, exact constant-speed 360,
+    720×960, 30 fps, 300 frames / 10 sec, no personal imagery. Rebuild with
+    `scripts/motion_driver.py` using
+    `/Users/janice.chang/liminal-wardrobe/.venv/bin/python`. This is a validation
+    driver; Kling recommends real human footage, so the FIRST result must prove
+    it understands the stylized mannequin before any broader spend.
+  - **Complete upload/prompt manifest:**
+    `pilots/spin-motion-control/look-001.json` records files, exact prompt, and
+    acceptance criteria. Required Kling settings: Motion Control 3.0;
+    Standard; 720p; Character Orientation = **Video** (must follow the driver's
+    changing facing direction); original sound off; fixed camera. Bind a facial
+    Element made only from the synthetic avatar if Kling offers it — never use
+    Janice's real face/reference photo. The visible identity and outfit come
+    from avatar/look references; the mannequin supplies motion only.
+  - **Acceptance gate before another generation:** same synthetic avatar and
+    body proportions throughout; dress pattern/hem stable; rear matches f04;
+    feet planted; fixed camera and constant rotation; clean final→first loop.
+    Stop if the first run shows major identity, garment, anatomy, direction, or
+    pose drift; do not spend through failures reflexively.
+  - **Browser handoff:** the stale desktop-AppTranslocation `node_repl` config
+    had previously been removed. For the authenticated Kling workflow it was
+    restored in `~/.codex/config.toml`, now pointing to the valid CLI plugin
+    runtime at
+    `~/.codex/plugins/cache/openai-bundled/chrome/26.519.81530/app-server-runtime/`
+    (`node_repl` + `node`) and `CODEX_CLI_PATH=~/.local/bin/codex`. `codex mcp
+    list` verifies `node_repl` enabled and no AppTranslocation path remains.
+    **NEXT:** after restarting Codex CLI, Janice says “ready”; open her
+    authenticated Kling session, upload driver + character reference, configure
+    the settings above, then pause immediately before Generate to show the
+    90-credit charge and get action-time confirmation. Generation is the first
+  paid/external side effect. Download and QA the result before deciding on a
+  second run or Luma/continuous-video comparison.
+  - **FIRST KLING ATTEMPT REJECTED + FULLY REFUNDED (07-22 17:53):** Kling accepted
+    the H.264 compatibility upload and quoted 90 credits, but its preflight after
+    Generate returned **“No valid characters detected in the video.”** The UI
+    explicitly says consumed credits were refunded (balance returned to 751), so
+    no paid generation occurred. Root cause is the procedural mannequin being too
+    abstract for Kling's human detector, not codec/duration/settings: the original
+    FMP4 preview was black, then a locally transcoded H.264 copy previewed correctly
+    before submission. **Do not retry the same driver or spend again reflexively.**
+    Next requires choosing a more human-detectable but still privacy-safe motion
+    source; keep the existing synthetic avatar as the character image and never
+    upload Janice's real face.
+  - **PHOTOREAL SYNTHETIC DRIVER BUILT ($0, 07-22 18:02):** Janice chose the
+    privacy-safe retry. `scripts/avatar_motion_driver.py` turns the eight aligned
+    synthetic look-001 avatar detents into a closed 300-frame sequence with local
+    RIFE, then writes browser-compatible H.264. Output:
+    `pilots/spin-motion-control/avatar-turn-360-h264.mp4` (10 sec, 30 fps,
+    1024×1024, 1.4 MB). Contact-sheet QA shows a complete front→profiles→back→front
+    human turn; no real-person imagery is present. `look-001.json` now points to
+    this driver. **NEXT:** replace the rejected mannequin video in Kling with this
+    file and verify it previews; keep Video orientation / Video 3.0 / Standard /
+    720p. Confirm the quote is still 90 credits, then get approval before the one
+    retry because this is a second paid attempt even though the first was refunded.
+  - **KLING SYNTHETIC-DRIVER RESULT REJECTED (07-22 ~18:12, 90 credits):** result
+    downloaded as
+    `/Users/janice.chang/Downloads/kling_20260723_Motion_Control_A_fixed_ca_1568_0.mp4`
+    (10 sec, 300 frames, 960×960). Janice: “entire figure morphs quite badly,
+    it's scary.” Dense timeline QA agrees: the eight anchor orientations are
+    recognizable in isolation, but the transitions reshape body volume, limbs,
+    face and dress instead of producing a physical continuous rotation; facing
+    also jumps/holds rather than maintaining constant angular speed. Root cause:
+    Motion Control transfers the RIFE-generated synthetic morphs literally—it
+    needs genuine continuous human motion, and neither an abstract procedural
+    mannequin nor interpolated still-angle avatars supply that. **Hard stop on
+    Kling Motion Control for privacy-safe synthetic drivers; do not spend on a
+    prompt-only retry.** The result fails identity, anatomy, garment-stability,
+    motion and loop acceptance gates. Keep aligned 8-detent scrub as the clean
+    default unless Janice explicitly chooses a different continuous-video method
+    or real human driver later.
+  - **REAL-MOTION / PRIVATE-FACE DRIVER READY ($0 local, 07-22 19:29):** Janice
+    recorded `/Users/janice.chang/Desktop/IMG_8576.MOV` (13.08 sec, 4K portrait,
+    25 fps), a clean continuous full-body 360 in fitted black activewear. Original
+    remains untouched and MUST NOT be uploaded: it contains her real face.
+    `scripts/human_motion_driver.py` trims the clean 2.00–12.00 sec window to
+    exactly 10 sec, downsizes to 720×1280, writes H.264, and covers her complete
+    face/head envelope with an opaque tracked neutral oval. QA across 16 angles
+    confirms no face leakage and clean front→back→front footwork. Upload-safe copy:
+    `pilots/spin-motion-control/human-turn-360-private-h264.mp4`; manifest points
+    to it. **NEXT:** upload this derivative only, bind facial Element from the
+    synthetic avatar if possible, tell the prompt the gray privacy mask + black
+    activewear are motion-only, verify Video orientation / 720p / 90 credits, and
+    pause before a third paid attempt. Do not upload the original MOV.
+  - **REAL-MOTION KLING RESULT: MOTION PASS, GARMENT-TRUTH FAIL (07-22 19:45,
+    90 credits):** downloaded result
+    `/Users/janice.chang/Downloads/kling_20260723_Motion_Control_A_fixed_ca_1943_0.mp4`
+    (10 sec, 300 frames, 960×960). Full-timeline QA: the human driver fixes the
+    scary synthetic morphing—identity/anatomy remain coherent, camera is fixed,
+    the rotation is continuous, and frame 299 returns closely to frame 0. But it
+    still fails the wardrobe-grade acceptance gate: the dress pattern crawls and
+    is materially reinvented around the body; the generated rear is mostly
+    red/black and does NOT match the strongly blue-backed f04 reference; real
+    pivot-step footwork means feet are not planted. Keep as proof that genuine
+    human motion solves geometry, but do not promote it as a faithful look-001
+    360 or spend on prompt-only rerolls. Any next attempt would need an
+    architecture with explicit multi-angle/keyframe garment conditioning during
+    video generation, not Motion Control's single character-image appearance
+    constraint.
+  - **3D FOUNDATION PIVOT / AVATAR-V4 STARTED (07-22 ~20:05):** Janice explicitly
+    approved scrapping avatar-v3 as the *foundation* if warranted. Decision: keep
+    v3 as the published 2D visual/history, but do NOT reverse-engineer its
+    inconsistent angle renders. Build a new canonical `avatar-v4` as a real 3D
+    asset with stable topology, rig, proportions and garments. Installed Blender
+    4.5.12 LTS user-locally at `~/Applications/Blender-4.5.app` (the Homebrew 5.2
+    build crashes in headless Metal detection on this Mac); Blender commands need
+    unsandboxed Metal access. Installed current MPFB from the official
+    makehumancommunity/mpfb2 repo; local source/package are gitignored.
+    `scripts/avatar_v4_blender.py` now deterministically builds a parametric Asian
+    female MPFB body, game-engine rig, 300-frame linear 360 root animation, studio
+    camera/lights, editable `.blend`, animated `.glb`, and front/rear gates under
+    `avatar/avatar-v4/`. **V3-MATCH FOUNDATION PASS (07-22 ~20:32):** official CC0
+    MakeHuman system assets now supply fitted low-poly eyes, young Asian female
+    skin, long hair and sportswear. The hair is near-black and vertex-shaped into
+    a restrained wave; the outfit shader reads as gray top + black leggings; face
+    targets and a relaxed arm pose move the silhouette toward v3. Front/rear QA
+    renders are clean, and the editable `.blend` plus animated `.glb` were rebuilt.
+    Rejected experiments (torn automatic sleeve removal and floating curve bangs)
+    were removed. This is now a usable 3D *foundation*, but not a finished likeness:
+    **REFINED FOUNDATION PASS (07-22 ~20:43):** replaced the stock short-sleeve top
+    with `punkduck_high_neck_crop_top` (clean fitted sleeveless silhouette), restricted
+    the old sportsuit body mask to leggings only, and replaced the straight system hair
+    with the longer black `elvs_lady_hippy_hair`. Added fitted eyebrows and eyelashes;
+    rebuilt clean front/rear previews, `.blend`, and animated `.glb`. The two new assets
+    are CC BY and are documented in `avatar/avatar-v4/ATTRIBUTION.md`. This is a much
+    closer v3 art-direction foundation and the geometry is clean. Remaining mismatch is
+    chiefly identity-level facial likeness and exact wispy-bang hairstyle, which now
+    require manual sculpt/hair art rather than more library swapping. Do not wire it
+    into the app as a v3 replacement until Janice approves the visible result.
+    **FRINGE + LOOP PASS (07-22 ~20:57):** extracted only the fitted forehead fringe
+    geometry from `elvs_katherine_hair`, layered it over the accepted long hair, and
+    tightened the oval head/chin/eye/lip targets toward v3. The fringe is stable and
+    clean at all angles. Rendered `avatar-v4-turntable-preview.mp4`: exactly 300 frames,
+    30 fps, 10.0 seconds. Eight-angle contact QA confirms a constant-speed, fixed-camera
+    360 with no morphing, geometry holes, clothing penetration, or angle-dependent
+    identity changes. This is now the first usable game-selection-style spin proof.
+    **V3-POSE MATCH + REVIEW ROUTE (07-22 ~23:36):** v4 now copies the canonical
+    `avatar-v3/front.png` pose instead of inventing a generic mannequin stance:
+    symmetric upright torso, vertical arms beside the thighs, palms facing inward,
+    fingers down with a light resting curl, parallel legs, and v3's small foot gap.
+    The rejected game-engine arm rig was replaced with MPFB's generated Rigify
+    foundation. Arms and legs are explicitly switched to FK: shoulders lower the
+    fitted A-pose, elbows extend through forearm controls, wrists remain neutral,
+    and palms inherit a natural thigh-facing orientation without wrist roll.
+    A spacing refinement reduced shoulder lowering from 40° to 37° to separate
+    the hands from the thighs, and leg adduction from 8° to 6° for a natural
+    foot gap. Rebuilt `.blend`, `.glb`, four-view previews, and the full
+    A final hand refinement applies Rigify's `finger_curve=0.12` to the four
+    finger master controls on each hand, subtly reducing side-view spread without
+    moving the palms, thumbs, wrists, or arms. `avatar-v4-turntable-rigify-v3.mp4`
+    is the current QA candidate. Eight-angle QA passes. Added isolated
+    `/avatar-v4` comparison/review page (v4 video vs v3 canon; v3 remains production).
+    Restarted the stale local server on port 8765 and verified both page and video
+    return HTTP 200.
+    **APPROVED V4 CHECKPOINT; RUNTIME EXPORT REJECTED (07-23 ~00:35):** Janice approved
+    the final pose and finger spacing. Freeze that source at
+    `avatar/avatar-v4/avatar-v4-approved-rigify-20260723.blend` with its companion
+    `avatar-v4-approved-rigify-20260723-source.glb`; do not silently overwrite the
+    checkpoint. The first reduced-skin GLB passed structural checks but failed
+    visual QA catastrophically: stripping Rigify controls invalidated the skin
+    bind and exploded the pose. Baking evaluated meshes fixed geometry, but the
+    layered MPFB hair shaders still translated incorrectly to glTF (wrong blonde
+    texture, then opaque hair cards masking the face). Janice rejected the result.
+    **Do not expose or integrate `avatar-v4-runtime.glb`.** `/avatar-v4-runtime`
+    now shows the approved turntable and a withdrawal notice; runtime/download
+    links were removed from `/avatar-v4`. The approved `.blend` is unchanged.
+    A future runtime asset needs a dedicated export rig plus baked PBR hair
+    textures and must pass imported-GLB visual QA before browser use.
+    **BAKED SPIN FOUNDATION RECOVERED (07-23 ~10:45):** the presentation-only
+    runtime was rebuilt from evaluated frame-1 meshes, with no reduced Rigify
+    skin. A clean parent root carries the 300-frame linear turntable. Export-native
+    Principled materials use one color/alpha texture; skin and eyes are forced
+    opaque because MakeHuman's legacy skin alpha incorrectly removes the face in
+    glTF, while hair/brows/lashes retain alpha. Hair tint is baked dark and PNG is
+    retained for lossless transparency. The resulting 6.2 MB Draco GLB passes
+    import-and-render front/side QA: intact face, dark transparent hair, correct
+    approved pose and clothing. `/avatar-v4-runtime` is restored and explicitly
+    labels this as a stable spin/presentation foundation—not a photoreal final or
+    garment-deformation rig. The editable approved Rigify checkpoint remains the
+    source for the later dedicated game rig and photoreal material phase.
+    **HAIR ART DIRECTION DEFERRED INTENTIONALLY (07-23 ~10:58):** Janice wants
+    the finished hair to end at the upper-bust/top-of-breast line and the bangs
+    to be straight across and wispy, not diagonally swept. Two nondestructive
+    candidates proved the current library mesh cannot deliver that cleanly:
+    vertical compression bunched the hair at the shoulders; a geometric trim
+    produced a blunt card edge; procedural curve bangs read as wires. Both were
+    rejected, and the review previews plus `avatar-v4-foundation.{blend,glb}`
+    were restored from the immutable approved checkpoint. The validated runtime
+    GLB was never rebuilt from either rejected candidate. Treat the requested
+    silhouette as a requirement for the dedicated photoreal hair-modeling phase:
+    use a purpose-built upper-bust hairstyle with proper alpha cards or groom
+    curves, then retest front/profile/rear and browser transparency.
+    **CUSTOM-GROOM PROTOTYPE REJECTED (07-23 ~11:28):** a dense tapered
+    181-strand fringe was built and calibrated from floating in profile to seated
+    against the forehead. It proved the head-plane placement, but still read as
+    parallel lines rather than natural clumped wisps in the front view. Its
+    promising upper-bust base (`culturalibre_hair_01`) was then found to be
+    AGPL-3 in its `.mhclo`, which is unsuitable for the intended distributable
+    app asset. Do not promote or ship it. The approved checkpoint, foundation
+    aliases and four previews were restored; runtime was never rebuilt. The next
+    hair candidate must be wholly original or clearly CC0/CC-BY, and should use
+    clumped ribbon/card groups or a true groom rather than uniform parallel tubes.
+    **ORIGINAL CARD-GROOM AUTOMATION REJECTED (07-23 ~11:33):**
+    `scripts/avatar_v4_original_hair_candidate.py` built a license-clean scalp
+    cap, 42 cross-card clumps and 17 tapered bang cards on a separate copy of the
+    approved checkpoint. Four-angle output is saved as
+    `hair-candidate-{front,right,rear,left}.png`; the editable rejected experiment
+    is `avatar-v4-original-hair-candidate.blend`. Front QA fails decisively: the
+    procedural cap reads as a helmet and the opaque grouped ribbons as flat strips
+    across the face. Do not integrate or expose it. This confirms the required
+    hair needs manual groom/card art (or a vetted permissively licensed production
+    asset), not further procedural layout tuning. Approved previews, foundation,
+    checkpoint and runtime remain untouched.
+    **PHOTOREAL MATERIAL STUDY READY (07-23 ~11:48):**
+    `scripts/avatar_v4_photoreal_material_candidate.py` opens the immutable
+    approved checkpoint and creates a separate material/lighting study without
+    changing geometry: restrained skin subsurface/specular response, moist-eye
+    coat, matte brows/lashes, differentiated tank/legging roughness, and softer
+    warm-key/cool-rim lighting. Outputs are
+    `photoreal-candidate-{front,right,rear,left,face}.png`; editable study is
+    `avatar-v4-photoreal-material-candidate.blend`; comparison route is
+    `/avatar-v4-material-candidate`. Full-body QA shows a useful incremental
+    material improvement, but the close face gate confirms current facial
+    geometry and eye-obscuring hair are now the dominant realism constraints.
+    Do not promote this as final photorealism or replace the approved checkpoint.
+    **FACE MORPH GATE CONFIRMS MANUAL SCULPT REQUIREMENT (07-23 ~12:10):**
+    `scripts/avatar_v4_face_geometry_diagnostic.py` renders the approved control
+    plus balanced, soft-oval and tapered variants using only reversible MPFB
+    shape keys. Both long hair and the fitted fringe are hidden for these frames
+    so the eyes and facial silhouette can be judged. The comparison route is
+    `/avatar-v4-face-diagnostic`. The variants produce only small proportional
+    changes and cannot supply v3-level identity or photoreal facial anatomy.
+    None is promoted or saved into the approved source. The next identity pass
+    requires a manual sculpt/texture workflow; stock macro sliders are exhausted.
+    **FACE REFERENCE SOURCE (07-23):** Janice tested ChatGPT and Gemini for the
+    controlled v3 turnaround. ChatGPT outputs were rejected as visually strange
+    and too identity/geometry-inconsistent. Use Gemini only for this pass.
+    Highest-resolution source downloads belong in
+    `avatar/avatar-v4/references/face/gemini/`; its README defines filenames.
+    Treat them as sculpting references, never as replacements for v3 canon or
+    the immutable approved v4 checkpoint.
+    **PAUSED AT CLEAN FACE-SCULPT HANDOFF (07-23 ~16:40):** Janice explicitly
+    approved `references/face/gemini/v3-face-front.png` as the locked facial
+    identity master. The second Gemini pass is better but not perfectly
+    self-consistent. Authority order is fixed: front controls identity,
+    proportions and feature placement; `right-threequarter.png` is secondary
+    transitional-volume guidance; `left-profile.png` is secondary depth guidance
+    and should be mirrored for the opposite side. `left-threequarter.png` and
+    `right-profile.png` are advisory only (identity/angle drift). Ignore all
+    generated moles, pores, skin marks and cross-view asymmetry. Do not regenerate
+    detail images: exact lossless crops are now
+    `v3-face-eyes-crop.png` and `v3-face-nose-mouth-crop.png`.
+
+    Nondestructive sculpt setup is complete:
+    `scripts/avatar_v4_face_sculpt_setup.py` was run against
+    `avatar-v4-photoreal-material-candidate.blend` and saved the separate
+    **`avatar-v4-face-sculpt-workspace.blend`**. It contains locked, non-rendering
+    front/three-quarter/profile image guides in collection
+    `V3_FACE_SCULPT_REFERENCES` and a dedicated body shape key
+    `v3-identity-manual-sculpt` initialized to the current approved face at 1.0.
+    The immutable approved Rigify checkpoint, approved runtime, production site,
+    and existing material candidate remain unchanged. Reference policy and
+    filenames are recorded in `references/face/gemini/README.md`.
+
+    Resume sequence (estimated 45–60 minutes for first pass):
+    1. Open `avatar-v4-face-sculpt-workspace.blend`; work only on
+       `v3-identity-manual-sculpt`.
+    2. Keep both hair objects hidden for geometry QA.
+    3. Make a conservative symmetric macro pass: match front face width/length,
+       eye line and spacing, nose width, mouth width, jaw taper and chin; use the
+       accepted left profile only for forehead/nose/lip/chin/skull depth.
+    4. Do not chase pores, likeness texture, hairstyle, or generated asymmetry.
+    5. Save a new candidate copy—never overwrite the workspace or approved
+       checkpoint—and render front, right three-quarter, and left profile
+       hair-hidden comparisons against the locked references.
+    6. Expose results for Janice review only after visual QA; do not promote.
+
+    `app/avatar-v4-face-references.html` and server route
+    `/avatar-v4-face-references` were added as a local reference board, but the
+    local server was intentionally stopped for this pause before it was restarted
+    or the new route was HTTP-verified/opened. On resume, start
+    `python3 scripts/closet_server.py` from `virtual-closet`, verify the route,
+    then open it if useful. No commands or renders are running at pause.
+    V3 remains the production fitting-room avatar: integrating v4 into garment
+    fitting is the next product phase, not part of this approval checkpoint.
+    **MANUAL SCULPT FIRST PASS (07-23 later):**
+    `scripts/avatar_v4_face_sculpt_candidate.py` now builds a deterministic,
+    separate first-pass candidate from the untouched sculpt workspace. Janice
+    flagged candidate 02's left profile as monkey-like. Candidate 03 exposed an
+    axis-sign error and is rejected; candidate 04 rebuilds from the workspace
+    using the correct +Y facial plane, advances the nose relative to the lips,
+    retracts the mouth zone, and balances the chin/forehead. Review files are
+    `face-sculpt-candidate-04-{front,right-threequarter,left-profile}.png` and
+    `avatar-v4-face-sculpt-candidate-04.blend`. It is cleaner but remains a
+    review candidate only; do not promote or integrate without Janice's approval.
+    Janice approved the direction ("this is better") and asked to continue.
+    Candidate 05 relaxes the overly narrow head/chin/nose macro values, softens
+    the V-shaped jaw, slightly lengthens the lower face, and broadens the
+    eye/mouth proportions while preserving candidate 04's improved profile.
+    Review files are
+    `face-sculpt-candidate-05-{front,right-threequarter,left-profile}.png` and
+    `avatar-v4-face-sculpt-candidate-05.blend`. Remaining mismatch is centered
+    on the eye region; the source exposes scale/height/epicanthus controls but
+    no safe eye-spacing control, so moving sockets would also require coordinated
+    eyeball, lash, and brow edits. Candidate 05 is not promoted yet.
+    **COORDINATED EYE PASS (07-23 later):** candidate 06 performs that coordinated
+    edit nondestructively: both socket regions and the paired eyeball, eyebrow,
+    and eyelash mesh halves move outward by the same ~3 mm per side. Front QA
+    reads less close-set; three-quarter QA shows no floating/separation; the
+    accepted candidate-04/05 profile relationship is unchanged. Review files:
+    `face-sculpt-candidate-06-{front,right-threequarter,left-profile}.png` and
+    `avatar-v4-face-sculpt-candidate-06.blend`. Still review-only; approved
+    checkpoint, sculpt workspace, runtime, and production remain untouched.
+    **READABLE QA + MIDFACE PASS (07-24):** candidate 07 preserves candidate 06
+    geometry but reduces the overpowered studio lights and uses -0.55 exposure,
+    revealing the nose, eyelids, mouth and jaw planes that the former whiteout
+    obscured. That gate showed the remaining clear geometry issue was an overly
+    pinched/low-volume nose. Candidate 08 relaxes the nose horizontal/volume
+    reduction and slightly broadens the mouth while retaining the coordinated
+    eye spacing and accepted profile. Front and three-quarter QA are more natural;
+    left profile does not regress. Review files are
+    `face-sculpt-candidate-08-{front,right-threequarter,left-profile}.png` and
+    `avatar-v4-face-sculpt-candidate-08.blend`. Candidate-only; nothing promoted.
+    **FACE/HAIR INTEGRATION GATE (07-24):**
+    `scripts/avatar_v4_face_integration_preview.py` restores the current long
+    hair + fitted fringe on candidate 08 and renders three angles into
+    `face-sculpt-candidate-08-hair-*.png`; editable preview is
+    `avatar-v4-face-sculpt-candidate-08-hair-preview.blend`. The face itself
+    survives, but the hairstyle decisively fails: it covers one eye entirely,
+    dominates the three-quarter view, and still reads too long/heavy. Do not
+    adjust the accepted face around this rejected hair.
+    License-first sourcing is recorded in
+    `references/hair-license-shortlist.md`. The only plausible current import
+    test is Greedy Engine's original **Wolf Hair** (Sketchfab listing: CC BY,
+    57.3k tris); inspect the downloaded archive's embedded license and texture
+    provenance before fitting. Explicitly reject the many Zepeto-derived
+    Sketchfab uploads even when their listing says CC BY—the uploader credits
+    Zepeto and does not establish authorship.
+    **CURRENT-HAIR REPAIR REJECTED (07-24):**
+    `scripts/avatar_v4_hair_layer_diagnostic.py` proves both layers fail on
+    their own: the long base sweeps across an eye and the extracted fringe is
+    an opaque asymmetrical cap. `scripts/avatar_v4_hair_open_face_candidate.py`
+    then removed the fringe and symmetrically eased the licensed long-hair
+    curtain away from both eyes. It exposes the face but tears/reveals the
+    side-swept topology at the forehead (`hair-open-face-candidate-front.png`);
+    reject it and do not promote. The current mesh is not repairable into the
+    requested straight-wispy-bang silhouette. Replacement is mandatory.
+    Authenticated Sketchfab download automation was attempted for the shortlisted
+    Wolf Hair archive, but the Chrome connector failed twice at bootstrap with
+    missing sandbox metadata before any page interaction. Janice must download
+    the archive manually; once present locally, inspect embedded license/textures
+    before importing into a separate candidate.
+    **WOLF HAIR FULL FIT REJECTED (07-24):** Janice downloaded
+    `wolf-hair.zip`; untouched archive, source, active texture and attribution
+    are preserved under `references/hair/wolf-hair/`. Structural inspection:
+    three meshes, one active included `HairStrand.jpg`, no linked libraries or
+    executable content; listing is CC BY but archive has no license file.
+    `scripts/avatar_v4_wolf_hair_fit_candidate.py` tested source orientation,
+    180° orientation, crown-relative width/depth/length scaling, and exact
+    face-plane alignment on candidate 08. Once correctly aligned, the asset is
+    intrinsically an anime/card-shell cut: very tall scalp, heavy facial cards,
+    fragmented alpha edges. Reject; do not integrate. Next license-clean
+    candidate is miccall's **Female hairs** CC-BY eight-style collection,
+    recorded in `references/hair-license-shortlist.md`; Janice must download it
+    for archive inspection because authenticated download automation remains
+    unavailable.
+    **FEMALE HAIRS STYLE 02 FULL FIT REJECTED (07-24):** archive/source/eight
+    textures/attribution preserved under `references/hair/female-hairs/`.
+    Inspection passes structurally (eight meshes, packed numbered textures, no
+    linked libraries; only unused HDR missing). Standardized source thumbnails
+    live in `references/hair/female-hairs-inspection/`; style 02 was the closest
+    straight-bang upper-bust silhouette. The full candidate fit is
+    `avatar-v4-female-hair-02-fit-candidate.blend` with four
+    `female-hair-02-fit-candidate-*.png` gates. It fails intrinsically: `02.png`
+    has no alpha, so broad beige scalp/face cards render over the skin; deleting
+    central below-brow cards reveals coarse jagged ribbon topology and scalp
+    holes. Dark strand-preserving tint cannot fix geometry. Do not integrate.
+    Two separate CC-BY free-asset families have now failed full import/fitting;
+    next credible path is a vetted production hair-card asset or genuinely
+    manual groom, not more automated deformation of low-quality free meshes.
+    **PAUSE / LATEST HANDOFF (07-24):** Janice asked to save state and is
+    considering returning to the 2D product and trying a different approach.
+    Do not continue face/hair/3D work automatically. Face candidate 08 remains
+    the best isolated facial candidate; no v4 source, runtime, hair candidate,
+    or route has been promoted into the production fitting room. The latest
+    style-02 hair render is rejected, not a checkpoint.
+
+- **2D ROLLBACK / 360 ISOLATION MAP (07-24):** yes, the spin work can be isolated
+  without deleting it. Committed spin history lives on `main` from the first
+  spin commit `c9b8310` through `f867251`; the literal pre-spin merge boundary
+  is `a71062d` / tag `fitting-room-pre-360`. The preferred 2D product baseline
+  is the separately reconstructed commit/tag **`fitting-room-pre-360-ui-final`
+  (`8c7532f`)**, already pointed to by local/remote `production`; it includes
+  the later desired index/silver-hover/reorder/18-look/demo-chrome changes and
+  contains no spin code or assets. Important: `8c7532f` is a sibling lineage
+  whose merge-base with `main` is `a71062d`, not an ancestor to reset through.
+  Safest future operation:
+  1. preserve current dirty v4/pilot work on a dedicated archival branch/commit;
+  2. leave `main` and its pushed spin commits untouched as the 360 archive;
+  3. create a fresh `2d-reboot` branch directly from `8c7532f`;
+  4. selectively bring over only explicitly wanted non-spin research/assets.
+  Do not run a hard reset or bulk checkout in the current dirty worktree.
+
 - **THE LOOKS ERA (07-19–20):** she published 19 looks (~$1.19) and then deleted one,
   so the archive is **18 published looks**, titled **"look 001"–"look 018"**. Title ≠ id
   and the drift is now large — carousel order is her 07-20 drag pass: **look-006 leads**,
@@ -201,6 +624,25 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   fully work from static files. `M.demo` is never set locally — zero behavior
   change for the live server. Vercel import is Janice's (she owns deploys);
   suggest Deployment Protection until the repo goes public.
+  **CORRECTED PRODUCTION BASELINE (07-23):** The literal pre-spin boundary
+  `a71062d` is preserved as `fitting-room-pre-360`, but it predates independent
+  later UI work Janice wants in production. The actual production baseline is
+  annotated tag **`fitting-room-pre-360-ui-final`** at reconstructed commit
+  `8c7532f`: `a71062d` plus only the later non-spin index lens, silver hover,
+  drag-to-reorder, 18-look deletion/renumbering, hidden demo budget, and removed
+  "Archive demo" line. It contains no 360 pipeline, viewer, scrub, API, or spin
+  asset references. This tag is the easy production rollback target. Vercel
+  production `virtual-closet-seven.vercel.app` was deployed from its isolated
+  prebuilt export and verified: `/`, `/fitting-room`, and `/api/manifest` HTTP
+  200; Index present; 18 published looks `look 001`–`look 018`; no spin strings.
+  A dedicated remote **`production` branch** also points to `8c7532f`, and the
+  Vercel project's Production Branch setting was changed from `main` to
+  `production`. Therefore pushes to `main` may create previews but must not
+  replace production. **Production contract:** keep
+  `fitting-room-pre-360-ui-final` live in production; all 360-spin and v4 work
+  stays local/on development branches until Janice explicitly approves a
+  production release. Do not merge or cherry-pick spin/v4 commits into
+  `production`, and do not reset or discard that later work locally.
 
 - **Mirror reaction (07-17, $0):** while a dragged garment hovers the mirror and the
   stage shows the base avatar, it crossfades to `avatar/avatar-v3/front-receive.png`
@@ -382,6 +824,11 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
+- **CAROUSEL DETAIL GLASSMORPHISM EXPLORATION (requested 07-23):** when a look is
+  clicked in the archive carousel, explore a glassmorphism treatment for the
+  detail/preview panel that opens. Treat this as a visual-design study first,
+  preserving the existing hero transition, legibility, and action hierarchy;
+  do not ship it until Janice reviews the direction.
 - **FULL SPIN BATCH (approved, HOLDING):** 58 garments + 18 outfits × ~$0.313 ≈
   $23.79 via `tryon.py … --spin`. Fire when Janice's back photos arrive (she's
   sourcing per the 07-19 priority list — A: distinct backs, B: shoe heel views,

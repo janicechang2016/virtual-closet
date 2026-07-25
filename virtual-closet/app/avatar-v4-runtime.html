@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>the archive. — avatar v4 spin foundation</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.3.1/model-viewer.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { min-height: 100vh; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #000; background: #fff; text-transform: uppercase; }
+header { border-bottom: 1px solid #000; padding: 10px 12px 12px; }
+nav, nav a { color: #000; font-size: 11px; font-weight: 600; }
+h1 { margin-top: 10px; text-align: center; font-size: 26px; font-style: italic; text-transform: lowercase; }
+.sub { text-align: center; font-size: 10px; letter-spacing: .28em; }
+main { min-height: calc(100vh - 82px); display: grid; grid-template-columns: minmax(300px, 1fr) 280px; }
+.viewer { padding: 20px; display: grid; place-items: center; }
+model-viewer { width: min(100%, 720px); height: min(78vh, 900px); border: 1px solid #000; background: #777; }
+aside { border-left: 1px solid #000; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+h2 { font-size: 11px; letter-spacing: .18em; }
+.metric { border-top: 1px solid #000; padding-top: 8px; }
+.metric b { display: block; font-size: 20px; }
+.metric span, p, aside a { color: #000; font-size: 9px; line-height: 1.55; letter-spacing: .08em; }
+.notice { padding: 10px; border: 1px solid #000; }
+@media (max-width: 760px) { main { grid-template-columns: 1fr; } aside { border-left: 0; border-top: 1px solid #000; } model-viewer { height: 70vh; } }
+</style>
+</head>
+<body>
+<header>
+  <nav><a href="/">Archive</a> · <a href="/avatar-v4">V4 study</a> · Spin foundation</nav>
+  <h1>the archive.</h1>
+  <div class="sub">avatar v4 spin foundation</div>
+</header>
+<main>
+  <section class="viewer">
+    <model-viewer id="runtime-viewer"
+      src="/assets/avatar/avatar-v4/avatar-v4-runtime.glb?v=20260723-1045"
+      poster="/assets/avatar/avatar-v4/preview-front.png"
+      alt="Avatar v4 stable 3D turntable foundation"
+      autoplay camera-controls interaction-prompt="none"
+      shadow-intensity="0.8" shadow-softness="0.8"
+      exposure="1" environment-image="neutral"
+      camera-orbit="0deg 90deg 2.6m">
+    </model-viewer>
+  </section>
+  <aside>
+    <h2>Validated foundation</h2>
+    <div class="notice">This validates stable geometry and 360° presentation. It is not the final photorealistic avatar or garment-deformation rig.</div>
+    <div class="metric"><b>6.2 MB</b><span>Lossless transparent hair textures + Draco geometry</span></div>
+    <div class="metric"><b>8 meshes</b><span>Pose baked from the approved Rigify checkpoint</span></div>
+    <div class="metric"><b>10 sec</b><span>300-frame linear turntable loop</span></div>
+    <p id="status">Loading validated runtime asset…</p>
+    <a href="/assets/avatar/avatar-v4/avatar-v4-approved-rigify-20260723.blend">Approved editable Blender checkpoint</a>
+  </aside>
+</main>
+<script>
+const viewer = document.querySelector("#runtime-viewer");
+const status = document.querySelector("#status");
+viewer.addEventListener("load", () => {
+  const animations = viewer.availableAnimations || [];
+  status.textContent = `Loaded · ${animations.length} animation${animations.length === 1 ? "" : "s"} · interactive camera ready`;
+});
+viewer.addEventListener("error", () => { status.textContent = "Load failed — keep this asset out of production."; });
+</script>
+</body>
+</html>

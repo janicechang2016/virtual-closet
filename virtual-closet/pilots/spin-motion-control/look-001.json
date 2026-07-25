@@ -1,0 +1,27 @@
+{
+  "pilot": "look-001 / look-006",
+  "items": [
+    "03-patterned-dress",
+    "52-camper-flats"
+  ],
+  "motion_driver": "../human-turn-360-private-h264.mp4",
+  "character_image": "../../../renders/spin/outfit_03+52/f00.jpg",
+  "appearance_references": [
+    "../../../renders/spin/outfit_03+52/f01.jpg",
+    "../../../renders/spin/outfit_03+52/f02.jpg",
+    "../../../renders/spin/outfit_03+52/f03.jpg",
+    "../../../renders/spin/outfit_03+52/f04.jpg",
+    "../../../renders/spin/outfit_03+52/f05.jpg",
+    "../../../renders/spin/outfit_03+52/f06.jpg",
+    "../../../renders/spin/outfit_03+52/f07.jpg"
+  ],
+  "prompt": "A fixed-camera full-body studio fashion turntable. Transfer only the exact slow 360-degree rotation from the motion reference. Preserve the woman, face, long black hair, body proportions, sleeveless fitted midi dress, abstract black red and blue pattern, fabric texture, black flats, lighting, framing, and plain light-gray background from the character and appearance references. Feet remain planted on the turntable. Constant angular speed. No walking, camera motion, zoom, pose change, garment redesign, added accessories, or background change. End seamlessly at the exact starting front view.",
+  "acceptance": [
+    "synthetic avatar identity remains stable",
+    "dress pattern and hem do not crawl or change",
+    "rear view matches f04",
+    "feet remain planted",
+    "rotation speed and camera are constant",
+    "last frame loops cleanly to first"
+  ]
+}
