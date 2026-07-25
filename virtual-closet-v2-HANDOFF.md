@@ -89,7 +89,14 @@ generation is wired).
      from stored LAB without a second rembg pass.
    - `scripts/backfill.py` → `backfill.sql`. Values reach Postgres via dollar-quoted
      `jsonb_to_recordset`, so nothing is hand-escaped. Idempotent.
-   - **STILL OPEN — needs her:** formality + warmth have no source in meta.json.
+   - **CONFIRMED + APPLIED 07-25:** all **58 garments** have formality, warmth, volume,
+     subcategory and season_tags; all **18 looks** have occasion/time merged into
+     `outfit.context` (`||`, so title/pose/render survived — verified 18/18/18). She
+     hand-set 46 and accepted the proposals for the remaining 12. Only **purchase data
+     is still outstanding** (`make_purchase_form.py` → browser form; the TSV workflow was
+     retired as too hard to edit — `apply_purchase.py` still accepts `.tsv` as an escape
+     hatch). Phase 2 does not depend on purchase data; only Track C does.
+   - Original framing of the gap: formality + warmth have no source in meta.json.
      `scripts/make_attr_grid.py` builds `attr_grid.html` (open via file://), a SYVE-styled
      $0 grid pre-filled with proposals derived from each garment's own name/fabric/fit
      text. She confirms/overrides → DOWNLOAD JSON → `scripts/apply_attrs.py <file>` →
