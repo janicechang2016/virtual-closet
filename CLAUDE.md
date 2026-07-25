@@ -200,6 +200,18 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
+- **2D reboot handoff (2026-07-24):** this branch intentionally resumes from
+  the approved pre-360 UI snapshot. The complete tracked 360/avatar-v4
+  exploration and its detailed context are preserved on
+  `archive/360-avatar-v4-20260724` (tip `ef96165`); the remaining 2.1 GB of
+  generated/vendor assets are at
+  `/Users/janice.chang/wardrobe-v3-360-local-assets-20260724/`. Hair work is
+  paused with the 3D exploration, not discarded.
+- **CAROUSEL DETAIL GLASSMORPHISM EXPLORATION (requested 07-23):** when a look is
+  clicked in the archive carousel, explore a glassmorphism treatment for the
+  detail/preview panel that opens. Treat this as a visual-design study first,
+  preserving the existing hero transition, legibility, and action hierarchy;
+  do not ship it until Janice reviews the direction.
 - **Look cards, remaining half:** the content-unit half shipped with publish (rembg
   cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**
   of all looks (second lens beside the carousel) once the archive grows past ~10 looks,
