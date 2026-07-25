@@ -1,5 +1,32 @@
 # Decision log
 
+## 2026-07-25 — Phase 0 provisioned: Railway live, guardrails verified
+
+**Decision (user):** subscribed to **Railway Hobby, $5/month** — the trial had expired and no
+project could be created without it. A real recurring cost, distinct from the fal budget.
+Alternatives were offered (free Neon Postgres with hosting deferred, or local Postgres) and
+declined in favour of the plan of record: one vendor, no rework, worker support later.
+
+**Live:** https://virtual-closet-api-production.up.railway.app · project `virtual-closet`
+(Postgres 18 + `virtual-closet-api`, sfo), deployed from GitHub `2d-reboot`, root dir `server`.
+
+**The reversal is now real and proven, not assumed.** Verified end to end: `/health` 200 open,
+`/budget` **401 without the bearer token**, correct JSON with it — and that response is a
+Postgres round-trip, so schema, connection, and the server-side budget gate are all confirmed
+($0.00 of $45.00 spent, 0 generations). Auth + budget hard-stop stand between the public URL
+and the fal budget, exactly as the 07-25 hosting reversal required.
+
+**Scope held:** foundation only, $0 API spend. R2 credentials and the worker service are
+deliberately deferred — neither is touched by Phases 1–2.
+
+**Gotchas worth not re-deriving** (full list in `virtual-closet-v2-HANDOFF.md`): `railway up`
+CLI upload 403s for reasons never established (GitHub deploy routes around it); `DATABASE_URL`
+is per-service and must be a `${{Postgres.DATABASE_URL}}` reference; laptop-side migrations
+need `DATABASE_PUBLIC_URL`; connecting the repo via the dashboard spawns a duplicate service.
+
+**`main` stays untouched** — it is what Vercel builds the live archive from. The pivot lives on
+`2d-reboot`; do not merge. This preserves the additive-identity decision.
+
 ## 2026-07-25 — v2 pivot: decisions locked + hosting reversal
 
 **Context:** rolled back to the 2D app (branch `2d-reboot`, HEAD `3b069e0`); the 360/

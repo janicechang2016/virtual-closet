@@ -1,6 +1,13 @@
 # Virtual Closet v2 — Handoff / Resume Point
 
-**Date:** 2026-07-25 · **Branch:** `2d-reboot` · **Status:** Phase 0 scaffold built, nothing provisioned.
+**Date:** 2026-07-25 · **Branch:** `2d-reboot` (pushed) · **Status:** Phase 0 PROVISIONED + deployed
+and verified. Phase 1 not started.
+
+**Live:** https://virtual-closet-api-production.up.railway.app — Railway project `virtual-closet`
+(`d8cf0dfa-1353-4f98-8c9a-cc7aab7dbced`), Postgres 18 + `virtual-closet-api`, region sfo,
+deployed from GitHub `2d-reboot` / root dir `server`. Verified 07-25: `/health` 200 open,
+`/budget` 401 without token, JSON with it (a real Postgres round-trip — schema + budget gate
+proven, not assumed). Bearer token is in `server/.app_secret` (gitignored, never committed).
 
 Read this to resume the v2 pivot cold. Source-of-truth docs: `CLAUDE.md` (2D app),
 `virtual-closet-plan-v2.md` (full v2 spec, tracks A–F), `virtual-closet-v2-foundation-plan.md`
@@ -40,13 +47,32 @@ FastAPI backend, compiles on Python 3.9. **The two reversal guardrails are real,
 - `engine/` — Phase 2 placeholder (constraints / colour / gaps), do not build yet.
 - `README.md` — exact provisioning commands.
 
+## Provisioning — DONE 2026-07-25 (recorded so it isn't re-derived)
+- Railway **Hobby $5/mo** was required: the trial had expired and `railway init` refused
+  without a plan. This is a new recurring cost, separate from the fal budget.
+- **`railway up` (CLI upload) returns 403 Forbidden — unexplained, still unresolved.** Auth
+  was fine (project create, DB provision, variable writes all succeeded on the same
+  credentials). Routed around by deploying from GitHub instead; if CLI upload is ever needed,
+  this is the known blocker.
+- Deploying from GitHub required pushing `2d-reboot` (the scaffold was local-only). **Do not
+  merge to `main`** — `main` is what Vercel builds the live archive from.
+- Connecting the repo in the dashboard spawned a **stray duplicate service** named
+  `virtual-closet`; deleted 07-25. The real service is `virtual-closet-api`.
+- `DATABASE_URL` is **not** auto-injected — Railway variables are per-service. Set as a
+  reference: `DATABASE_URL=${{Postgres.DATABASE_URL}}` (works via CLI with single quotes).
+- Migrations run from a laptop need **`DATABASE_PUBLIC_URL`**, not `DATABASE_URL` (the latter
+  is a `railway.internal` host, unreachable off-platform). `psql` came from `brew install
+  libpq`, keg-only → `/opt/homebrew/opt/libpq/bin/psql`.
+- `scripts/set_railway_vars.sh` pushes secrets from `virtual-closet/.env` without echoing them.
+
+**Deferred on purpose:** the three `R2_*` credentials (Cloudflare dashboard task; nothing in
+Phases 1–2 touches object storage) and the **worker service** (Railway runs one start command
+per service; no paid jobs exist yet — add a service with `python -m app.worker` when
+generation is wired).
+
 ## RESUME HERE — next actions in order
-1. **Provision (user does — interactive logins).** From `server/README.md`:
-   `railway login` → `railway init` → `railway add` (PostgreSQL) → set variables
-   (`APP_SECRET`, `BUDGET_CAP_USD=45`, `FAL_KEY`, `ANTHROPIC_API_KEY`) → create R2 bucket
-   `virtual-closet` in Cloudflare + set `R2_*` vars.
-2. **Apply schema + first deploy.** `railway run psql "$DATABASE_URL" -f migrations/0001_init.sql`
-   then `railway up`. Verify `/health` and authed `/budget`.
+1. ~~Provision~~ **DONE** — see above.
+2. ~~Apply schema + first deploy~~ **DONE** — all 8 tables live, `/health` + authed `/budget` verified.
 3. **Phase 1 — backfill (not written yet).** Migrate 58 garments from the file store →
    `garment` rows (carry size + brand); programmatic LAB colours ($0, white-balance first);
    seed the 18 published looks as `outfit` rows (source='manual') = cold-start prior;
