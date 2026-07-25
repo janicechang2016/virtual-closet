@@ -55,6 +55,28 @@ SELECT count(*) FILTER (WHERE context ? 'title')    AS has_title,
        count(*) FILTER (WHERE context ? 'occasion') AS has_occasion
 FROM outfit;
 
+\echo '== purchase coverage + closet value =='
+SELECT count(*) FILTER (WHERE purchase ? 'price_usd') AS priced,
+       count(*) FILTER (WHERE purchase ? 'date')      AS dated,
+       count(*)                                       AS total,
+       to_char(sum((purchase->>'price_usd')::numeric), 'FM999,999.00') AS total_usd,
+       to_char(avg((purchase->>'price_usd')::numeric), 'FM999.00')     AS avg_usd
+FROM garment;
+
+\echo '== spend by category =='
+SELECT category, count(*) AS items,
+       to_char(sum((purchase->>'price_usd')::numeric), 'FM999,999') AS spend
+FROM garment WHERE purchase ? 'price_usd'
+GROUP BY 1 ORDER BY sum((purchase->>'price_usd')::numeric) DESC;
+
+\echo '== most expensive garments never worn in a published look =='
+SELECT g.id, to_char((g.purchase->>'price_usd')::numeric, 'FM999,999') AS price,
+       g.purchase->>'date' AS bought
+FROM garment g
+WHERE g.purchase ? 'price_usd'
+  AND NOT EXISTS (SELECT 1 FROM outfit o WHERE g.id = ANY(o.garment_ids))
+ORDER BY (g.purchase->>'price_usd')::numeric DESC LIMIT 8;
+
 \echo '== sample: dominant colour per garment =='
 SELECT id, size_owned, brand,
        colors->0->>'name'                       AS dominant,
