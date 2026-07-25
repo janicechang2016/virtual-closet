@@ -378,9 +378,17 @@ def main():
         top = ", ".join(f"{c['name']} {c['coverage']:.0%}" for c in colors)
         print(f"  {gid:34s} [{how:18s}] {top:44s} meta: {meta.get('color')}")
 
+    # Merge, never replace: a subset run (`extract_colors.py 36-...`) must not
+    # discard the other 57 garments' measurements.
+    merged = {}
+    if os.path.exists(OUT):
+        with open(OUT) as fh:
+            merged = json.load(fh)
+    merged.update(results)
+
     with open(OUT, "w") as fh:
-        json.dump(results, fh, indent=2)
-    print(f"\n{len(results)} garments -> {os.path.relpath(OUT)}")
+        json.dump(merged, fh, indent=2)
+    print(f"\n{len(results)} garments measured, {len(merged)} total -> {os.path.relpath(OUT)}")
     if failures:
         print(f"{len(failures)} FAILED:")
         for gid, why in failures:
