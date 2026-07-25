@@ -1,0 +1,5 @@
+.env
+.app_secret
+.railway_token
+__pycache__/
+*.pyc

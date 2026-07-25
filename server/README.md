@@ -44,15 +44,21 @@ Run these with the `! ` prefix in the Claude Code prompt so output lands here.
 ! railway add                  # choose PostgreSQL plugin
 ```
 
-**2. Secrets** (Railway → Variables, or CLI). `APP_SECRET` = any long random string you
-keep; it's the auth token the frontend will send.
+**2. Secrets.** `scripts/set_railway_vars.sh` reads `FAL_KEY`/`ANTHROPIC_API_KEY` from the
+existing `virtual-closet/.env`, generates `APP_SECRET` once into `server/.app_secret`
+(gitignored — the frontend sends it as the bearer token), and pushes them all:
 ```
-! railway variables --set "APP_SECRET=$(openssl rand -hex 24)" \
-    --set "BUDGET_CAP_USD=45" \
-    --set "FAL_KEY=<your fal key>" \
-    --set "ANTHROPIC_API_KEY=<your anthropic key>"
+! ./scripts/set_railway_vars.sh <api-service-name>
 ```
-`DATABASE_URL` is injected by the Postgres plugin automatically.
+
+**2b. `DATABASE_URL` is NOT automatic.** Railway variables are per-service: the Postgres
+service holds its own `DATABASE_URL`, the API service does not inherit it. Add a reference
+variable on the API service (Railway dashboard → API service → Variables):
+```
+DATABASE_URL = ${{Postgres.DATABASE_URL}}
+```
+(`Postgres` = whatever the DB service is named.) `config.py` fails fast at startup if it's
+missing, so a bad reference shows up immediately in the deploy logs.
 
 **3. Cloudflare R2** (object storage — the one thing Railway doesn't give natively)
 - Cloudflare dashboard → R2 → create bucket `virtual-closet`.
@@ -62,11 +68,15 @@ keep; it's the auth token the frontend will send.
     --set "R2_SECRET_ACCESS_KEY=..." --set "R2_BUCKET=virtual-closet"
 ```
 
-**4. Migrate + deploy**
+**4. Migrate + deploy.** macOS has no `psql` by default — install the client first:
 ```
-! railway run psql "$DATABASE_URL" -f migrations/0001_init.sql   # apply schema
-! railway up                                                     # deploy web + worker
+! brew install libpq && brew link --force libpq
+! railway run --service <api-service> psql "$DATABASE_URL" -f migrations/0001_init.sql
+! railway up                                                     # deploy the web service
 ```
+The **worker is a second service** (Railway runs one start command per service). It is not
+needed for the foundation phase — no paid jobs exist yet. Add it when generation is wired:
+new service, same repo, start command `python -m app.worker`.
 
 **5. Frontend (Vercel)** — the archive stays where it is. When Phase 3 UI arrives, point
 the Vercel app at the Railway URL and have it send `Authorization: Bearer $APP_SECRET`.
