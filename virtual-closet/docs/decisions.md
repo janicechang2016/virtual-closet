@@ -1,5 +1,49 @@
 # Decision log
 
+## 2026-07-25 — Phase 2 constraint engine built; its taste does NOT match hers
+
+**Built ($0, offline, 26 unit tests passing):** `engine/colour.py` (LAB, neutral detection,
+harmony), `engine/constraints.py` (hard structural rules vs soft judgement, kept strictly
+apart), `engine/gaps.py` (enumeration, participation, orphans, cost-per-wear).
+`scripts/dump_closet.py` snapshots Postgres to JSON so the engine stays a pure library.
+
+**Acceptance met:** 2220 valid outfits = (21×10 + 12)×10, arithmetic confirmed; 13,320 with
+outerwear. Scoring is instant. Her 18 published looks all pass the hard rules.
+
+**THE FINDING — the engine's aesthetic prior disagrees with her.** Her 18 published looks
+score at **mean percentile 39**, i.e. below the median outfit the engine would suggest.
+Cause is measurable: **99.4% of all garment pairs in this closet are neutral-on-neutral**
+(990 "neutral contrast", 392 "neutral-anchored", 176 "matched", 85 "slight mismatch" —
+against just 10 chromatic pairs in the entire wardrobe). So colour harmony barely
+discriminates, and what little it does comes from lightness separation: the rules reward
+maximum contrast (white + greige + black = 0.900) and *penalise* tonal black-on-charcoal as
+a near-miss (0.74). Tonal black is her signature. The rule encodes a generic styling
+opinion that is demonstrably not hers.
+
+**Not fixed unilaterally — she decides aesthetics** (standing rule). But there is now a
+concrete calibration target: **tune until her own 18 looks rank high in the space they were
+drawn from.** That is real ground truth, and it is the honest exit criterion for ranking.
+
+**Rules corrected because her closet said so:**
+- `look-023` (hoodie + trousers + sneakers) failed "no top". **Outerwear worn alone IS the
+  top layer.** When the closet's own history fails a rule, the rule is wrong.
+- Structural orphan detection returned **zero** orphans — with 21 tops and 10 bottoms
+  everything pairs, so participation says nothing. Replaced by *quality* participation:
+  how many ABOVE-MEDIAN outfits a garment can appear in. That list is all dresses.
+- Outerwear was excluded from enumeration, which reported the entire outerwear rail as
+  orphaned — an artifact of the enumeration, not a fact about the closet.
+
+**Track C preview from real data:** 23 of 58 garments appear in no published look,
+**$2,381 of value sitting unworn**; best cost-per-wear is 52-camper-flats at $10.89 over
+9 wears.
+
+**Data-loss bug found and fixed:** re-running `backfill.py` after the colour work **wiped
+user-owned data** — `subcategory` reset to null and `occasion` was replaced out of
+`outfit.context`. The garment upsert protected formality/warmth/season_tags but not
+subcategory; the outfit upsert replaced `context` wholesale. Now: subcategory is never
+written by backfill, and context MERGES (`outfit.context || EXCLUDED.context`). Verified by
+re-running and confirming 58/58/18 survive.
+
 ## 2026-07-25 — Phase 1 backfill: objective half loaded, subjective half awaiting her
 
 **Done ($0, no API calls):** 58 garments + 18 published looks are in Postgres. Garment ids

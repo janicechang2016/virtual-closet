@@ -162,7 +162,6 @@ FROM jsonb_to_recordset($garments${garments}$garments$::jsonb)
        brand text)
 ON CONFLICT (id) DO UPDATE SET
     category    = EXCLUDED.category,
-    subcategory = EXCLUDED.subcategory,
     colors      = EXCLUDED.colors,
     pattern     = EXCLUDED.pattern,
     fabric      = EXCLUDED.fabric,
@@ -171,7 +170,10 @@ ON CONFLICT (id) DO UPDATE SET
     images      = EXCLUDED.images,
     size_owned  = EXCLUDED.size_owned,
     brand       = EXCLUDED.brand;
-    -- formality / warmth / season_tags intentionally absent: user-owned.
+    -- USER-OWNED, never written here: formality, warmth, season_tags, volume,
+    -- subcategory. meta.json has no source for any of them, so refreshing from
+    -- it would silently blank confirmed answers — which is exactly what an
+    -- earlier version of this statement did to subcategory.
 
 INSERT INTO outfit (garment_ids, source, context, render_cache_key, rationale)
 SELECT garment_ids, 'manual', context, look_id, rationale
@@ -181,7 +183,10 @@ FROM jsonb_to_recordset($outfits${outfits}$outfits$::jsonb)
 -- the conflict target restates its WHERE clause.
 ON CONFLICT (render_cache_key) WHERE render_cache_key IS NOT NULL DO UPDATE SET
     garment_ids = EXCLUDED.garment_ids,
-    context     = EXCLUDED.context;
+    -- MERGE, never replace. Existing keys first so the refreshed mechanical
+    -- values win, but user keys this statement knows nothing about (occasion,
+    -- time, venue) survive. Replacing outright wiped them once already.
+    context     = outfit.context || EXCLUDED.context;
 
 COMMIT;
 """
