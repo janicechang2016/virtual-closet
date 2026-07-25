@@ -95,6 +95,17 @@ generation is wired).
      text. She confirms/overrides → DOWNLOAD JSON → `scripts/apply_attrs.py <file>` →
      `attrs.sql`. season_tags is derived from confirmed warmth, not asked separately.
      Verified by applying with COMMIT→ROLLBACK: valid SQL, `UPDATE 58`, nothing persisted.
+   - **Metadata review (her call 07-25, all three accepted).** Three inputs, all $0:
+     (a) `make_occasion_form.py` → `occasion_form.html` — occasion/time/venue for the 18
+     looks. Highest leverage: without it the prior teaches only "these go together"; with
+     it, "these go together FOR X". `apply_occasions.py` MERGES into `outfit.context` (`||`)
+     so backfill's title/pose/render survive. (b) `make_purchase_tsv.py` → `purchase.tsv`
+     (fill in an editor; TSV because brands contain commas; never overwritten once it
+     exists) → `--apply` → `purchase.sql`. Unlocks Track C cost-per-wear, which is
+     arithmetically impossible to reconstruct later. (c) volume + subcategory: DERIVED from
+     each garment's own name/fit text and folded into the same grid as confirm rows, so she
+     spot-checks rather than authors. New column via `migrations/0003_garment_volume.sql`
+     (applied); subcategory uses the existing column with a closed per-category vocabulary.
    - **Colour QA: 6 of 58 flagged for her eye** (was 15; 9 were my naming anchors, since
      recalibrated — a real garment black measures L*~15-22, not L*~7). Genuine finding:
      **36-realisation-liv-dress meta.color is wrong** — says "violet-blue with dark leopard

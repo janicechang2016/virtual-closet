@@ -22,6 +22,73 @@ OUT = os.path.join(HERE, "attr_grid.html")
 
 FORMALITY_SCALE = ["1 lounge", "2 casual", "3 smart casual", "4 dressy", "5 formal"]
 WARMTH_SCALE = ["1 barely", "2 light", "3 mid", "4 warm", "5 very warm"]
+VOLUME_SCALE = ["fitted", "relaxed", "oversized"]
+
+# Offered per category so the dropdown stays short and the vocabulary stays closed —
+# an open text field here would produce 58 spellings of "long sleeve".
+SUBCATEGORIES = {
+    "top": ["tank", "camisole", "short-sleeve", "long-sleeve", "blouse", "vest",
+            "sweater", "hoodie", "bodysuit", "other"],
+    "bottom": ["trousers", "jeans", "skirt", "shorts", "other"],
+    "dress": ["slip dress", "mini dress", "midi dress", "maxi dress", "other"],
+    "outerwear": ["coat", "jacket", "blazer", "hoodie", "other"],
+    "shoes": ["sneaker", "boot", "heel", "flat", "sandal", "loafer", "other"],
+}
+
+
+def derive_subcategory(meta, has):
+    """Closed-vocabulary subcategory from the garment's own name/fit text."""
+    cat = meta.get("category", "")
+    if cat == "shoes":
+        for key, sub in (("sneaker|trainer|runner", "sneaker"), ("boot", "boot"),
+                         ("heel|pump", "heel"), ("loafer", "loafer"),
+                         ("sandal|thong", "sandal"), ("flat|ballet", "flat")):
+            if has(*key.split("|")):
+                return sub
+        return "other"
+    if cat == "dress":
+        if has("slip"):
+            return "slip dress"
+        for key, sub in (("maxi", "maxi dress"), ("midi", "midi dress"),
+                         ("mini", "mini dress")):
+            if has(key):
+                return sub
+        return "other"
+    if cat == "bottom":
+        for key, sub in (("jean|denim", "jeans"), ("skirt", "skirt"),
+                         ("short", "shorts"),
+                         ("trouser|pant|slack", "trousers")):
+            if has(*key.split("|")):
+                return sub
+        return "other"
+    if cat == "outerwear":
+        for key, sub in (("blazer", "blazer"), ("hoodie|sweatshirt", "hoodie"),
+                         ("coat", "coat"), ("jacket|blouson|bomber", "jacket")):
+            if has(*key.split("|")):
+                return sub
+        return "other"
+    # tops
+    for key, sub in (("hoodie|sweatshirt", "hoodie"), ("bodysuit", "bodysuit"),
+                     ("vest", "vest"), ("sweater|knit|cardigan", "sweater"),
+                     ("camisole|cami", "camisole"), ("tank|halter", "tank"),
+                     ("long.sleeve", "long-sleeve"),
+                     ("short.sleeve|tee|t-shirt", "short-sleeve"),
+                     ("blouse|shirt", "blouse")):
+        if has(*key.split("|")):
+            return sub
+    return "other"
+
+
+def derive_volume(has):
+    """fitted / relaxed / oversized — feeds the constraint engine's proportion rules."""
+    if has("oversize", "slouch", "voluminous", "baggy", "balloon", "wide.leg",
+           "wide-leg", "boxy"):
+        return "oversized"
+    if has("fitted", "slim", "bodycon", "second.skin", "body-skimming", "snug"):
+        return "fitted"
+    if has("relaxed", "loose", "easy", "straight", "draped", "fluid"):
+        return "relaxed"
+    return "relaxed"
 
 
 def propose(meta):
@@ -64,7 +131,7 @@ def propose(meta):
             warmth = 5
         if cat == "outerwear":
             warmth = max(warmth, 4)
-    return formality, warmth
+    return formality, warmth, derive_subcategory(meta, has), derive_volume(has)
 
 
 def image_for(gid):
@@ -102,12 +169,13 @@ def collect():
             continue
         with open(mp) as fh:
             meta = json.load(fh)
-        f, w = propose(meta)
+        f, w, sub, vol = propose(meta)
+        cat = meta.get("category", "")
         cols = colors.get(gid, {}).get("colors", [])
         items.append({
             "id": gid,
             "name": meta.get("name", ""),
-            "category": meta.get("category", ""),
+            "category": cat,
             "brand": meta.get("brand", ""),
             "size": meta.get("size_owned", ""),
             "fabric": (meta.get("fabric") or "")[:90],
@@ -115,6 +183,9 @@ def collect():
             "swatches": [c["rgb"] for c in cols[:3]],
             "formality": f,
             "warmth": w,
+            "subcategory": meta.get("subcategory") or sub,
+            "volume": vol,
+            "subs": SUBCATEGORIES.get(cat, ["other"]),
         })
     return items
 
@@ -160,6 +231,12 @@ HTML = """<!doctype html>
   .opts input {{ position:absolute; opacity:0; pointer-events:none; }}
   .opts input:checked + span {{ display:block; background:#000; color:#fff;
                                 margin:-6px 0; padding:6px 0; }}
+  select {{ font:inherit; font-size:11px; width:100%; padding:6px 8px; border:1px solid var(--line);
+            background:var(--bg); border-radius:0; -webkit-appearance:none; appearance:none;
+            background-image:linear-gradient(45deg,transparent 50%,#000 50%),
+                             linear-gradient(135deg,#000 50%,transparent 50%);
+            background-position:calc(100% - 14px) 12px, calc(100% - 9px) 12px;
+            background-size:5px 5px, 5px 5px; background-repeat:no-repeat; cursor:pointer; }}
   footer {{ padding:26px 24px 60px; }}
   .note {{ color:var(--dim); font-size:11px; max-width:60ch; }}
 </style></head><body>
@@ -174,7 +251,9 @@ HTML = """<!doctype html>
 <div class="legend">
   formality 1 lounge · 2 casual · 3 smart casual · 4 dressy · 5 formal &nbsp;&nbsp;|&nbsp;&nbsp;
   warmth 1 barely · 2 light · 3 mid · 4 warm · 5 very warm &nbsp;&nbsp;|&nbsp;&nbsp;
-  values shown are PROPOSALS derived from each garment's own text — override freely
+  volume + subcategory feed the constraint engine's proportion and category rules
+  <br>everything shown is a PROPOSAL derived from each garment's own name / fabric / fit
+  text — override freely; nothing here writes to the database
 </div>
 <div class="grid" id="grid"></div>
 <footer>
@@ -186,19 +265,32 @@ HTML = """<!doctype html>
 const ITEMS = {data};
 const FORM = {form};
 const WARM = {warm};
+const VOL  = {vol};
 const touched = new Set();
 const grid = document.getElementById('grid');
 
-function scaleRow(item, field, scale) {{
+// numeric=true -> value is the 1-5 index and the button shows the number;
+// otherwise the value IS the label and the button shows the word.
+function scaleRow(item, field, scale, numeric) {{
   const opts = scale.map((s, i) => {{
-    const v = i + 1, id = `${{item.id}}-${{field}}-${{v}}`;
+    const v = numeric ? i + 1 : s;
+    const id = `${{item.id}}-${{field}}-${{i}}`;
     const on = item[field] === v ? 'checked' : '';
     return `<label for="${{id}}" title="${{s}}">
-      <input type="radio" id="${{id}}" name="${{item.id}}-${{field}}" value="${{v}}" ${{on}}>
-      <span>${{v}}</span></label>`;
+      <input type="radio" id="${{id}}" data-id="${{item.id}}" data-field="${{field}}"
+             data-numeric="${{numeric ? 1 : 0}}" name="${{item.id}}-${{field}}"
+             value="${{v}}" ${{on}}>
+      <span>${{numeric ? v : s}}</span></label>`;
   }}).join('');
   return `<div class="row"><span class="lbl">${{field}}</span>
           <div class="opts">${{opts}}</div></div>`;
+}}
+
+function selectRow(item, field, options) {{
+  const opts = options.map(o =>
+    `<option value="${{o}}" ${{item[field] === o ? 'selected' : ''}}>${{o}}</option>`).join('');
+  return `<div class="row"><span class="lbl">${{field}}</span>
+          <select data-id="${{item.id}}" data-field="${{field}}" data-numeric="0">${{opts}}</select></div>`;
 }}
 
 grid.innerHTML = ITEMS.map(it => `
@@ -211,15 +303,18 @@ grid.innerHTML = ITEMS.map(it => `
     </div>
     <div class="sw">${{it.swatches.map(c =>
         `<i style="background:rgb(${{c.join(',')}})"></i>`).join('')}}</div>
-    ${{scaleRow(it, 'formality', FORM)}}
-    ${{scaleRow(it, 'warmth', WARM)}}
+    ${{scaleRow(it, 'formality', FORM, true)}}
+    ${{scaleRow(it, 'warmth', WARM, true)}}
+    ${{scaleRow(it, 'volume', VOL, false)}}
+    ${{selectRow(it, 'subcategory', it.subs)}}
   </div>`).join('');
 
 grid.addEventListener('change', e => {{
-  const [id] = e.target.name.split(/-(formality|warmth)$/);
+  const el = e.target;
+  const id = el.dataset.id, field = el.dataset.field;
+  if (!id || !field) return;
   const it = ITEMS.find(x => x.id === id);
-  const field = e.target.name.endsWith('warmth') ? 'warmth' : 'formality';
-  it[field] = +e.target.value;
+  it[field] = el.dataset.numeric === '1' ? +el.value : el.value;
   touched.add(id);
   document.getElementById('card-' + id).classList.add('touched');
   render();
@@ -240,7 +335,8 @@ document.getElementById('dl').onclick = () => {{
     generated: new Date().toISOString(),
     touched: [...touched],
     attributes: Object.fromEntries(ITEMS.map(it =>
-      [it.id, {{formality: it.formality, warmth: it.warmth}}]))
+      [it.id, {{formality: it.formality, warmth: it.warmth,
+                volume: it.volume, subcategory: it.subcategory}}]))
   }};
   const blob = new Blob([JSON.stringify(payload, null, 2)], {{type: 'application/json'}});
   const a = document.createElement('a');
@@ -261,6 +357,7 @@ def main():
             data=json.dumps(items),
             form=json.dumps(FORMALITY_SCALE),
             warm=json.dumps(WARMTH_SCALE),
+            vol=json.dumps(VOLUME_SCALE),
         ))
     print(f"{len(items)} garments -> {os.path.relpath(OUT)}")
     print(f"open: file://{OUT}")
