@@ -27,6 +27,34 @@ SELECT count(*) AS unworn_garments
 FROM garment g
 WHERE NOT EXISTS (SELECT 1 FROM outfit o WHERE g.id = ANY(o.garment_ids));
 
+\echo '== user-confirmed attributes (from the grid) =='
+SELECT count(*) FILTER (WHERE formality   IS NOT NULL) AS formality_set,
+       count(*) FILTER (WHERE warmth      IS NOT NULL) AS warmth_set,
+       count(*) FILTER (WHERE volume      IS NOT NULL) AS volume_set,
+       count(*) FILTER (WHERE subcategory IS NOT NULL) AS subcat_set,
+       count(*) FILTER (WHERE season_tags <> '{}')     AS seasons_set,
+       count(*)                                        AS total
+FROM garment;
+
+\echo '== garments still awaiting confirmation =='
+SELECT id, category, name_hint FROM (
+  SELECT id, category, left(coalesce(fit, ''), 44) AS name_hint
+  FROM garment WHERE formality IS NULL ORDER BY id
+) q;
+
+\echo '== looks by occasion =='
+SELECT context->>'occasion' AS occasion,
+       count(*)             AS looks
+FROM outfit
+WHERE context ? 'occasion'
+GROUP BY 1 ORDER BY 2 DESC;
+
+\echo '== context merge preserved backfill keys (title/pose must survive) =='
+SELECT count(*) FILTER (WHERE context ? 'title')    AS has_title,
+       count(*) FILTER (WHERE context ? 'pose')     AS has_pose,
+       count(*) FILTER (WHERE context ? 'occasion') AS has_occasion
+FROM outfit;
+
 \echo '== sample: dominant colour per garment =='
 SELECT id, size_owned, brand,
        colors->0->>'name'                       AS dominant,

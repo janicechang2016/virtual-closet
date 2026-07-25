@@ -12,5 +12,4 @@ scripts/occasions.sql
 scripts/purchase.sql
 scripts/attr_grid.html
 scripts/occasion_form.html
-# purchase.tsv is NOT ignored — once filled it is hand-entered data with no
-# other source, and losing it would mean re-entering 58 rows.
+scripts/purchase_form.html
