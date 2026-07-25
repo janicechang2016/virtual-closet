@@ -30,9 +30,18 @@ GARMENTS = os.path.join(CLOSET, "garments")
 OUT = os.path.join(HERE, "colors.json")
 
 MAX_SAMPLES = 20000      # plenty for a stable palette; keeps this fast
-N_CLUSTERS = 6           # quantise to 6, then prune
-MIN_COVERAGE = 0.06      # drop clusters under 6% of garment pixels
+# Quantise fine, then merge back. Coarse quantisation averaged small print details
+# into the base colour — 34's pink florals surfaced as a muddy "tan" (a*5) when the
+# real accent is a*25, and 38's gold dots vanished into "camel".
+N_CLUSTERS = 16
+RAW_MIN_COVERAGE = 0.01  # keep this loose; merging and the final prune do the work
+MIN_COVERAGE = 0.03      # final floor — small enough to keep a print accent
 MERGE_DE = 8.0           # merge clusters closer than this in ΔE76
+# Shading merge: one fabric under light and in shadow is ONE colour. Merge clusters
+# that match in chroma but differ in lightness — bounded, because black-and-white
+# polka dots also match in chroma and must NOT merge.
+SHADE_DC = 4.0           # max chroma distance (a*,b*) to count as the same hue
+SHADE_DL = 28.0          # max lightness gap to count as shading rather than pattern
 ALPHA_MIN = 200          # opaque-enough to count
 WB_CLAMP = (0.85, 1.18)  # per-channel gain limits
 MIN_MASK_COVERAGE = 0.02  # of the frame; below this the mask is junk (matches dragcut.py)
@@ -65,6 +74,11 @@ NAMED = [
     ("navy", (28, 40, 72)), ("blue", (52, 88, 160)), ("light blue", (150, 184, 214)),
     ("teal", (40, 110, 110)), ("green", (66, 108, 70)), ("olive", (104, 104, 62)),
     ("sage", (156, 168, 142)), ("red", (168, 38, 42)), ("scarlet", (198, 46, 40)),
+    # Warm accents that print details land on — without these, a pink floral on a
+    # pale ground gets named "tan" and a gold dot gets named "camel".
+    ("coral", (232, 146, 124)), ("dusty pink", (214, 158, 152)),
+    ("mustard", (206, 166, 60)), ("sand", (216, 198, 170)),
+    ("oatmeal light", (222, 210, 192)),
     ("burgundy", (98, 30, 44)), ("oxblood", (82, 28, 32)), ("pink", (222, 152, 168)),
     ("blush", (236, 202, 198)), ("rose", (200, 110, 122)), ("purple", (104, 64, 132)),
     ("violet", (138, 110, 190)), ("lavender", (196, 182, 220)), ("yellow", (226, 200, 92)),
@@ -275,22 +289,63 @@ def quantise(px, gains):
     out = []
     for i in np.argsort(-counts):
         cov = counts[i] / total
-        if cov < MIN_COVERAGE:
+        if cov < RAW_MIN_COVERAGE:
             continue
         lab = srgb_to_lab(pal[i])
         merged = False
-        for e in out:                          # merge perceptual near-duplicates
-            if float(np.sqrt(((np.array(e["lab"]) - lab) ** 2).sum())) < MERGE_DE:
-                e["coverage"] = round(e["coverage"] + cov, 4)
+        for e in out:
+            # Compare against the cluster's ORIGINAL centre, never its running
+            # average. Chaining off a drifting average walked black boots up their
+            # own highlight ramp (black -> ... -> "grey 100%") one merge at a time.
+            seed = np.array(e["seed"])
+            de = float(np.sqrt(((seed - lab) ** 2).sum()))
+            dc = float(np.sqrt(((seed[1:] - lab[1:]) ** 2).sum()))
+            dl = abs(float(seed[0] - lab[0]))
+            if de < MERGE_DE:
+                # True near-duplicate: averaging is safe, the centres coincide.
+                w0, w1 = e["coverage"], cov
+                tot = w0 + w1
+                e["lab"] = [(a * w0 + b * w1) / tot for a, b in zip(e["lab"], lab)]
+                e["rgb"] = [int((a * w0 + b * w1) / tot)
+                            for a, b in zip(e["rgb"], pal[i])]
+                e["coverage"] = tot
+                merged = True
+                break
+            if dc < SHADE_DC and dl < SHADE_DL:
+                # Shading: absorb into the group, but the representative is decided
+                # later from the members' weighted MEDIAN lightness. A smooth
+                # gradient (black leather, L*17-44) splits into ~16 equal bins where
+                # no cluster dominates, so trusting the largest bin picked a
+                # highlight and reported black boots as grey.
+                e["members"].append((lab, cov, pal[i]))
+                e["coverage"] += cov
                 merged = True
                 break
         if not merged:
             out.append({
                 "lab": [float(v) for v in lab],
+                "seed": [float(v) for v in lab],   # fixed reference for merging
                 "rgb": [int(v) for v in pal[i]],
                 "name": name_for(lab),
                 "coverage": float(cov),
+                "members": [(lab, cov, pal[i])],
             })
+
+    # Resolve each shade group to its weighted-median member.
+    for e in out:
+        mem = e.pop("members", [])
+        if len(mem) > 1:
+            mem.sort(key=lambda m: m[0][0])            # by L*
+            half, run = sum(m[1] for m in mem) / 2.0, 0.0
+            pick = mem[0]
+            for m in mem:
+                run += m[1]
+                if run >= half:
+                    pick = m
+                    break
+            e["lab"] = [float(v) for v in pick[0]]
+            e["rgb"] = [int(v) for v in pick[2]]
+            e["name"] = name_for(pick[0])
 
     # Collapse entries that landed on the same name (e.g. two greys 10 ΔE apart):
     # one garment reporting "grey" twice is noise, not information.
@@ -306,8 +361,12 @@ def quantise(px, gains):
         prev["rgb"] = [int((a * w0 + b * w1) / tot) for a, b in zip(prev["rgb"], c["rgb"])]
         prev["coverage"] = tot
 
-    final = sorted(by_name.values(), key=lambda c: -c["coverage"])
+    # Final prune: RAW_MIN_COVERAGE was deliberately loose so accents survived long
+    # enough to merge; anything still tiny is noise.
+    final = sorted((c for c in by_name.values() if c["coverage"] >= MIN_COVERAGE),
+                   key=lambda c: -c["coverage"])
     for c in final:
+        c.pop("seed", None)                    # internal to merging
         c["lab"] = [round(v, 2) for v in c["lab"]]
         c["coverage"] = round(c["coverage"], 4)
     return final

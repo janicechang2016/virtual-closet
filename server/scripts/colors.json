@@ -3,31 +3,17 @@
     "colors": [
       {
         "lab": [
-          22.23,
-          0.47,
-          -1.26
+          14.89,
+          1.2,
+          -1.82
         ],
         "rgb": [
-          53,
-          53,
-          55
+          38,
+          37,
+          40
         ],
         "name": "black",
-        "coverage": 0.8312
-      },
-      {
-        "lab": [
-          13.79,
-          0.5,
-          -1.34
-        ],
-        "rgb": [
-          35,
-          35,
-          37
-        ],
-        "name": "black",
-        "coverage": 0.1689
+        "coverage": 1.0
       }
     ],
     "source": "garments/01-plain-tee/clean/01-plain-tee_extracted.png",
@@ -45,17 +31,17 @@
     "colors": [
       {
         "lab": [
-          7.35,
-          2.93,
-          -2.07
+          7.15,
+          2.28,
+          -1.12
         ],
         "rgb": [
-          25,
-          21,
-          25
+          20,
+          16,
+          18
         ],
         "name": "black",
-        "coverage": 1.0001
+        "coverage": 1.0
       }
     ],
     "source": "garments/02-jeans/clean/02-jeans_dragcut.png",
@@ -73,45 +59,59 @@
     "colors": [
       {
         "lab": [
-          4.79,
-          0.95,
-          -3.67
+          8.66,
+          2.69,
+          -5.38
         ],
         "rgb": [
-          15,
-          16,
-          22
+          21,
+          21,
+          30
         ],
         "name": "black",
-        "coverage": 0.4826
+        "coverage": 0.5611
       },
       {
         "lab": [
-          19.91,
-          27.69,
-          11.27
+          14.33,
+          24.91,
+          9.4
         ],
         "rgb": [
-          87,
-          28,
-          33
+          69,
+          17,
+          24
         ],
         "name": "oxblood",
-        "coverage": 0.3339
+        "coverage": 0.1861
       },
       {
         "lab": [
-          16.18,
-          4.17,
-          -22.39
+          23.18,
+          36.58,
+          18.78
         ],
         "rgb": [
-          20,
-          40,
-          72
+          106,
+          23,
+          29
+        ],
+        "name": "burgundy",
+        "coverage": 0.1531
+      },
+      {
+        "lab": [
+          19.71,
+          7.09,
+          -30.87
+        ],
+        "rgb": [
+          14,
+          47,
+          93
         ],
         "name": "navy",
-        "coverage": 0.1451
+        "coverage": 0.093
       }
     ],
     "source": "garments/03-patterned-dress/clean/03-patterned-dress_dragcut.png",
@@ -129,31 +129,17 @@
     "colors": [
       {
         "lab": [
-          9.12,
-          -0.74,
-          0.53
-        ],
-        "rgb": [
-          25,
-          26,
-          25
-        ],
-        "name": "black",
-        "coverage": 0.885
-      },
-      {
-        "lab": [
-          18.94,
+          7.74,
           -0.0,
           0.0
         ],
         "rgb": [
-          46,
-          46,
-          46
+          23,
+          23,
+          23
         ],
         "name": "black",
-        "coverage": 0.115
+        "coverage": 1.0
       }
     ],
     "source": "garments/04-structured-blazer/clean/04-structured-blazer_extracted.png",
@@ -171,31 +157,45 @@
     "colors": [
       {
         "lab": [
-          34.28,
-          -0.71,
-          -5.31
+          34.38,
+          -0.67,
+          -4.94
         ],
         "rgb": [
-          75,
-          81,
-          88
+          72,
+          78,
+          84
         ],
         "name": "charcoal",
-        "coverage": 0.8862
+        "coverage": 0.8911
       },
       {
         "lab": [
-          43.29,
-          2.85,
-          -4.08
+          45.5,
+          3.58,
+          -3.76
         ],
         "rgb": [
-          104,
-          101,
-          109
+          111,
+          106,
+          114
         ],
         "name": "grey",
-        "coverage": 0.1138
+        "coverage": 0.0638
+      },
+      {
+        "lab": [
+          19.03,
+          -5.77,
+          -5.52
+        ],
+        "rgb": [
+          31,
+          49,
+          54
+        ],
+        "name": "black",
+        "coverage": 0.0452
       }
     ],
     "source": "garments/05-hardest-item/clean/05-hardest-item_dragcut.png",
@@ -213,17 +213,17 @@
     "colors": [
       {
         "lab": [
-          9.84,
-          0.52,
-          -1.38
+          11.34,
+          0.51,
+          -1.36
         ],
         "rgb": [
-          27,
-          27,
-          29
+          30,
+          30,
+          32
         ],
         "name": "black",
-        "coverage": 0.9688
+        "coverage": 0.9998
       }
     ],
     "source": "garments/06-aritzia-slouch-coat/clean/06-aritzia-slouch-coat_dragcut.png",
@@ -241,17 +241,17 @@
     "colors": [
       {
         "lab": [
-          15.95,
+          16.43,
           -0.65,
           -0.97
         ],
         "rgb": [
-          38,
-          40,
-          41
+          39,
+          41,
+          42
         ],
         "name": "black",
-        "coverage": 0.9713
+        "coverage": 0.9864
       }
     ],
     "source": "garments/07-aritzia-suit-vest/clean/07-aritzia-suit-vest_dragcut.png",
@@ -269,59 +269,59 @@
     "colors": [
       {
         "lab": [
-          81.35,
-          1.73,
-          0.61
+          71.71,
+          1.27,
+          -1.28
         ],
         "rgb": [
-          206,
-          201,
-          201
+          177,
+          175,
+          178
         ],
-        "name": "silver",
-        "coverage": 0.5024
+        "name": "light grey",
+        "coverage": 0.5804
       },
       {
         "lab": [
-          36.99,
-          2.03,
-          -0.58
+          53.01,
+          2.65,
+          0.95
         ],
         "rgb": [
-          90,
-          86,
-          88
+          132,
+          125,
+          125
         ],
-        "name": "charcoal",
-        "coverage": 0.1873
+        "name": "grey",
+        "coverage": 0.3086
       },
       {
         "lab": [
-          63.63,
-          1.82,
-          0.65
+          12.57,
+          1.68,
+          -1.69
         ],
         "rgb": [
-          158,
-          153,
-          153
+          34,
+          32,
+          35
         ],
-        "name": "greige",
-        "coverage": 0.1727
+        "name": "black",
+        "coverage": 0.0606
       },
       {
         "lab": [
-          90.39,
-          2.58,
-          -1.83
+          81.11,
+          3.19,
+          6.76
         ],
         "rgb": [
-          231,
-          226,
-          231
+          213,
+          199,
+          189
         ],
-        "name": "off-white",
-        "coverage": 0.1376
+        "name": "oatmeal",
+        "coverage": 0.0503
       }
     ],
     "source": "garments/08-bunnyhill-grey-top/raw/grey-top.webp",
@@ -339,45 +339,31 @@
     "colors": [
       {
         "lab": [
-          96.04,
-          1.02,
-          -0.73
+          84.61,
+          0.16,
+          0.61
         ],
         "rgb": [
-          245,
-          243,
-          245
-        ],
-        "name": "white",
-        "coverage": 0.6577
-      },
-      {
-        "lab": [
-          64.59,
-          2.38,
-          3.79
-        ],
-        "rgb": [
-          164,
-          155,
-          150
-        ],
-        "name": "greige",
-        "coverage": 0.1886
-      },
-      {
-        "lab": [
-          86.19,
-          0.84,
-          0.85
-        ],
-        "rgb": [
-          218,
-          215,
-          214
+          212,
+          211,
+          210
         ],
         "name": "silver",
-        "coverage": 0.1537
+        "coverage": 0.8793
+      },
+      {
+        "lab": [
+          59.68,
+          2.45,
+          5.06
+        ],
+        "rgb": [
+          152,
+          142,
+          135
+        ],
+        "name": "grey",
+        "coverage": 0.1207
       }
     ],
     "source": "garments/09-bunnyhill-white-top/raw/white-top.webp",
@@ -395,17 +381,17 @@
     "colors": [
       {
         "lab": [
-          5.42,
-          1.83,
-          -1.31
+          6.58,
+          1.36,
+          -0.97
         ],
         "rgb": [
+          22,
           20,
-          17,
-          20
+          22
         ],
         "name": "black",
-        "coverage": 1.0
+        "coverage": 0.9931
       }
     ],
     "source": "garments/10-coucou-black-midi-skirt/clean/10-coucou-black-midi-skirt_dragcut.png",
@@ -423,17 +409,17 @@
     "colors": [
       {
         "lab": [
-          14.23,
-          0.25,
-          -0.67
+          14.68,
+          0.38,
+          -0.83
         ],
         "rgb": [
-          36,
-          36,
-          37
+          34,
+          34,
+          35
         ],
         "name": "black",
-        "coverage": 1.0
+        "coverage": 0.9898
       }
     ],
     "source": "garments/11-coucou-black-muse-tank/clean/11-coucou-black-muse-tank_dragcut.png",
@@ -451,17 +437,17 @@
     "colors": [
       {
         "lab": [
-          17.23,
-          0.93,
-          -1.14
+          15.99,
+          0.45,
+          -0.92
         ],
         "rgb": [
-          43,
-          42,
-          44
+          35,
+          35,
+          36
         ],
         "name": "black",
-        "coverage": 0.9999
+        "coverage": 1.0
       }
     ],
     "source": "garments/12-coucou-black-scoop-tank/clean/12-coucou-black-scoop-tank_dragcut.png",
@@ -479,17 +465,17 @@
     "colors": [
       {
         "lab": [
-          3.31,
-          0.65,
-          -5.89
+          3.12,
+          0.51,
+          -5.56
         ],
         "rgb": [
-          7,
-          12,
-          22
+          4,
+          8,
+          17
         ],
         "name": "black",
-        "coverage": 0.9924
+        "coverage": 0.9608
       }
     ],
     "source": "garments/13-coucou-long-sleeve-top/clean/13-coucou-long-sleeve-top_dragcut.png",
@@ -507,17 +493,17 @@
     "colors": [
       {
         "lab": [
-          12.84,
-          3.18,
-          -4.19
+          12.15,
+          3.13,
+          -4.01
         ],
         "rgb": [
-          35,
-          32,
-          39
+          30,
+          28,
+          34
         ],
         "name": "black",
-        "coverage": 1.0001
+        "coverage": 1.0
       }
     ],
     "source": "garments/14-coucou-midi-black-dress/clean/14-coucou-midi-black-dress_dragcut.png",
@@ -535,17 +521,17 @@
     "colors": [
       {
         "lab": [
-          15.26,
-          3.11,
-          -4.11
+          18.89,
+          2.34,
+          -3.53
         ],
         "rgb": [
-          40,
-          37,
-          44
+          47,
+          45,
+          51
         ],
         "name": "black",
-        "coverage": 1.0001
+        "coverage": 1.0
       }
     ],
     "source": "garments/15-coucou-mini-skirt/clean/15-coucou-mini-skirt_dragcut.png",
@@ -563,17 +549,17 @@
     "colors": [
       {
         "lab": [
-          37.63,
-          53.02,
-          29.66
+          36.29,
+          52.43,
+          29.94
         ],
         "rgb": [
-          169,
-          36,
-          44
+          159,
+          28,
+          35
         ],
         "name": "red",
-        "coverage": 0.9478
+        "coverage": 1.0
       }
     ],
     "source": "garments/16-coucou-red-scoop-tank/clean/16-coucou-red-scoop-tank_dragcut.png",
@@ -591,17 +577,17 @@
     "colors": [
       {
         "lab": [
-          88.82,
+          89.15,
           -0.0,
           0.0
         ],
         "rgb": [
-          223,
-          223,
-          223
+          220,
+          220,
+          220
         ],
         "name": "off-white",
-        "coverage": 0.9999
+        "coverage": 0.9966
       }
     ],
     "source": "garments/17-coucou-slip-dress/clean/17-coucou-slip-dress_dragcut.png",
@@ -619,17 +605,17 @@
     "colors": [
       {
         "lab": [
-          93.2,
-          0.87,
-          -1.33
+          93.73,
+          0.92,
+          -1.43
         ],
         "rgb": [
-          236,
-          235,
-          238
+          234,
+          233,
+          237
         ],
-        "name": "off-white",
-        "coverage": 0.9999
+        "name": "white",
+        "coverage": 1.0
       }
     ],
     "source": "garments/18-coucou-white-midi-skirt/clean/18-coucou-white-midi-skirt_dragcut.png",
@@ -647,17 +633,17 @@
     "colors": [
       {
         "lab": [
-          92.2,
-          1.23,
-          -2.3
+          92.7,
+          0.97,
+          -2.03
         ],
         "rgb": [
-          233,
-          232,
-          237
+          231,
+          231,
+          235
         ],
-        "name": "off-white",
-        "coverage": 1.0
+        "name": "white",
+        "coverage": 0.9922
       }
     ],
     "source": "garments/19-coucou-white-scoop-tank/clean/19-coucou-white-scoop-tank_dragcut.png",
@@ -675,17 +661,17 @@
     "colors": [
       {
         "lab": [
-          20.79,
-          -0.23,
-          2.06
+          15.09,
+          -0.48,
+          1.33
         ],
         "rgb": [
-          51,
-          50,
-          47
+          38,
+          38,
+          36
         ],
         "name": "black",
-        "coverage": 1.0001
+        "coverage": 1.0
       }
     ],
     "source": "garments/20-entire-studios-eternal-hoodie/clean/20-entire-studios-eternal-hoodie_dragcut.png",
@@ -703,31 +689,17 @@
     "colors": [
       {
         "lab": [
-          5.09,
-          0.2,
-          -0.55
+          5.06,
+          -0.0,
+          0.0
         ],
         "rgb": [
           17,
           17,
-          18
+          17
         ],
         "name": "black",
-        "coverage": 0.8872
-      },
-      {
-        "lab": [
-          14.51,
-          -0.66,
-          -0.98
-        ],
-        "rgb": [
-          35,
-          37,
-          38
-        ],
-        "name": "black",
-        "coverage": 0.1128
+        "coverage": 0.9952
       }
     ],
     "source": "garments/21-frankies-maxi-dress/clean/21-frankies-maxi-dress_dragcut.png",
@@ -745,17 +717,17 @@
     "colors": [
       {
         "lab": [
-          20.76,
-          0.04,
-          -1.42
+          19.34,
+          -0.2,
+          -0.79
         ],
         "rgb": [
-          49,
-          50,
-          52
+          46,
+          47,
+          48
         ],
         "name": "black",
-        "coverage": 0.9999
+        "coverage": 1.0
       }
     ],
     "source": "garments/23-issey-black-tank/clean/23-issey-black-tank_dragcut.png",
@@ -773,17 +745,17 @@
     "colors": [
       {
         "lab": [
-          81.76,
-          0.34,
-          0.12
+          84.17,
+          -0.18,
+          0.49
         ],
         "rgb": [
-          204,
-          203,
-          203
+          210,
+          210,
+          209
         ],
         "name": "silver",
-        "coverage": 1.0001
+        "coverage": 1.0
       }
     ],
     "source": "garments/24-issey-silver-tank/clean/24-issey-silver-tank_dragcut.png",
@@ -801,31 +773,17 @@
     "colors": [
       {
         "lab": [
-          86.29,
-          -0.55,
-          2.58
+          79.52,
+          -0.39,
+          3.25
         ],
         "rgb": [
-          217,
-          216,
-          211
-        ],
-        "name": "off-white",
-        "coverage": 0.848
-      },
-      {
-        "lab": [
-          76.41,
-          0.32,
-          3.53
-        ],
-        "rgb": [
-          192,
-          188,
-          182
+          199,
+          197,
+          191
         ],
         "name": "light grey",
-        "coverage": 0.1521
+        "coverage": 1.0
       }
     ],
     "source": "garments/25-kotn-samira-tank/clean/25-kotn-samira-tank_dragcut.png",
@@ -843,31 +801,31 @@
     "colors": [
       {
         "lab": [
-          50.61,
-          1.08,
-          7.57
+          62.29,
+          0.21,
+          6.58
         ],
         "rgb": [
-          127,
-          119,
-          107
+          156,
+          150,
+          139
         ],
-        "name": "grey",
-        "coverage": 0.5201
+        "name": "greige",
+        "coverage": 0.8247
       },
       {
         "lab": [
-          72.59,
-          0.84,
-          6.61
+          46.49,
+          1.15,
+          8.54
         ],
         "rgb": [
-          184,
-          177,
-          166
+          118,
+          109,
+          96
         ],
-        "name": "greige",
-        "coverage": 0.48
+        "name": "grey",
+        "coverage": 0.1753
       }
     ],
     "source": "garments/26-liniss-dune-pants/raw/dune-pants.webp",
@@ -885,31 +843,31 @@
     "colors": [
       {
         "lab": [
-          10.67,
-          -0.13,
-          -2.38
+          4.24,
+          -0.33,
+          -0.12
         ],
         "rgb": [
-          27,
-          29,
-          32
+          14,
+          15,
+          15
         ],
         "name": "black",
-        "coverage": 0.9356
+        "coverage": 0.9394
       },
       {
         "lab": [
-          49.21,
-          0.03,
-          -1.23
+          79.55,
+          0.18,
+          -0.5
         ],
         "rgb": [
-          116,
-          117,
-          119
+          197,
+          197,
+          198
         ],
-        "name": "grey",
-        "coverage": 0.0645
+        "name": "silver",
+        "coverage": 0.0606
       }
     ],
     "source": "garments/27-liniss-pants/clean/27-liniss-pants_dragcut.png",
@@ -927,17 +885,17 @@
     "colors": [
       {
         "lab": [
-          90.39,
-          -1.22,
-          2.32
+          90.48,
+          -1.07,
+          1.72
         ],
         "rgb": [
-          227,
-          228,
-          223
+          224,
+          226,
+          222
         ],
         "name": "off-white",
-        "coverage": 1.0002
+        "coverage": 0.9968
       }
     ],
     "source": "garments/28-neil-vernon-long-sleeve-top/clean/28-neil-vernon-long-sleeve-top_dragcut.png",
@@ -955,31 +913,31 @@
     "colors": [
       {
         "lab": [
-          15.82,
-          -1.77,
-          -0.35
+          11.34,
+          -1.73,
+          -2.14
         ],
         "rgb": [
-          36,
-          40,
-          39
+          26,
+          31,
+          33
         ],
         "name": "black",
-        "coverage": 0.8694
+        "coverage": 0.8592
       },
       {
         "lab": [
-          54.43,
-          0.97,
-          10.05
+          62.11,
+          0.73,
+          10.31
         ],
         "rgb": [
-          139,
-          129,
-          113
+          159,
+          149,
+          132
         ],
-        "name": "grey",
-        "coverage": 0.1307
+        "name": "greige",
+        "coverage": 0.1408
       }
     ],
     "source": "garments/29-nin-pleated-top/raw/pleated-top.webp",
@@ -997,17 +955,17 @@
     "colors": [
       {
         "lab": [
-          13.78,
-          0.23,
-          0.83
+          12.19,
+          0.22,
+          0.22
         ],
         "rgb": [
-          36,
-          35,
-          34
+          29,
+          28,
+          28
         ],
         "name": "black",
-        "coverage": 0.9999
+        "coverage": 1.0
       }
     ],
     "source": "garments/30-off-shoulder-top/raw/off-shoulder-top.webp",
@@ -1025,45 +983,31 @@
     "colors": [
       {
         "lab": [
-          80.92,
-          4.7,
-          15.13
+          77.75,
+          6.21,
+          20.83
         ],
         "rgb": [
-          221,
-          197,
-          173
+          218,
+          187,
+          154
         ],
         "name": "beige",
-        "coverage": 0.7075
+        "coverage": 0.7768
       },
       {
         "lab": [
-          67.02,
-          6.64,
-          18.1
+          89.07,
+          2.06,
+          11.91
         ],
         "rgb": [
-          187,
-          158,
-          131
+          236,
+          221,
+          201
         ],
-        "name": "tan",
-        "coverage": 0.1756
-      },
-      {
-        "lab": [
-          90.87,
-          1.66,
-          10.99
-        ],
-        "rgb": [
-          241,
-          227,
-          208
-        ],
-        "name": "cream",
-        "coverage": 0.1169
+        "name": "oatmeal light",
+        "coverage": 0.1952
       }
     ],
     "source": "garments/31-orseund-iris-top/clean/31-orseund-iris-top_dragcut.png",
@@ -1081,31 +1025,17 @@
     "colors": [
       {
         "lab": [
-          46.59,
-          2.33,
-          2.09
+          38.61,
+          1.41,
+          2.45
         ],
         "rgb": [
-          116,
-          109,
-          107
-        ],
-        "name": "grey",
-        "coverage": 0.6504
-      },
-      {
-        "lab": [
-          33.16,
-          1.65,
-          1.92
-        ],
-        "rgb": [
-          82,
-          77,
-          75
+          95,
+          90,
+          87
         ],
         "name": "charcoal",
-        "coverage": 0.3496
+        "coverage": 1.0
       }
     ],
     "source": "garments/32-personal-language-skirt/clean/32-personal-language-skirt_dragcut.png",
@@ -1123,45 +1053,45 @@
     "colors": [
       {
         "lab": [
-          12.45,
-          2.74,
-          3.3
+          15.2,
+          1.96,
+          3.69
         ],
         "rgb": [
-          38,
-          31,
-          28
+          43,
+          37,
+          33
         ],
         "name": "black",
-        "coverage": 0.5946
+        "coverage": 0.6033
       },
       {
         "lab": [
-          19.58,
-          15.96,
-          4.81
+          23.58,
+          27.19,
+          6.47
         ],
         "rgb": [
-          71,
-          38,
-          41
+          94,
+          36,
+          47
+        ],
+        "name": "burgundy",
+        "coverage": 0.2036
+      },
+      {
+        "lab": [
+          12.25,
+          15.37,
+          4.79
+        ],
+        "rgb": [
+          53,
+          23,
+          26
         ],
         "name": "chocolate",
-        "coverage": 0.1814
-      },
-      {
-        "lab": [
-          31.06,
-          18.24,
-          4.33
-        ],
-        "rgb": [
-          102,
-          62,
-          67
-        ],
-        "name": "oxblood",
-        "coverage": 0.1711
+        "coverage": 0.1931
       }
     ],
     "source": "garments/33-realisation-alba-dress/clean/33-realisation-alba-dress_dragcut.png",
@@ -1179,31 +1109,31 @@
     "colors": [
       {
         "lab": [
-          88.33,
-          -5.16,
-          26.04
+          86.03,
+          -3.99,
+          27.41
         ],
         "rgb": [
-          231,
-          223,
-          172
+          227,
+          215,
+          163
         ],
         "name": "butter",
-        "coverage": 0.8306
+        "coverage": 0.9518
       },
       {
         "lab": [
-          72.97,
-          5.42,
-          30.78
+          62.2,
+          25.18,
+          30.81
         ],
         "rgb": [
-          208,
-          174,
-          123
+          207,
+          132,
+          97
         ],
-        "name": "tan",
-        "coverage": 0.1694
+        "name": "coral",
+        "coverage": 0.0482
       }
     ],
     "source": "garments/34-realisation-allegra-dress/clean/34-realisation-allegra-dress_dragcut.png",
@@ -1222,30 +1152,30 @@
       {
         "lab": [
           15.6,
-          0.68,
-          -0.33
+          -0.24,
+          0.66
         ],
         "rgb": [
           39,
-          38,
-          39
+          39,
+          38
         ],
         "name": "black",
-        "coverage": 0.8694
+        "coverage": 0.8687
       },
       {
         "lab": [
-          79.75,
-          0.85,
-          1.99
+          88.6,
+          0.31,
+          2.32
         ],
         "rgb": [
-          201,
-          197,
-          194
+          225,
+          222,
+          218
         ],
-        "name": "light grey",
-        "coverage": 0.1306
+        "name": "off-white",
+        "coverage": 0.1313
       }
     ],
     "source": "garments/35-realisation-delphine-dress/clean/35-realisation-delphine-dress_dragcut.png",
@@ -1263,31 +1193,45 @@
     "colors": [
       {
         "lab": [
-          15.98,
-          14.74,
-          4.37
+          9.88,
+          5.93,
+          3.75
         ],
         "rgb": [
-          60,
-          31,
-          34
+          35,
+          21,
+          19
         ],
-        "name": "chocolate",
-        "coverage": 0.5978
+        "name": "black",
+        "coverage": 0.5354
       },
       {
         "lab": [
-          10.45,
-          2.61,
-          4.07
+          15.13,
+          16.75,
+          3.94
         ],
         "rgb": [
-          34,
-          27,
-          23
+          61,
+          28,
+          33
         ],
-        "name": "black",
-        "coverage": 0.4022
+        "name": "oxblood",
+        "coverage": 0.332
+      },
+      {
+        "lab": [
+          9.17,
+          12.91,
+          4.12
+        ],
+        "rgb": [
+          43,
+          18,
+          20
+        ],
+        "name": "chocolate",
+        "coverage": 0.1326
       }
     ],
     "source": "garments/36-realisation-liv-dress/clean/36-realisation-liv-dress_dragcut.png",
@@ -1305,31 +1249,31 @@
     "colors": [
       {
         "lab": [
-          36.83,
-          54.69,
-          33.56
+          47.16,
+          59.17,
+          36.93
         ],
         "rgb": [
-          169,
-          29,
-          36
+          205,
+          52,
+          52
         ],
-        "name": "red",
-        "coverage": 0.5252
+        "name": "scarlet",
+        "coverage": 0.526
       },
       {
         "lab": [
-          50.82,
-          59.84,
-          35.07
+          35.02,
+          53.14,
+          32.97
         ],
         "rgb": [
-          219,
-          64,
-          65
+          159,
+          24,
+          31
         ],
-        "name": "scarlet",
-        "coverage": 0.4748
+        "name": "red",
+        "coverage": 0.474
       }
     ],
     "source": "garments/37-realisation-gia-dress/clean/37-realisation-gia-dress_dragcut.png",
@@ -1347,31 +1291,45 @@
     "colors": [
       {
         "lab": [
-          14.09,
-          5.38,
-          3.57
+          15.98,
+          3.32,
+          2.71
         ],
         "rgb": [
-          45,
-          33,
-          31
+          46,
+          38,
+          36
         ],
         "name": "black",
-        "coverage": 0.8936
+        "coverage": 0.872
       },
       {
         "lab": [
-          52.79,
-          2.77,
-          26.78
+          68.17,
+          2.23,
+          32.71
         ],
         "rgb": [
-          146,
-          123,
-          80
+          190,
+          163,
+          107
         ],
-        "name": "camel",
-        "coverage": 0.1064
+        "name": "tan",
+        "coverage": 0.0713
+      },
+      {
+        "lab": [
+          36.08,
+          3.45,
+          20.54
+        ],
+        "rgb": [
+          101,
+          82,
+          52
+        ],
+        "name": "brown",
+        "coverage": 0.0566
       }
     ],
     "source": "garments/38-realisation-iggy-dress/clean/38-realisation-iggy-dress_dragcut.png",
@@ -1389,45 +1347,45 @@
     "colors": [
       {
         "lab": [
-          72.31,
-          12.02,
-          13.12
+          78.33,
+          7.91,
+          13.06
         ],
         "rgb": [
-          208,
-          169,
-          154
+          218,
+          188,
+          170
         ],
-        "name": "greige",
-        "coverage": 0.7091
+        "name": "beige",
+        "coverage": 0.77
       },
       {
         "lab": [
-          63.11,
-          17.61,
-          11.02
+          67.95,
+          17.07,
+          12.74
         ],
         "rgb": [
-          190,
-          141,
-          134
-        ],
-        "name": "pink",
-        "coverage": 0.1943
-      },
-      {
-        "lab": [
-          84.21,
-          9.88,
-          12.55
-        ],
-        "rgb": [
-          238,
           203,
-          187
+          153,
+          143
         ],
-        "name": "blush",
-        "coverage": 0.0964
+        "name": "dusty pink",
+        "coverage": 0.1828
+      },
+      {
+        "lab": [
+          55.05,
+          26.19,
+          10.38
+        ],
+        "rgb": [
+          180,
+          114,
+          115
+        ],
+        "name": "rose",
+        "coverage": 0.0473
       }
     ],
     "source": "garments/39-realisation-ivy-dress/clean/39-realisation-ivy-dress_dragcut.png",
@@ -1445,45 +1403,31 @@
     "colors": [
       {
         "lab": [
-          4.41,
-          0.38,
-          -0.17
+          31.12,
+          0.19,
+          2.09
         ],
         "rgb": [
-          13,
-          12,
-          13
-        ],
-        "name": "black",
-        "coverage": 0.5389
-      },
-      {
-        "lab": [
-          30.85,
-          0.51,
-          1.87
-        ],
-        "rgb": [
-          74,
-          72,
-          69
+          75,
+          73,
+          70
         ],
         "name": "charcoal",
-        "coverage": 0.3492
+        "coverage": 0.5049
       },
       {
         "lab": [
-          47.1,
-          0.96,
-          2.22
+          9.37,
+          0.48,
+          0.17
         ],
         "rgb": [
-          115,
-          111,
-          108
+          27,
+          26,
+          26
         ],
-        "name": "grey",
-        "coverage": 0.1119
+        "name": "black",
+        "coverage": 0.4951
       }
     ],
     "source": "garments/40-realisation-sheer-top/clean/40-realisation-sheer-top_dragcut.png",
@@ -1501,31 +1445,31 @@
     "colors": [
       {
         "lab": [
-          10.77,
+          6.32,
           -0.0,
           0.0
         ],
         "rgb": [
-          29,
-          29,
-          29
+          20,
+          20,
+          20
         ],
         "name": "black",
-        "coverage": 0.7685
+        "coverage": 0.7684
       },
       {
         "lab": [
-          100.0,
-          -0.0,
-          0.0
+          99.99,
+          -0.06,
+          0.04
         ],
         "rgb": [
-          255,
-          255,
-          255
+          254,
+          254,
+          254
         ],
         "name": "white",
-        "coverage": 0.2215
+        "coverage": 0.2216
       }
     ],
     "source": "garments/41-sagittarius-top/clean/41-sagittarius-top_dragcut.png",
@@ -1543,17 +1487,17 @@
     "colors": [
       {
         "lab": [
-          10.27,
+          11.26,
           -0.0,
           0.0
         ],
         "rgb": [
-          28,
-          28,
-          28
+          30,
+          30,
+          30
         ],
         "name": "black",
-        "coverage": 1.0001
+        "coverage": 0.9952
       }
     ],
     "source": "garments/42-sagittarius-trousers/clean/42-sagittarius-trousers_dragcut.png",
@@ -1571,31 +1515,31 @@
     "colors": [
       {
         "lab": [
-          94.0,
-          0.81,
-          3.01
+          100.0,
+          -0.0,
+          0.0
         ],
         "rgb": [
-          242,
-          237,
-          232
+          255,
+          255,
+          255
         ],
-        "name": "off-white",
-        "coverage": 0.8171
+        "name": "white",
+        "coverage": 0.5757
       },
       {
         "lab": [
-          84.75,
-          1.9,
-          5.68
+          92.0,
+          1.16,
+          4.24
         ],
         "rgb": [
-          220,
-          210,
-          201
+          238,
+          231,
+          224
         ],
-        "name": "oatmeal",
-        "coverage": 0.1829
+        "name": "off-white",
+        "coverage": 0.4178
       }
     ],
     "source": "garments/43-subtle-mermaid-top/clean/43-subtle-mermaid-top_dragcut.png",
@@ -1613,31 +1557,31 @@
     "colors": [
       {
         "lab": [
-          95.97,
+          96.66,
           0.49,
-          0.72
+          0.71
         ],
         "rgb": [
+          247,
           245,
-          243,
-          242
+          244
         ],
         "name": "white",
-        "coverage": 0.8342
+        "coverage": 0.8265
       },
       {
         "lab": [
-          86.05,
-          1.36,
-          4.92
+          85.4,
+          1.83,
+          4.87
         ],
         "rgb": [
-          222,
-          214,
-          206
+          220,
+          211,
+          204
         ],
-        "name": "off-white",
-        "coverage": 0.1658
+        "name": "oatmeal light",
+        "coverage": 0.1735
       }
     ],
     "source": "garments/44-subtle-mermaid-skirt/clean/44-subtle-mermaid-skirt_dragcut.png",
@@ -1655,17 +1599,17 @@
     "colors": [
       {
         "lab": [
-          86.53,
-          -1.84,
-          -5.08
+          87.56,
+          -2.03,
+          -4.58
         ],
         "rgb": [
-          208,
-          218,
-          226
+          211,
+          221,
+          228
         ],
         "name": "pale blue",
-        "coverage": 0.9999
+        "coverage": 1.0
       }
     ],
     "source": "garments/45-sundae-gorum-shirt/clean/45-sundae-gorum-shirt_dragcut.png",
@@ -1683,45 +1627,59 @@
     "colors": [
       {
         "lab": [
-          57.15,
-          -4.11,
-          3.48
+          69.26,
+          -5.33,
+          0.49
         ],
         "rgb": [
-          132,
-          139,
-          131
-        ],
-        "name": "grey",
-        "coverage": 0.5381
-      },
-      {
-        "lab": [
-          68.44,
-          -5.69,
-          0.38
-        ],
-        "rgb": [
-          156,
-          170,
-          166
+          159,
+          172,
+          168
         ],
         "name": "greige",
-        "coverage": 0.2508
+        "coverage": 0.6327
       },
       {
         "lab": [
-          30.58,
-          -1.03,
-          9.02
+          37.76,
+          -3.04,
+          6.09
         ],
         "rgb": [
-          76,
-          72,
-          58
+          88,
+          90,
+          79
         ],
         "name": "charcoal",
-        "coverage": 0.211
+        "coverage": 0.2598
+      },
+      {
+        "lab": [
+          41.82,
+          -0.24,
+          13.85
+        ],
+        "rgb": [
+          107,
+          98,
+          76
+        ],
+        "name": "olive",
+        "coverage": 0.0556
+      },
+      {
+        "lab": [
+          12.42,
+          0.05,
+          6.83
+        ],
+        "rgb": [
+          36,
+          32,
+          23
+        ],
+        "name": "black",
+        "coverage": 0.052
       }
     ],
     "source": "garments/46-the-idiot-jacket/clean/46-the-idiot-jacket_dragcut.png",
@@ -1739,73 +1697,59 @@
     "colors": [
       {
         "lab": [
-          62.4,
-          1.41,
-          16.97
+          61.33,
+          1.7,
+          17.71
         ],
         "rgb": [
-          165,
-          149,
-          121
+          163,
+          146,
+          117
         ],
         "name": "tan",
-        "coverage": 0.4289
+        "coverage": 0.4616
       },
       {
         "lab": [
-          29.63,
-          0.68,
-          8.34
+          20.67,
+          0.44,
+          5.1
         ],
         "rgb": [
-          76,
-          69,
-          57
-        ],
-        "name": "charcoal",
-        "coverage": 0.1981
-      },
-      {
-        "lab": [
-          15.87,
-          0.57,
-          4.64
-        ],
-        "rgb": [
-          43,
-          39,
-          33
+          53,
+          49,
+          42
         ],
         "name": "black",
-        "coverage": 0.1898
+        "coverage": 0.3732
       },
       {
         "lab": [
-          85.46,
-          0.16,
-          6.16
+          92.0,
+          -0.19,
+          1.57
         ],
         "rgb": [
-          219,
-          213,
-          202
+          233,
+          232,
+          229
         ],
-        "name": "oatmeal",
-        "coverage": 0.0932
+        "name": "off-white",
+        "coverage": 0.0856
       },
       {
         "lab": [
-          47.1,
-          1.37,
-          15.98
+          40.9,
+          1.24,
+          13.8
         ],
         "rgb": [
-          124,
-          110,
-          85
+          107,
+          95,
+          74
         ],
-        "name": "olive",
-        "coverage": 0.09
+        "name": "brown",
+        "coverage": 0.0556
       }
     ],
     "source": "garments/47-woodrose-deli-skirt/raw/tie-skirt.webp",
@@ -1823,31 +1767,17 @@
     "colors": [
       {
         "lab": [
-          71.82,
-          1.69,
-          14.93
+          61.52,
+          1.07,
+          15.14
         ],
         "rgb": [
-          190,
-          174,
-          149
+          161,
+          147,
+          122
         ],
         "name": "greige",
-        "coverage": 0.8286
-      },
-      {
-        "lab": [
-          58.54,
-          1.38,
-          15.98
-        ],
-        "rgb": [
-          154,
-          139,
-          113
-        ],
-        "name": "tan",
-        "coverage": 0.1715
+        "coverage": 1.0
       }
     ],
     "source": "garments/48-woodrose-deli-sweater/raw/off-shoulder-sweater.webp",
@@ -1865,31 +1795,17 @@
     "colors": [
       {
         "lab": [
-          23.66,
-          2.18,
-          -1.92
+          23.73,
+          1.58,
+          -1.55
         ],
         "rgb": [
-          58,
+          57,
           55,
           58
         ],
         "name": "black",
-        "coverage": 0.9194
-      },
-      {
-        "lab": [
-          53.92,
-          1.72,
-          -1.22
-        ],
-        "rgb": [
-          131,
-          128,
-          131
-        ],
-        "name": "grey",
-        "coverage": 0.0804
+        "coverage": 1.0
       }
     ],
     "source": "garments/49-jil-sander-boots/clean/49-jil-sander-boots_dragcut.png",
@@ -1907,45 +1823,31 @@
     "colors": [
       {
         "lab": [
-          18.38,
-          -0.13,
-          -2.24
+          23.85,
+          -0.38,
+          -1.54
         ],
         "rgb": [
-          43,
-          45,
-          48
+          55,
+          57,
+          59
         ],
         "name": "black",
-        "coverage": 0.735
+        "coverage": 0.9536
       },
       {
         "lab": [
-          8.11,
-          -0.41,
-          -1.74
+          53.87,
+          -0.34,
+          -1.34
         ],
         "rgb": [
-          22,
-          24,
-          26
-        ],
-        "name": "black",
-        "coverage": 0.1769
-      },
-      {
-        "lab": [
-          44.39,
-          0.03,
-          -1.26
-        ],
-        "rgb": [
-          104,
-          105,
-          107
+          127,
+          129,
+          131
         ],
         "name": "grey",
-        "coverage": 0.0882
+        "coverage": 0.0464
       }
     ],
     "source": "garments/50-yello-heels/clean/50-yello-heels_dragcut.png",
@@ -1963,45 +1865,45 @@
     "colors": [
       {
         "lab": [
-          25.25,
-          1.77,
-          -0.69
+          12.47,
+          1.23,
+          -1.86
         ],
         "rgb": [
-          62,
-          59,
-          60
-        ],
-        "name": "charcoal",
-        "coverage": 0.5341
-      },
-      {
-        "lab": [
-          4.45,
-          0.73,
-          -0.91
-        ],
-        "rgb": [
-          16,
-          15,
-          17
+          33,
+          32,
+          35
         ],
         "name": "black",
-        "coverage": 0.3714
+        "coverage": 0.905
       },
       {
         "lab": [
-          58.39,
-          0.99,
-          -2.66
+          69.7,
+          0.8,
+          -3.2
         ],
         "rgb": [
-          140,
-          140,
-          145
+          169,
+          170,
+          176
         ],
-        "name": "grey",
-        "coverage": 0.0945
+        "name": "light grey",
+        "coverage": 0.0619
+      },
+      {
+        "lab": [
+          27.81,
+          4.52,
+          5.78
+        ],
+        "rgb": [
+          76,
+          63,
+          57
+        ],
+        "name": "chocolate",
+        "coverage": 0.0332
       }
     ],
     "source": "garments/51-weejuns-loafers/clean/51-weejuns-loafers_dragcut.png",
@@ -2019,31 +1921,17 @@
     "colors": [
       {
         "lab": [
-          9.98,
-          0.64,
-          -0.46
+          4.79,
+          0.56,
+          -0.4
         ],
         "rgb": [
-          27,
-          26,
-          27
+          17,
+          16,
+          17
         ],
         "name": "black",
-        "coverage": 0.9085
-      },
-      {
-        "lab": [
-          31.18,
-          0.61,
-          0.89
-        ],
-        "rgb": [
-          75,
-          73,
-          72
-        ],
-        "name": "charcoal",
-        "coverage": 0.0915
+        "coverage": 1.0
       }
     ],
     "source": "garments/52-camper-flats/clean/52-camper-flats_dragcut.png",
@@ -2061,45 +1949,31 @@
     "colors": [
       {
         "lab": [
-          21.29,
-          -0.57,
-          -1.09
+          20.63,
+          -0.63,
+          -0.94
         ],
         "rgb": [
-          49,
-          51,
-          52
+          48,
+          50,
+          51
         ],
         "name": "black",
-        "coverage": 0.7422
+        "coverage": 0.938
       },
       {
         "lab": [
-          7.63,
-          -0.47,
-          -0.17
+          93.75,
+          -0.0,
+          0.0
         ],
         "rgb": [
-          22,
-          23,
-          23
+          237,
+          237,
+          237
         ],
-        "name": "black",
-        "coverage": 0.1916
-      },
-      {
-        "lab": [
-          66.19,
-          -0.17,
-          -0.64
-        ],
-        "rgb": [
-          160,
-          161,
-          162
-        ],
-        "name": "greige",
-        "coverage": 0.0663
+        "name": "off-white",
+        "coverage": 0.062
       }
     ],
     "source": "garments/53-keen-sandals/clean/53-keen-sandals_dragcut.png",
@@ -2117,45 +1991,31 @@
     "colors": [
       {
         "lab": [
-          20.33,
+          14.11,
           -0.0,
           0.0
         ],
         "rgb": [
-          49,
-          49,
-          49
+          35,
+          35,
+          35
         ],
         "name": "black",
-        "coverage": 0.5741
+        "coverage": 0.9578
       },
       {
         "lab": [
-          4.32,
-          -0.0,
-          0.0
+          57.82,
+          -0.77,
+          4.54
         ],
         "rgb": [
-          15,
-          15,
-          15
-        ],
-        "name": "black",
-        "coverage": 0.3566
-      },
-      {
-        "lab": [
-          46.0,
-          -0.41,
-          2.37
-        ],
-        "rgb": [
-          110,
-          109,
-          105
+          141,
+          139,
+          131
         ],
         "name": "grey",
-        "coverage": 0.0692
+        "coverage": 0.0423
       }
     ],
     "source": "garments/54-salomon-sneakers/clean/54-salomon-sneakers_dragcut.png",
@@ -2173,45 +2033,31 @@
     "colors": [
       {
         "lab": [
-          10.54,
-          -0.33,
+          12.6,
+          -0.71,
+          0.51
+        ],
+        "rgb": [
+          32,
+          33,
+          32
+        ],
+        "name": "black",
+        "coverage": 0.9309
+      },
+      {
+        "lab": [
+          76.17,
+          -0.35,
           -0.12
         ],
         "rgb": [
-          27,
-          28,
-          28
+          187,
+          188,
+          188
         ],
-        "name": "black",
-        "coverage": 0.7628
-      },
-      {
-        "lab": [
-          28.79,
-          -0.19,
-          -0.75
-        ],
-        "rgb": [
-          67,
-          68,
-          69
-        ],
-        "name": "charcoal",
-        "coverage": 0.1391
-      },
-      {
-        "lab": [
-          62.49,
-          0.19,
-          -0.52
-        ],
-        "rgb": [
-          151,
-          151,
-          152
-        ],
-        "name": "grey",
-        "coverage": 0.0981
+        "name": "light grey",
+        "coverage": 0.0692
       }
     ],
     "source": "garments/55-asics-sneakers/clean/55-asics-sneakers_dragcut.png",
@@ -2229,45 +2075,31 @@
     "colors": [
       {
         "lab": [
-          4.31,
+          8.76,
           -0.0,
           0.0
         ],
         "rgb": [
-          12,
-          12,
-          12
+          25,
+          25,
+          25
         ],
         "name": "black",
-        "coverage": 0.5306
+        "coverage": 0.9396
       },
       {
         "lab": [
-          23.95,
-          -0.0,
-          0.0
+          60.14,
+          -0.19,
+          0.53
         ],
         "rgb": [
-          57,
-          57,
-          57
-        ],
-        "name": "black",
-        "coverage": 0.3621
-      },
-      {
-        "lab": [
-          52.41,
-          -0.0,
-          0.0
-        ],
-        "rgb": [
-          125,
-          125,
-          125
+          145,
+          145,
+          144
         ],
         "name": "grey",
-        "coverage": 0.1073
+        "coverage": 0.0604
       }
     ],
     "source": "garments/56-mizuno-sneakers/clean/56-mizuno-sneakers_dragcut.png",
@@ -2285,31 +2117,17 @@
     "colors": [
       {
         "lab": [
-          18.3,
-          -0.65,
-          0.41
-        ],
-        "rgb": [
-          44,
-          45,
-          44
-        ],
-        "name": "black",
-        "coverage": 0.8024
-      },
-      {
-        "lab": [
-          3.64,
+          9.77,
           -0.0,
           0.0
         ],
         "rgb": [
-          13,
-          13,
-          13
+          27,
+          27,
+          27
         ],
         "name": "black",
-        "coverage": 0.1975
+        "coverage": 1.0
       }
     ],
     "source": "garments/57-puma-ssg-sneakers/clean/57-puma-ssg-sneakers_dragcut.png",
@@ -2327,31 +2145,17 @@
     "colors": [
       {
         "lab": [
-          8.55,
-          -0.96,
-          -0.33
+          14.0,
+          -0.91,
+          -0.32
         ],
         "rgb": [
-          23,
-          25,
-          25
+          34,
+          36,
+          36
         ],
         "name": "black",
-        "coverage": 0.8992
-      },
-      {
-        "lab": [
-          22.1,
-          -0.2,
-          -0.78
-        ],
-        "rgb": [
-          52,
-          53,
-          54
-        ],
-        "name": "black",
-        "coverage": 0.1009
+        "coverage": 1.0
       }
     ],
     "source": "garments/58-vortex-long-boots/clean/58-vortex-long-boots_dragcut.png",
@@ -2369,31 +2173,31 @@
     "colors": [
       {
         "lab": [
-          8.7,
-          2.23,
-          -1.57
+          9.67,
+          2.31,
+          -1.95
         ],
         "rgb": [
-          27,
-          24,
-          27
+          28,
+          25,
+          29
         ],
         "name": "black",
-        "coverage": 0.8938
+        "coverage": 0.9113
       },
       {
         "lab": [
-          44.12,
-          -2.3,
-          8.03
+          65.55,
+          -2.67,
+          10.17
         ],
         "rgb": [
-          106,
-          105,
-          91
+          162,
+          160,
+          141
         ],
-        "name": "grey",
-        "coverage": 0.1061
+        "name": "greige",
+        "coverage": 0.0887
       }
     ],
     "source": "garments/59-el-hoodie/clean/59-el-hoodie_dragcut.png",

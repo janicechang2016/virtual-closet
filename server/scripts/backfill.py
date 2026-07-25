@@ -29,6 +29,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CLOSET = os.path.normpath(os.path.join(HERE, "..", "..", "virtual-closet"))
 GARMENTS = os.path.join(CLOSET, "garments")
 COLORS = os.path.join(HERE, "colors.json")
+OVERRIDES = os.path.join(HERE, "color_overrides.json")
 OUT_SQL = os.path.join(HERE, "backfill.sql")
 
 RAW_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".avif"}
@@ -198,6 +199,20 @@ def main():
             colors = json.load(fh)
     else:
         print("!! scripts/colors.json missing — run extract_colors.py first", file=sys.stderr)
+
+    # User adjudications win over measurement, and survive re-measuring.
+    if os.path.exists(OVERRIDES):
+        with open(OVERRIDES) as fh:
+            overrides = json.load(fh)
+        applied = []
+        for gid, ov in overrides.items():
+            if gid.startswith("_") or gid not in colors:
+                continue
+            colors[gid] = dict(colors[gid], colors=ov["colors"], overridden=True,
+                               verdict=ov.get("verdict", ""))
+            applied.append(gid)
+        if applied:
+            print(f"colour overrides applied: {', '.join(applied)}")
 
     garments, missing_colors = build_garments(colors)
     outfits, orphans = build_outfits()

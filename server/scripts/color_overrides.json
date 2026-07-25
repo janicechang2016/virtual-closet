@@ -1,0 +1,27 @@
+{
+  "_README": [
+    "User adjudications that the measurement pipeline cannot express on its own.",
+    "Applied by backfill.py ON TOP of colors.json, so re-measuring never loses them.",
+    "Every lab value here is MEASURED, not invented — taken from a finer-grained run",
+    "of the same extractor. Only the grouping reflects a human decision.",
+    "Keep this small: a growing file means the extractor needs fixing instead."
+  ],
+  "38-realisation-iggy-dress": {
+    "adjudicated": "2026-07-25",
+    "verdict": "black is correct; the accent is mustard yellow, not camel",
+    "reason": [
+      "The gold dots sit on a near-black ground, and the quantiser resolves the",
+      "anti-aliased dot edges as their own clusters: a continuous lightness ramp",
+      "black L*12 -> chocolate L*24 -> olive L*43 -> camel L*60 -> gold L*76, all at",
+      "roughly constant hue. The endpoints are real; the middle is edge blending.",
+      "Shading-merge cannot fix this without also merging genuine light/dark prints",
+      "(35's black-and-white polka dots), so the grouping is recorded here instead.",
+      "Accent lab is the purest measured dot colour (rgb 214,183,121); its coverage",
+      "is the summed ramp, because those pixels belong to the dots."
+    ],
+    "colors": [
+      {"lab": [11.98, 5.0, 3.0], "rgb": [34, 23, 21], "name": "black", "coverage": 0.831},
+      {"lab": [75.79, 2.9, 35.6], "rgb": [214, 183, 121], "name": "mustard", "coverage": 0.169}
+    ]
+  }
+}
