@@ -824,6 +824,15 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
+- **360 isolation completed 2026-07-24:** the Git history and all tracked
+  avatar-v4 / motion-pilot work are preserved on
+  `archive/360-avatar-v4-20260724` at commit `530f9f7`. Large generated/vendor
+  files that should not be forced into Git (spin frame renders, MakeHuman asset
+  packs/tools, and Blender `.blend1` backups) are preserved separately at
+  `/Users/janice.chang/wardrobe-v3-360-local-assets-20260724/` (about 2.1 GB).
+  Active 2D work resumes on branch `2d-reboot`, based on
+  `fitting-room-pre-360-ui-final` / commit `8c7532f`. Do not delete either
+  archive until the alternate 2D approach is settled.
 - **CAROUSEL DETAIL GLASSMORPHISM EXPLORATION (requested 07-23):** when a look is
   clicked in the archive carousel, explore a glassmorphism treatment for the
   detail/preview panel that opens. Treat this as a visual-design study first,
