@@ -1,6 +1,53 @@
 # Decision log
 
-## 2026-07-19 — Ingest: 59-el-hoodie (Eckhaus Latta)
+## 2026-07-25 — v2 pivot: decisions locked + hosting reversal
+
+**Context:** rolled back to the 2D app (branch `2d-reboot`, HEAD `3b069e0`); the 360/
+avatar-v4 work is archived on `archive/360-avatar-v4-20260724`. New spec
+`virtual-closet-plan-v2.md` reframes the app from an aesthetic lookbook to a utility
+wardrobe tool (tracks A ingestion / B stylist / C sustainability / D style+gap /
+E constellation / F spin). Reconciled foundation plan: `virtual-closet-v2-foundation-plan.md`.
+
+**Decisions (user):**
+1. **Persistence = hosted Postgres** — deliberately REVERSES the 07-20 "no live endpoint
+   in front of the fal budget" rule. Consequence: auth + a server-side budget hard-stop are
+   now load-bearing, and both ship in the Phase 0 scaffold (`server/app/auth.py`,
+   `server/app/budget.py` — a Postgres port of genlog).
+2. **Host = Railway + Vercel + Cloudflare R2.** Railway (Postgres + API + worker), Vercel
+   (frontend; the archive stays put), R2 (object storage — Railway has no native blob).
+   No strong reason for Supabase at single-user scale; R2 is the only added piece.
+3. **Scope = foundation only** (Phases 0–2: infra+guardrails → schema+backfill → constraint
+   engine). ~$0 on API calls. Stop and choose the first UI with real data in hand.
+4. **Identity = additive.** The SYVE archive carousel stays the front door; `/stylist`
+   `/insights` `/galaxy` are added later under the same language. The gallery is unchanged.
+
+**Sequencing note:** v2's stated "Track A first" is wrong for this closet — it is already
+tagged (58 garments, 18 looks), so bulk ingestion is not the bottleneck. The real critical
+path is schema migration + attribute backfill + the constraint engine; the 18 looks seed
+the outfit table as a cold-start preference prior.
+
+## 2026-07-25 — Glassmorphism: re-home from the archive to `/galaxy`
+
+**Decision (user, agreed):** The 07-23 "carousel detail glassmorphism exploration" is
+**re-homed.** Do NOT apply glassmorphism to the archive carousel/detail overlay.
+
+**Why:** SYVE's language is a white void + 1px black hairlines + hard edges. Frosted
+translucency fights that austerity and has no rich backdrop to work over on a white void +
+figure cutout — it reads as decoration and muddies the crispness that is the brand.
+
+**Where it goes instead:**
+- **Primary: the constellation dashboard (`/galaxy`, Track E).** Glass is native here — a
+  dark field with glowing nodes and depth-of-field blur is exactly what glassmorphism is
+  for (a HUD floating over a live nebula, glow bleeding through). The dark backdrop is what
+  makes frosted glass legible.
+- **Secondary, restrained: stylist suggestion cards (`/stylist`, Track B)** over the flat-lay
+  composite — translucency signals "ephemeral suggestion, not yet committed."
+- **The archive stays glass-free** on purpose. The crisp-archive ↔ atmospheric-galaxy
+  contrast is a feature.
+
+**Timing:** parked as a design study to resolve when `/galaxy` (Phase 5) is designed. It
+does not block the foundation; building it against the archive now would solve it in the
+wrong context.
 
 Janice staged 4 webp views ("EL-hoodie") via the sourcing flow; ingested as
 **59-el-hoodie**. "EL" resolved to **Eckhaus Latta** from the baked-in shoulder
