@@ -1,5 +1,38 @@
 # Decision log
 
+## 2026-07-25 — Phase 1 backfill: objective half loaded, subjective half awaiting her
+
+**Done ($0, no API calls):** 58 garments + 18 published looks are in Postgres. Garment ids
+are the existing slugs, so render-id matching is preserved. Looks seed `outfit` as
+`source='manual'` — the cold-start preference prior. `scripts/verify_backfill.sql` passes:
+0 orphan references, 0 duplicates, 0 garments without colours, idempotent on re-run.
+
+**Standing rule honoured — she decides aesthetics.** `formality` and `warmth` have no source
+in `meta.json`, so they are NOT populated by the backfill and re-running never overwrites
+them. They come from a $0 confirmation grid (`scripts/make_attr_grid.py` → `attr_grid.html`)
+pre-filled with proposals derived from each garment's own text, so the job is confirming
+rather than authoring 116 values. No Anthropic auto-extraction was run; it stays an
+approved-batch item only.
+
+**Colour extraction rulings (worth keeping):**
+- On-model photos use **cloth-seg only, never the general model** — same rule as dragcut.py.
+  The general model keeps the whole figure, so 26-liniss-dune-pants (sand) picked up a
+  phantom 21% charcoal that was the *model's black halter top*.
+- The 7 garments dragcut could never cut fail because cloth-seg files them under `full`
+  and leaves upper/lower empty. Fallback: intersect `full` with a category-appropriate
+  vertical band. Recovered all 7.
+- **Colour-name anchors were recalibrated to how garments photograph, not to ideal
+  swatches:** a real black top measures L*~15-22, so anchoring "black" at L*~7 sent every
+  black item in the closet to "charcoal". 15 QA flags dropped to 6. LAB values were correct
+  throughout — only the names were wrong, and LAB is what the engine consumes.
+- Attribute proposals ignore `meta.notes`: it describes the *photo*, not the garment.
+  04-structured-blazer's note "worn open over a white tee" was classifying a tailored
+  blazer as casual.
+
+**Finding for her verdict:** `36-realisation-liv-dress` has the wrong `meta.color` — recorded
+as "violet-blue with dark leopard print", the garment is black with dark red spots. The
+measurement caught a mislabelled garment. `meta.json` left unedited — her data, her call.
+
 ## 2026-07-25 — Phase 0 provisioned: Railway live, guardrails verified
 
 **Decision (user):** subscribed to **Railway Hobby, $5/month** — the trial had expired and no

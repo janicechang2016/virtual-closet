@@ -73,11 +73,32 @@ generation is wired).
 ## RESUME HERE — next actions in order
 1. ~~Provision~~ **DONE** — see above.
 2. ~~Apply schema + first deploy~~ **DONE** — all 8 tables live, `/health` + authed `/budget` verified.
-3. **Phase 1 — backfill (not written yet).** Migrate 58 garments from the file store →
-   `garment` rows (carry size + brand); programmatic LAB colours ($0, white-balance first);
-   seed the 18 published looks as `outfit` rows (source='manual') = cold-start prior;
-   subjective attributes (formality/warmth/fabric/fit) via a $0 confirmation grid (she
-   decides aesthetics) — Anthropic auto-extraction only as an approved batch.
+3. **Phase 1 — backfill: OBJECTIVE HALF DONE 2026-07-25, $0.** In Postgres now:
+   **58 garment rows** (slug ids, size + brand carried, LAB colours, images, asset_tier)
+   and **18 outfit rows** (`source='manual'`, `render_cache_key` = look id) = the
+   cold-start prior. Acceptance checks all pass and are re-runnable:
+   `scripts/verify_backfill.sql` → 0 orphan refs, 0 dupes, 0 garments without colours,
+   idempotent on re-run. Notable signal: **23 garments appear in no published look** —
+   real input for Phase 2 gap analysis.
+   - `scripts/extract_colors.py` (venv python) — LAB per garment, white-balanced,
+     median-cut, $0. Follows dragcut.py's routing rule: on-model photos use cloth-seg,
+     NEVER the general model (that keeps the whole figure, so a garment's palette picks
+     up the model's skin and other clothes). For the 7 garments dragcut could never cut,
+     cloth-seg files the outfit under `full` and leaves upper/lower empty — fallback
+     intersects `full` with a category-appropriate vertical band. `--rename` re-names
+     from stored LAB without a second rembg pass.
+   - `scripts/backfill.py` → `backfill.sql`. Values reach Postgres via dollar-quoted
+     `jsonb_to_recordset`, so nothing is hand-escaped. Idempotent.
+   - **STILL OPEN — needs her:** formality + warmth have no source in meta.json.
+     `scripts/make_attr_grid.py` builds `attr_grid.html` (open via file://), a SYVE-styled
+     $0 grid pre-filled with proposals derived from each garment's own name/fabric/fit
+     text. She confirms/overrides → DOWNLOAD JSON → `scripts/apply_attrs.py <file>` →
+     `attrs.sql`. season_tags is derived from confirmed warmth, not asked separately.
+     Verified by applying with COMMIT→ROLLBACK: valid SQL, `UPDATE 58`, nothing persisted.
+   - **Colour QA: 6 of 58 flagged for her eye** (was 15; 9 were my naming anchors, since
+     recalibrated — a real garment black measures L*~15-22, not L*~7). Genuine finding:
+     **36-realisation-liv-dress meta.color is wrong** — says "violet-blue with dark leopard
+     print", the garment is black with dark red spots. meta.json left unedited: her data.
 4. **Phase 2 — constraint engine.** `engine/constraints.py` + `colour.py` + `gaps.py`, pure
    functions, unit-tested against the real closet. Acceptance: enumerate valid outfits,
    orphans obvious, harmony scores rank sane. → STOP, pick first UI (stylist / insights / galaxy).

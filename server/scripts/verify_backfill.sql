@@ -1,0 +1,34 @@
+-- Phase 1 acceptance checks. Read-only; safe to run any time.
+--   railway run --service Postgres bash -c \
+--     '/opt/homebrew/opt/libpq/bin/psql "$DATABASE_PUBLIC_URL" -X -f scripts/verify_backfill.sql'
+\echo '== counts =='
+SELECT (SELECT count(*) FROM garment)                                AS garments,
+       (SELECT count(*) FROM outfit WHERE source = 'manual')         AS outfits_manual,
+       (SELECT count(*) FROM garment WHERE colors = '[]'::jsonb)     AS garments_no_colors,
+       (SELECT count(*) FROM garment WHERE formality IS NOT NULL)    AS formality_set,
+       (SELECT count(*) FROM garment WHERE warmth   IS NOT NULL)     AS warmth_set;
+
+\echo '== category mix =='
+SELECT category, count(*) FROM garment GROUP BY 1 ORDER BY 2 DESC;
+
+\echo '== outfits referencing a garment that does not exist (must be 0) =='
+SELECT count(*) AS orphan_refs
+FROM (SELECT unnest(garment_ids) AS gid FROM outfit) u
+LEFT JOIN garment g ON g.id = u.gid
+WHERE g.id IS NULL;
+
+\echo '== duplicate outfits by look id (must be 0) =='
+SELECT count(*) AS dupes FROM (
+  SELECT render_cache_key FROM outfit GROUP BY 1 HAVING count(*) > 1
+) d;
+
+\echo '== garments never worn in any published look (cold-start orphans) =='
+SELECT count(*) AS unworn_garments
+FROM garment g
+WHERE NOT EXISTS (SELECT 1 FROM outfit o WHERE g.id = ANY(o.garment_ids));
+
+\echo '== sample: dominant colour per garment =='
+SELECT id, size_owned, brand,
+       colors->0->>'name'                       AS dominant,
+       round((colors->0->>'coverage')::numeric, 2) AS coverage
+FROM garment ORDER BY id LIMIT 8;
