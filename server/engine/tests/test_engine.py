@@ -17,7 +17,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
-from engine import colour, constraints, gaps  # noqa: E402
+from engine import colour, constraints, gaps, preference  # noqa: E402
 
 SNAPSHOT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "..", "..", "scripts", "closet_snapshot.json")
@@ -228,3 +228,46 @@ class TestRealCloset(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestPreference(unittest.TestCase):
+    """Learned affinity — the only signal measured to predict her judgement."""
+
+    def setUp(self):
+        self.closet = [g("liked", "shoes"), g("disliked", "shoes"), g("unseen", "shoes"),
+                       g("t", "top"), g("b", "bottom")]
+
+    def test_no_evidence_is_neutral(self):
+        aff = preference.affinity(self.closet)
+        self.assertAlmostEqual(aff["unseen"], 0.5)
+
+    def test_published_look_raises_affinity(self):
+        aff = preference.affinity(self.closet, [{"garment_ids": ["liked"]}] * 3)
+        self.assertGreater(aff["liked"], 0.5)
+        self.assertAlmostEqual(aff["unseen"], 0.5)
+
+    def test_rejection_lowers_affinity(self):
+        aff = preference.affinity(self.closet, [], [({"ids": ["disliked"]}, "no")] * 3)
+        self.assertLess(aff["disliked"], 0.5)
+
+    def test_smoothing_bounds_thin_evidence(self):
+        """One observation must not produce certainty."""
+        aff = preference.affinity(self.closet, [{"garment_ids": ["liked"]}])
+        self.assertLess(aff["liked"], 0.8)
+
+    def test_one_bad_garment_sinks_the_outfit(self):
+        """The loafer case: everything else fine, still would not wear it."""
+        aff = {"t": 0.9, "b": 0.9, "disliked": 0.1}
+        blended = preference.outfit_preference(["t", "b", "disliked"], aff)
+        all_good = preference.outfit_preference(["t", "b"], aff)
+        self.assertLess(blended, all_good)
+        self.assertLess(blended, 0.6)
+
+    def test_ranking_uses_affinity_when_given(self):
+        closet = [g("t", "top"), g("b", "bottom"),
+                  g("good", "shoes"), g("bad", "shoes")]
+        aff = {"t": 0.5, "b": 0.5, "good": 0.95, "bad": 0.05}
+        ranked = gaps.ranked_outfits(closet, affinity=aff)
+        self.assertIn("good", ranked[0]["garment_ids"])
+        self.assertIn("bad", ranked[-1]["garment_ids"])
+        self.assertIsNotNone(ranked[0]["preference"])

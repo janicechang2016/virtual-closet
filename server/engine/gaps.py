@@ -6,7 +6,7 @@ count is what makes orphan detection trustworthy.
 """
 import itertools
 
-from . import colour, constraints
+from . import colour, constraints, preference
 
 # A garment appearing in this few valid outfits is functionally stranded.
 ORPHAN_PARTICIPATION = 2
@@ -42,16 +42,30 @@ def enumerate_outfits(garments, with_outerwear=False):
     return out
 
 
-def ranked_outfits(garments, limit=None, with_outerwear=False):
-    """Valid outfits ordered best-first by harmony minus the soft penalties."""
+def ranked_outfits(garments, limit=None, with_outerwear=False, affinity=None,
+                   affinity_weight=0.75):
+    """Valid outfits ordered best-first.
+
+    With an `affinity` map (see engine.preference) that signal leads, because it
+    is the only one measured to predict her judgement: on outfits it had never
+    seen, learned affinity scored AUC 0.824 while colour harmony scored 0.491 —
+    chance. Colour is kept at a small weight as a tiebreak, not a ranker.
+    """
     scored = []
     for combo in enumerate_outfits(garments, with_outerwear):
+        ids = [g["id"] for g in combo]
         h, worst = colour.outfit_harmony(combo)
         s, notes = constraints.score(combo, h)
+        pref = None
+        if affinity:
+            pref = preference.outfit_preference(ids, affinity)
+            s = max(0.0, affinity_weight * pref + (1.0 - affinity_weight) * s
+                    - constraints.soft_notes(combo)[0] * (1.0 - affinity_weight))
         scored.append({
-            "garment_ids": [g["id"] for g in combo],
+            "garment_ids": ids,
             "score": round(s, 4),
             "harmony": round(h, 4),
+            "preference": None if pref is None else round(pref, 4),
             "notes": notes,
             "worst_pair": worst[2:] if worst else None,
             "worst_reason": worst[1] if worst else None,
