@@ -15,6 +15,7 @@
   :root {
     --ink:#0E0E10; --charcoal:#1C1D20; --graphite:#3A3D42;
     --oxblood:#6F2B2B; --amber:#CC8A3A; --paper:#F5F3EF; --dim:#8b8d92;
+
   }
   * { box-sizing:border-box; }
   html,body { margin:0; height:100%; background:var(--ink); color:var(--paper);
@@ -69,13 +70,20 @@
 
   /* plain panel beside the graph — the plan's own anti-pattern guard: the graph
      explores, the panel answers */
+  /* sits ON the glass column, so it carries only a hairline and a whisper of
+     ground — the refraction behind it is the surface */
   #panel { position:fixed; right:22px; bottom:22px; z-index:20; width:290px;
-    border:1px solid var(--graphite); background:rgba(14,14,16,.72);
+    border:1px solid rgba(245,243,239,.18); background:rgba(14,14,16,.34);
     padding:14px 16px; }
   #panel h4 { margin:0 0 10px; font-weight:normal; color:var(--dim); }
   #panel .orow { display:flex; justify-content:space-between; gap:10px;
     padding:4px 0; cursor:pointer; }
-  #panel .orow:hover { color:var(--amber); }
+  /* Hover lights the row rather than recolouring it. Amber was wrong twice over:
+     the tokens reserve it for the SELECTED state, and a second hue competes with
+     oxblood, which already means something specific here. On a page whose whole
+     language is emitted light, glow is the native signal. */
+  #panel .orow:hover { color:var(--paper);
+    text-shadow:0 0 9px rgba(245,243,239,.55), 0 0 20px rgba(245,243,239,.22); }
   #panel .orow span:last-child { color:var(--dim); }
   #legend { position:fixed; left:22px; top:64px; z-index:20; color:var(--dim);
     display:flex; flex-direction:column; gap:7px; }
@@ -209,9 +217,9 @@ function drift() {
   const t = clock / 1000;
   for (let i = 0; i < NODES.length; i++) {
     const n = NODES[i];
-    const a = t * 0.055 + n.phase;
-    n.vx += Math.cos(a) * 0.020 * motion;
-    n.vy += Math.sin(a * 0.83 + n.phase) * 0.020 * motion;
+    const a = t * 0.10 + n.phase;
+    n.vx += Math.cos(a) * 0.075 * motion;
+    n.vy += Math.sin(a * 0.83 + n.phase) * 0.075 * motion;
   }
 }
 
@@ -377,10 +385,16 @@ function makeGrain() {
   return c;
 }
 
+function glassRect() {
+  // A standing column down the right edge rather than a panel that appears with
+  // the detail view: the glass is a LAYER of the page, and the never-worn box
+  // and detail card sit on top of it.
+  const w = Math.min(334, innerWidth * 0.34);
+  return { left: innerWidth - w, top: 0, width: w, height: innerHeight };
+}
+
 function drawReededGlass() {
-  const el = document.getElementById('detail');
-  if (!el.classList.contains('open')) return;
-  const b = el.getBoundingClientRect();
+  const b = glassRect();
   const w = Math.round(b.width), h = Math.round(b.height);
   if (w < 4 || h < 4) return;
 
