@@ -329,5 +329,7 @@ body.demo #cost-meter, body.demo .dot-cost { display: none !important; }
   .strip-left, .strip-right { font-size: 9px; }
 }
 
-/* the shared menu button is fixed at top-right; keep the header clear of it */
-header { padding-right: 52px; }
+
+/* the wordmark is the way home from every page except the archive itself */
+.homelink { color: inherit; text-decoration: none; }
+.homelink:hover { opacity: .7; }

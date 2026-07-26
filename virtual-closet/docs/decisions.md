@@ -1,5 +1,25 @@
 # Decision log
 
+## 2026-07-26 — Nav polish + insights made modular
+
+**Hamburger:** box removed (three hairlines at the site's own weight). Placement is no longer
+a floating overlay by default — it **mounts into each page's existing top-right cluster** so
+it aligns with its neighbours instead of covering them. The mount is container-aware because
+two real failures showed up: the carousel's `#nav-right` is a **column**, so mounting stacked
+the button beneath the readout and over the figures; sourcing's strip is
+**space-between**, so adding a third child shoved `$0 · local only` to the centre. Columns
+now fall back to floating, and space-between rows pin the previous sibling with
+`margin-left:auto`. **The wordmark links home from every page except the archive itself** —
+a link to the page you are already on is a dead control.
+
+**Insights, made modular for scanning.** Sections became modules on a 12-column field,
+divided by hairlines rather than cards (SYVE has no shadows or radii to spend). Every module
+carries the same head — ordinal number, title, one line of context — so the eye learns the
+shape once and can then skim. Span follows the story, not the data: the two at-a-glance
+reads sit 8/4, the two category comparisons 6/6, and the photographic evidence runs full
+width. `auto-fill` was leaving dead space at the end of the picture rows; `auto-fit`
+collapses the empty tracks so the cards stretch.
+
 ## 2026-07-26 — Navigation consolidated into a shared hamburger
 
 **Decision (user):** one menu for every page, italic labels, inline nav retired with a

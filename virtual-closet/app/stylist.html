@@ -16,9 +16,11 @@
   .up { text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
 
   header { position:sticky; top:0; z-index:20; background:var(--bg);
-    border-bottom:1px solid var(--line); padding:16px 66px 16px 24px;
+    border-bottom:1px solid var(--line); padding:16px 24px;
     display:flex; align-items:baseline; gap:22px; flex-wrap:wrap; }
-  .wordmark { font-style:italic; font-size:17px; }
+  .wordmark { font-style:italic; font-size:17px; color:inherit;
+    text-decoration:none; }
+  .wordmark:hover { opacity:.7; }
   nav { display:flex; gap:16px; }
   nav a { color:var(--dim); }
   nav a:hover { color:#000; }
@@ -145,8 +147,8 @@
   footer { padding:30px 24px 70px; color:var(--dim); font-size:11px; max-width:70ch; }
 </style></head>
 <body>
-<header>
-  <span class="wordmark">the archive.</span>
+<header data-nav-mount>
+  <a class="wordmark" href="/">the archive.</a>
   <span class="up" style="color:var(--dim)">Stylist</span>
   <span class="spacer"></span>
   <label class="up" style="color:var(--dim)">Occasion

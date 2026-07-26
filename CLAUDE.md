@@ -287,7 +287,13 @@ The liminal-wardrobe venv (Python 3.9) has rembg/cv2/PIL; system python3 is 3.9 
 `str | None` syntax). Headless design QA: Chrome `--headless=new --screenshot=…` then
 actually look at the PNG.
 
-- **SHARED NAV (07-26):** `app/nav.js` injects a hamburger (fixed top-right) on every page.
+- **SHARED NAV (07-26):** `app/nav.js` injects a hamburger on every page. It MOUNTS into the page's own
+  top-right cluster (`[data-nav-mount]`) so it aligns with what is already there — but the
+  mount is container-aware: a column stack would put it under the readout and a
+  space-between row would shove the readout to centre (both observed), so those fall back to
+  floating, and in a space-between row the previous sibling is pinned with `margin-left:auto`.
+  No box — three hairlines at the site's own weight. **The wordmark links home on every page
+  except the archive itself**, where it would be a dead control.
   Opens as a top-to-bottom roll (`clip-path`), then labels **resolve out of noise** — the
   ASCII entrance run backwards, same monospace face, italic. A new route is one line in
   `ROUTES`. Labels render as real text first, so no-JS and reduced-motion get the finished

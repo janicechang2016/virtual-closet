@@ -23,9 +23,11 @@
   .up { text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
 
   header { position:sticky; top:0; z-index:20; background:var(--bg);
-    border-bottom:1px solid var(--line); padding:16px 66px 16px 24px;
+    border-bottom:1px solid var(--line); padding:16px 24px;
     display:flex; align-items:baseline; gap:22px; flex-wrap:wrap; }
-  .wordmark { font-style:italic; font-size:17px; }
+  .wordmark { font-style:italic; font-size:17px; color:inherit;
+    text-decoration:none; }
+  .wordmark:hover { opacity:.7; }
   nav { display:flex; gap:16px; }
   nav a { color:var(--dim); } nav a:hover { color:#000; }
   .spacer { flex:1; }
@@ -46,11 +48,29 @@
   .caveat { padding:12px 24px; border-bottom:1px solid var(--line);
     color:var(--dim); font-size:11px; }
 
-  section { border-bottom:1px solid var(--line); padding:22px 24px 26px; }
-  .h { display:flex; align-items:baseline; gap:14px; margin-bottom:18px; }
+  /* ── modular field ──────────────────────────────────────────────────
+     Modules occupy a 12-column grid and are divided by hairlines, not cards:
+     SYVE has no shadows or radii to spend. Every module has the same head
+     (eyebrow number + title + one line of context) so the eye learns the shape
+     once and can then skim. Span is set per module by the story, not the data
+     size — the two "at a glance" reads sit side by side, the evidence below
+     runs full width. */
+  .field { display:grid; grid-template-columns:repeat(12,1fr); }
+  .mod { grid-column:span 12; border-bottom:1px solid var(--line);
+    border-right:1px solid var(--line); padding:22px 24px 26px; min-width:0; }
+  .mod:last-child { border-right:0; }
+  @media (min-width:1080px) {
+    .mod[data-span="8"] { grid-column:span 8; }
+    .mod[data-span="4"] { grid-column:span 4; }
+    .mod[data-span="6"] { grid-column:span 6; }
+  }
+  .h { display:flex; align-items:baseline; gap:10px; margin-bottom:20px;
+    flex-wrap:wrap; }
+  .h .no { color:var(--dim); font-variant-numeric:tabular-nums; font-size:10px;
+    letter-spacing:.14em; }
   .h h2 { margin:0; font-size:12px; text-transform:uppercase; letter-spacing:.14em;
     font-weight:normal; }
-  .h .sub { color:var(--dim); font-size:11px; }
+  .h .sub { color:var(--dim); font-size:11px; flex-basis:100%; }
 
   /* ── horizontal bars ─────────────────────────────────────────────────
      <=24px thick, 4px rounded data-end and square at the baseline, growing
@@ -89,6 +109,8 @@
      Fill and track are steps of the same ramp, so the state reads across the
      whole bar rather than only where the fill ends. */
   .meter { margin-top:14px; }
+  .mod[data-span="4"] { display:flex; flex-direction:column; }
+  .mod[data-span="4"] .meter { margin-top:auto; margin-bottom:auto; }
   .mtrack { height:26px; background:#efe9e9; position:relative; }
   .mfill { height:100%; background:var(--alert); border-radius:0 4px 4px 0; }
   .mlabels { display:flex; justify-content:space-between; margin-top:8px;
@@ -113,7 +135,7 @@
   .key i { width:12px; height:12px; border-radius:2px; display:block; }
 
   /* ── picture rows: the subject is clothes, so show the clothes ── */
-  .pics { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0; }
+  .pics { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0; }
   .pic { border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
     padding:16px 14px 14px; display:flex; flex-direction:column; gap:10px;
     cursor:default; }
@@ -158,8 +180,8 @@
   }
 </style></head>
 <body>
-<header>
-  <span class="wordmark">the archive.</span>
+<header data-nav-mount>
+  <a class="wordmark" href="/">the archive.</a>
   <span class="up" style="color:var(--dim)">Insights</span>
   <span class="spacer"></span>
   <button id="tabletoggle">table view</button>
@@ -168,52 +190,48 @@
 <div class="kpis" id="kpis"></div>
 <div class="caveat up" id="caveat"></div>
 
-<section>
-  <div class="h"><h2>How much of the closet is in play</h2>
+<div class="field">
+<div class="mod" data-span="8">
+  <div class="h"><span class="no">01</span><h2>How much of the closet is in play</h2>
     <span class="sub">every garment, one mark — hover any of them</span></div>
   <div class="units" id="units"></div>
   <div class="key up" id="unitkey"></div>
-</section>
-
-<section>
-  <div class="h"><h2>The share standing still</h2>
-    <span class="sub">value with no recorded wear, against the whole closet</span></div>
+</div>
+<div class="mod" data-span="4">
+  <div class="h"><span class="no">02</span><h2>The share standing still</h2>
+    <span class="sub">value with no recorded wear</span></div>
   <div class="meter">
     <div class="mtrack"><div class="mfill" id="mfill"></div></div>
     <div class="mlabels up"><span id="mleft"></span><span id="mright"></span></div>
   </div>
-</section>
-
-<section>
-  <div class="h"><h2>Most value, never worn</h2>
-    <span class="sub">the biggest single pieces with no recorded wear</span></div>
-  <div class="pics" id="idletop"></div>
-</section>
-
-<section>
-  <div class="h"><h2>Earning their keep</h2>
-    <span class="sub">lowest cost per wear — price ÷ recorded wears</span></div>
-  <div class="pics" id="bestcpw"></div>
-</section>
-
-<section>
-  <div class="h"><h2>Where the value sleeps</h2>
-    <span class="sub">purchase value of garments with no recorded wear, by category</span></div>
+</div>
+<div class="mod" data-span="6">
+  <div class="h"><span class="no">03</span><h2>Where the value sleeps</h2>
+    <span class="sub">value with no recorded wear, by category</span></div>
   <div class="bars" id="idle"></div>
-</section>
-
-<section>
-  <div class="h"><h2>Spend by category</h2>
+</div>
+<div class="mod" data-span="6">
+  <div class="h"><span class="no">04</span><h2>Spend by category</h2>
     <span class="sub">all 58 garments</span></div>
   <div class="bars" id="spend"></div>
-</section>
-
-<section>
-  <div class="h"><h2>Acquired by year</h2>
+</div>
+<div class="mod" data-span="12">
+  <div class="h"><span class="no">05</span><h2>Most value, never worn</h2>
+    <span class="sub">the biggest single pieces with no recorded wear</span></div>
+  <div class="pics" id="idletop"></div>
+</div>
+<div class="mod" data-span="12">
+  <div class="h"><span class="no">06</span><h2>Earning their keep</h2>
+    <span class="sub">lowest cost per wear — price ÷ recorded wears</span></div>
+  <div class="pics" id="bestcpw"></div>
+</div>
+<div class="mod" data-span="12">
+  <div class="h"><span class="no">07</span><h2>Acquired by year</h2>
     <span class="sub">spend, and number of garments</span></div>
   <div class="cols" id="years"></div>
   <div class="collabs up" id="yearlabs"></div>
-</section>
+</div>
+</div>
 
 <div id="tablewrap"><table id="table"></table></div>
 

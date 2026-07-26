@@ -34,10 +34,17 @@
 
   function css() {
     return [
-      '#navburger{position:fixed;top:12px;right:14px;z-index:120;width:34px;height:34px;',
-      '  border:1px solid #000;background:#fff;cursor:pointer;padding:0;display:flex;',
-      '  flex-direction:column;align-items:center;justify-content:center;gap:4px;}',
-      '#navburger span{display:block;width:16px;height:1px;background:#000;',
+      // No box: three hairlines, the same weight as every other rule on the
+      // site. The hit area stays 34px via padding, not a visible border.
+      '#navburger{z-index:120;width:34px;height:34px;border:0;background:none;',
+      '  cursor:pointer;padding:0;display:flex;flex-direction:column;',
+      '  align-items:center;justify-content:center;gap:5px;}',
+      // Mounted into a page header it sits in the flow and aligns with its
+      // neighbours; only pages without a mount point get the floating fallback,
+      // which is what was covering their content.
+      '#navburger.floating{position:fixed;top:6px;right:12px;}',
+      '#navburger:not(.floating){margin-left:16px;flex:none;align-self:center;}',
+      '#navburger span{display:block;width:18px;height:1px;background:#000;',
       '  transition:transform .28s ease,opacity .2s ease;}',
       '#navburger.open span:nth-child(1){transform:translateY(5px) rotate(45deg);}',
       '#navburger.open span:nth-child(2){opacity:0;}',
@@ -105,7 +112,28 @@
     sheet.appendChild(wrap);
 
     document.body.appendChild(sheet);
-    document.body.appendChild(burger);
+    // Mount into the page's own header so the button aligns with what is
+    // already there — but only where that actually works. A column stack would
+    // put it under the readout, and a space-between row would shove the
+    // readout to the middle. Both were observed; both are worse than floating.
+    var mount = document.querySelector('[data-nav-mount]');
+    var mounted = false;
+    if (mount) {
+      var cs = getComputedStyle(mount);
+      var column = cs.display.indexOf('flex') >= 0 && cs.flexDirection.indexOf('column') === 0;
+      if (!column) {
+        var last = mount.lastElementChild;
+        mount.appendChild(burger);
+        // In a space-between row the new last child would redistribute the
+        // others; pinning the previous item keeps them exactly where they were.
+        if (last && cs.justifyContent === 'space-between') last.style.marginLeft = 'auto';
+        mounted = true;
+      }
+    }
+    if (!mounted) {
+      burger.classList.add('floating');
+      document.body.appendChild(burger);
+    }
 
     var open = false, raf = null;
 
