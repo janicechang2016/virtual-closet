@@ -176,15 +176,26 @@ hashing files against every branch.
   reference photos — generating silhouettes for them was tried and reverted as worse than
   the photo. Queued, not priority: vertical body-stacked outfits, wildcard as a full-width
   interruption.
-- **`/galaxy` — Track E constellation (07-26, $0, PROTOTYPE):** canvas force graph on the
-  tokens' Ink ground. **Nodes are thumbnails on white plates, NOT tinted by garment colour** —
-  60% of this closet is below L*25 and would vanish on Ink, and the palette insight that
-  encoding buys is already better served by `/insights`. Colour does state only: oxblood ring
-  = never worn, amber = selected; size = wear count. Worn edges from look co-occurrence,
-  could-pair edges from the constraint engine capped at 3/node (uncapped is ~520 edges — the
-  hairball the plan warns about). `/api/galaxy` serves it; no new tables. The detail panel is
-  the site's one genuine home for glassmorphism, since it finally has a dark field.
-  NOT built: time scrubber (wear_log empty), LLM cluster labels (paid).
+- **`/galaxy` — Track E constellation (07-26, $0, on branch `track-e-galaxy`, NOT deployed):**
+  canvas force graph on the tokens' Ink ground. `/api/galaxy` serves it; no new tables.
+  - **Nodes are Bayer-DITHERED dot fields, not photos and not tinted by garment colour.** Dot
+    density carries luminance, so a near-black garment (60% of this closet is below L*25)
+    renders as a DENSE field of light instead of vanishing. Coverage floored at 0.30 so white
+    garments still read. This retired the white plates an earlier pass needed.
+  - Colour does STATE only: oxblood ring = never worn, amber = selected. Size = wear count.
+  - **Detection HUD on hover** (corner-ticked box, dotted tracking lines, real readout) —
+    drawn in SCREEN space after the world transform, so it keeps its weight at any zoom.
+  - **The field never rests** (~25px drift/3s); hover slows it to a crawl (motion 0.14) but
+    never stops. Load-in mirrors the hamburger glyph resolve.
+  - **Reeded glass is a standing right-hand column, and really refracts** — the region behind
+    is snapshotted and redrawn as 21 ribs each sampling a wider slice. Possible only because
+    we own the canvas pixels. The never-worn box and detail card layer on top of it.
+  - Cybercore comes from processing artifacts (dither, refraction, HUD), NOT colour — both
+    supplied references were monochrome. Palette unchanged.
+  - Worn edges from look co-occurrence; could-pair edges from the constraint engine capped at
+    3/node (uncapped is ~520 edges — the hairball the plan warns about).
+  - NOT built: time scrubber (wear_log empty), LLM cluster labels (paid), the references'
+    poetic text fragments (their conceit, would be costume here).
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear
@@ -322,6 +333,23 @@ actually look at the PNG.
   put — the carousel's Carousel/Index viewtabs are a lens toggle, not navigation.
 
 ## Queued next (do not build until asked)
+
+- **GALAXY TITLE FONT (her note 07-26):** explore changing the type for the `/galaxy` page
+  title. Currently the shared italic wordmark + uppercase mono label; the page's cybercore
+  direction may want something else for the title specifically. Not started.
+- **STYLIST "INDEX/CATALOG" TREATMENT (her note 07-26):** a small design change for
+  `/stylist` drawn from the *Stills 2026 Design Trend Report* §2.6 INDEX/CATALOG. The
+  reference is a numbered slot grid — `[01]`…`[30]` printed as a sparse lattice on a flat
+  ground, with cutout objects sitting in only some of the slots, the empty numbers left
+  visible as structure, plus a large editorial pull-quote. The idea for the stylist: treat
+  suggestions as an indexed catalogue rather than cards — numbered positions carrying the
+  garments, the numbering itself doing the compositional work. Screenshot supplied 07-26.
+  Not started; discuss before building.
+- **REFERENCE GLASS CODE (her note 07-26):** she may supply the source from Brik's
+  "Refractive Glass Studio" (by Raquel Gómez Arango). Likely a WebGL fragment shader —
+  integrating means either a second WebGL layer sampling the galaxy canvas as a texture, or
+  porting the maths; the shader route would give real chromatic aberration the 2D version
+  cannot. Keep an attribution comment if used.
 
 - **PHONE LAYOUT FIXED 07-26, NOT DEPLOYED.** Both public pages (archive carousel +
   fitting room) had no media queries at all and broke at 390px — overlapping HUD panels,

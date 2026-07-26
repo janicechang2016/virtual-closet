@@ -589,7 +589,7 @@ function tick(now) {
   const dt = lastFrame === null ? 16 : Math.min(now - lastFrame, 50);
   lastFrame = now; clock += dt;
   // hover/selection slows the field to a crawl; it never stops
-  motionTarget = (hover || selected) ? 0.06 : 1;
+  motionTarget = (hover || selected) ? 0.14 : 1;
   motion += (motionTarget - motion) * 0.06;
   if (settle > 0) { settle--; step(); }
   else { drift(); step(); }
