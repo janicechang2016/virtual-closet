@@ -115,8 +115,11 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
   display: block;
   transition: opacity 0.35s ease, transform 0.25s ease, filter 0.25s ease;
 }
-/* she notices the garment: a breath of scale/light when one hovers the mirror */
-#stage-frame.drop-hot #stage-img { transform: scale(1.015); filter: brightness(1.05); }
+/* She notices the garment: light only, never scale. The 1.5% "breath" grew the
+   image 738->749px mid-drag, which reads as the mirror changing size — the one
+   thing this frame must never do. Brightness carries the same signal at zero
+   geometric cost. */
+#stage-frame.drop-hot #stage-img { filter: brightness(1.06); }
 #stage-img.loading { opacity: 0.25; }
 #stage-caption {
   text-align: center; margin-top: 20px; padding-top: 10px;
@@ -207,8 +210,13 @@ code { font-family: ui-monospace, Menlo, monospace; text-transform: none; }
 body.dragging { cursor: grabbing; user-select: none; }
 body.dragging #garment-grid .row { cursor: grabbing; }
 /* while a garment is in the air, the mirror announces itself as a target */
-body.dragging #stage-frame { box-shadow: inset 0 0 0 1px #000; }
-#stage-frame.drop-hot { box-shadow: inset 0 0 0 3px #000; }
+/* Drop affordance without changing apparent weight: the frame already carries a
+   1px border, so stacking a 1px then 3px inset shadow made the edge read as
+   1->2->4px — the box visibly thickening. The chrome-silver wash is the site's
+   existing "this is the target" signal (index lens, stylist cards) and costs no
+   geometry. */
+body.dragging #stage-frame { background: #fbfbfc; }
+#stage-frame.drop-hot { background: linear-gradient(180deg,#f6f7f9,#e9ebef 55%,#dee1e6); }
 .slot.drop-hot { background: #000; color: #fff; }
 .slot.drop-hot .slot-name, .slot.drop-hot .slot-val { opacity: 1; }
 

@@ -13,8 +13,21 @@ Fixed with the pattern the spin viewer already needed — **lock the box, letter
 frame**: a square `height`/`width` on the image plus `object-fit: contain`. Verified across
 aspect 1.000 / 0.665 / 0.800 / 1.000: frame constant at 657×642, image undistorted.
 
+**Reported still moving after that fix, and it was — two other things changed size, both
+deliberate:** the `drop-hot` state scaled the image `1.015` (measured 738 → 749 → 738px
+mid-drag) and the drop affordance stacked a 1px then 3px inset shadow on top of the frame's
+existing 1px border, so the edge read as 1 → 2 → 4px. Locking the box only fixed the
+aspect-ratio cause; these two were separate.
+
+Both removed. Hover now signals with brightness alone, and the drop target uses the
+chrome-silver wash already used by the index lens and stylist cards — same signal, zero
+geometry. Traced through a real drag: frame 852×837 and image 738×738 constant at every
+phase.
+
 This is the third instance of the same standing rule ("appearing must never shift the
-centred mirror", 07-15): the mirror's geometry is fixed, and content adapts to it.
+centred mirror", 07-15): the mirror's geometry is fixed, and content adapts to it. The
+lesson that generalises — **an effect that is "just visual" still counts as movement if it
+changes apparent size.**
 
 **`production` deleted.** Vercel now builds from `main` (verified by pushing a commit to
 `main` alone and watching the live build stamp change to it). A branch named `production`
