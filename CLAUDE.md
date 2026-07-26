@@ -327,18 +327,23 @@ actually look at the PNG.
   cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**
   of all looks (second lens beside the carousel) once the archive grows past ~10 looks,
   plus any coverflow treatment from `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`.
-- **Pose rollout DONE** (see current state) — going forward: assign one pose per saved
-  look at creation (~$0.06/render). Do NOT re-pose via nb2/edit prompt language alone
-  (it's an editor; re-posing fights it). Difficulty-4/5 garments stay on the front pose
-  (03 plissé AND 05 draped maxi — check `difficulty` in meta.json, not folder names;
-  03's drifted contrapposto rejected by Janice 07-14, hidden not deleted).
-- **Render batch for items 06–58** (53 × $0.059 ≈ $3.13) — Janice said no exclusions
-  (worksheet Q7) but the spend envelope itself is NOT yet explicitly approved. Run as
-  ONE batch when approved; difficulty-4/5 stay front (they all only get front anyway);
-  after renders, run cutout_render.py so the carousel picks the new figures up.
-- **Drag-to-dress** (fitting room): next build after the render batch. Sourcing notes:
-  `scripts/ingest_fetch.py` / the `/sourcing` page pull best-res product images;
-  source-photo bar ≥1500px long side, ghost-mannequin/flat-lay > on-model > editorial;
-  grab BACK views for the future turntable idea. Dropped items (in `_discarded/`, can
-  be re-sourced any time): bitter-cells jacket, realisation scarlet, the "uniqlo"
-  parka (actually Aritzia per baked-in tooltip), reformation leather dress.
+**Standing rules that outlived their queue entries** (the work itself shipped in July —
+these are the constraints to honour, not tasks):
+- **Poses:** assign one per saved look at creation (~$0.06/render). Do NOT re-pose via
+  nb2/edit prompt language alone — it's an editor, and re-posing fights it. Difficulty-4/5
+  garments stay on the front pose (03 plissé AND 05 draped maxi — check `difficulty` in
+  meta.json, not folder names; 03's drifted contrapposto rejected 07-14, hidden not deleted).
+- **Sourcing quality bar:** source-photo ≥1500px long side; ghost-mannequin/flat-lay >
+  on-model > editorial; grab BACK views for any future turntable work. Dropped items sit in
+  `_discarded/` and can be re-sourced any time: bitter-cells jacket, realisation scarlet, the
+  "uniqlo" parka (actually Aritzia per baked-in tooltip), reformation leather dress.
+
+**Still genuinely queued, not started:**
+- **Galaxy (`/galaxy`, Track E)** — last of the three v2 UI candidates and the designated
+  home for the parked glassmorphism study. Needs design direction first.
+- Deferred by explicit decision, revisit only if suggestions go stale: stylist explore mode,
+  pairwise garment compatibility, vertical body-stacked outfit cards, wildcard as a
+  full-width interruption.
+- **fal balance** was **-$0.08** (07-22); one pilot segment is $0-recoverable once topped up.
+- **360/avatar-v4** exploration parked on `archive/360-avatar-v4-20260724` + 2.1GB of assets
+  at `~/wardrobe-v3-360-local-assets-20260724/`.

@@ -1,5 +1,25 @@
 # Decision log
 
+## 2026-07-26 — Merge to `main` and deploy; Railway kept warm
+
+**Decisions (user):** (1) merge the session's work to `main` so the branch stops diverging —
+this is what Vercel builds, so it deploys the public site; (2) **keep Railway warm** rather
+than pausing it, accepting the $5/mo while `/stylist` and `/insights` remain local-only and
+snapshot-driven.
+
+**A real bug was caught by checking the built export before merging, not after.** `nav.js`
+read `body.demo` when it built the menu — but that class is applied only *after* the
+carousel's async manifest fetch, so the race lost and the static export offered **Stylist,
+Insights and Sourcing: three links that 404 on the public site**. Fixed by marking those
+items `data-local` and hiding them in CSS (`body.demo #navsheet li[data-local]`), which has
+no timing to lose. Verified: the built export shows Archive + Fitting room only; the local
+server still shows all five.
+
+**`CLAUDE.md` queued list cleaned.** It still carried the render batch and drag-to-dress as
+"do not build until asked" months after both shipped, which would mislead a cold read. The
+durable constraints inside those entries (pose rules, sourcing quality bar) were kept and
+relabelled as standing rules; the task framing was dropped.
+
 ## 2026-07-26 — Nav polish + insights made modular
 
 **Hamburger:** box removed (three hairlines at the site's own weight). Placement is no longer

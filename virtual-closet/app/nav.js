@@ -57,6 +57,9 @@
       '#navsheet ul{list-style:none;margin:0;padding:0;text-align:center;}',
       '#navsheet li{margin:0 0 18px;}',
       '#navsheet li:last-child{margin-bottom:0;}',
+      // routes that need the local server are absent from the static export
+      'body.demo #navsheet li[data-local]{display:none;}',
+      'body.demo #navsheet li[data-local] + li{margin-top:0;}',
       '#navsheet a{display:inline-block;text-decoration:none;color:#000;',
       "  font:italic 400 26px/1.2 'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;",
       '  letter-spacing:.06em;text-transform:uppercase;white-space:pre;}',
@@ -91,14 +94,16 @@
     sheet.setAttribute('aria-modal', 'true');
     sheet.hidden = false;
 
-    var demo = document.body.classList.contains('demo');
     var here = location.pathname.replace(/\/$/, '') || '/';
 
     var wrap = document.createElement('div');
     var ul = document.createElement('ul');
     ROUTES.forEach(function (r) {
-      if (demo && r.local) return;               // needs the local server
       var li = document.createElement('li');
+      // Marked, not omitted. `body.demo` is applied AFTER an async manifest
+      // fetch, so reading it at build time raced and the static export offered
+      // three links that 404. CSS has no timing to lose.
+      if (r.local) li.setAttribute('data-local', '');
       var a = document.createElement('a');
       a.href = r.href;
       a.dataset.text = r.label;
