@@ -362,11 +362,14 @@ actually look at the PNG.
   suggestions as an indexed catalogue rather than cards — numbered positions carrying the
   garments, the numbering itself doing the compositional work. Screenshot supplied 07-26.
   Not started; discuss before building.
-- **REFERENCE GLASS CODE (her note 07-26):** she may supply the source from Brik's
-  "Refractive Glass Studio" (by Raquel Gómez Arango). Likely a WebGL fragment shader —
-  integrating means either a second WebGL layer sampling the galaxy canvas as a texture, or
-  porting the maths; the shader route would give real chromatic aberration the 2D version
-  cannot. Keep an attribution comment if used.
+- **REFERENCE GLASS CODE — DONE 07-26.** Ported to a WebGL layer; see the `/galaxy` notes
+  above and decisions.md. Aberration ships at 0 by measurement, not by omission.
+- **GALAXY GROUND / BACKGROUND IMAGE (her note 07-26, TABLED — discuss):** the glass effect
+  is limited by what is behind it. A near-black ground gives refraction almost nothing to
+  bend, which is why the flutes had to be given light to catch and why the ribs gather the
+  field rather than the strip behind them. A non-black ground — a photograph, a texture, a
+  luminous field — would exaggerate the effect the way the reference's full-bleed image does.
+  Not started; it touches the page's Ink-ground palette decision, so discuss before building.
 
 - **PHONE LAYOUT FIXED AND DEPLOYED 07-26.** Both public pages (archive carousel + fitting
   room) had no media queries at all and broke at 390px — overlapping HUD panels, ~39px
