@@ -43,18 +43,12 @@
     display:flex; flex-direction:column; min-height:392px; position:relative; }
   .card.gone { opacity:.35; }
 
-  /* Hierarchy: the lead suggestion is the page's subject, the rest recede —
-     the archive's own hero-and-remainder language rather than a flat grid. */
+  /* Uniform containers, deliberately. A lead card spanning two columns with a
+     larger unit was tried (the archive's hero-and-remainder language) and
+     rejected: at this card size the inconsistency read as a mistake rather than
+     as emphasis. Every suggestion now occupies an identical frame. */
   @media (min-width:1000px) {
     .grid { grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
-    /* Wider, not taller. Spanning rows let the flat area grow unbounded and
-       pushed the panel and actions off the card entirely. */
-    .card.hero { grid-column:span 2; min-height:466px; }
-    /* The lead is bigger, but by a bounded step — not by however tall the card
-       happens to grow. */
-    .card.hero .flat { padding:34px 40px 40px; gap:26px; --u:290px; }
-    .card.hero .why { font-size:16px; }
-    .card.hero .panel { left:22px; right:22px; bottom:18px; }
   }
 
   /* Flat-lay proportion. A ballet flat is not the size of a pair of trousers;
@@ -80,8 +74,10 @@
   /* Per-garment scale, computed server-side from the garment's own length —
      see _draw_scale(). Width is capped too: a short wide garment forced to a
      height would otherwise sprawl sideways. */
+  /* min() with 100% so a wide garment cannot overflow its slot and bleed past
+     the card's padding into the border. */
   .flat img { max-height:calc(var(--u) * var(--s, 0.7));
-              max-width:calc(var(--u) * var(--s, 0.7) * 1.15); }
+              max-width:min(100%, calc(var(--u) * var(--s, 0.7) * 1.15)); }
   /* Seven garments have no usable cutout. Rather than pretend, they are framed
      as reference photographs at a fixed size — a deliberate second register,
      the same distinction dragcut makes between silhouettes and framed cards. */
@@ -89,7 +85,7 @@
   /* Reference photos are full-body shots, so they need more height than the
      garment inside them would suggest. */
   .flat .it.framed img { max-height:calc(var(--u) * 0.86) !important;
-    max-width:calc(var(--u) * 0.62) !important;
+    max-width:min(100%, calc(var(--u) * 0.62)) !important;
     border:1px solid rgba(0,0,0,.22); background:#fff; }
 
   /* the glass */
@@ -220,8 +216,6 @@ async function load() {
   const all = DATA.suggestions.slice();
   if (DATA.wildcard) all.push(DATA.wildcard);
   grid.innerHTML = all.map((o, i) => cardHTML(o, i, !!o.wildcard)).join('');
-  const first = document.getElementById('card-0');
-  if (first) first.classList.add('hero');
   const st = DATA.state || {};
   document.getElementById('state').innerHTML = [
     ['garments', st.garments], ['published looks', st.looks],

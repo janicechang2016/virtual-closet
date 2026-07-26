@@ -60,9 +60,12 @@ own choosing. An explore mode that samples across the range is the fix, and it i
    gorum wrap-collar shirt", with soft rules phrased as a caveat ("mixed warmth"). $0,
    deterministic templates, no LLM. Colliding garment names are disambiguated by measured
    dominant colour — three garments are called "scoop tank".
-3. **Hierarchy.** The lead suggestion spans two columns; the rest recede. Spanning ROWS was
-   tried first and let the flat area grow unbounded, pushing the panel and actions off the
-   card entirely.
+3. ~~**Hierarchy.** The lead suggestion spans two columns.~~ **REVERTED 07-26 (user):
+   containers are uniform.** Built as designed, then rejected on sight — at this card size a
+   double-width lead read as an inconsistency rather than as emphasis, and she wants one
+   frame for every suggestion. (Spanning ROWS was also tried and was worse: the flat area
+   grew unbounded and pushed the panel and actions off the card.) The rejected variant is in
+   git history if hierarchy is ever wanted again.
 6. **Ambient state line** — `garments 58 · published looks 18 · never worn 23 · idle value
    $2,381 · judgements 70`. Ties the stylist to the sustainability track in SYVE's own
    technical-label register.
