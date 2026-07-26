@@ -39,7 +39,7 @@
   #controls { position:fixed; left:22px; bottom:22px; z-index:20; display:flex;
     flex-direction:column; gap:12px; }
   .ctl { display:flex; align-items:center; gap:10px; color:var(--dim); }
-  .ctl input[type=range] { width:120px; accent-color:var(--amber); }
+  .ctl input[type=range] { width:120px; accent-color:var(--paper); }
   .chips { display:flex; gap:6px; flex-wrap:wrap; max-width:340px; }
   .chip { border:1px solid var(--graphite); color:var(--dim); background:none;
     padding:5px 10px; cursor:pointer; font:inherit; }
@@ -80,6 +80,7 @@
     display:flex; flex-direction:column; gap:7px; }
   #legend div { display:flex; align-items:center; gap:8px; }
   #legend i { width:22px; height:0; border-top:1px solid; display:block; }
+  #legend .thick { border-top-width:1px; }
   #hint { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
     color:var(--dim); z-index:20; }
   @media (max-width:860px) { #panel, #legend { display:none; } }
@@ -97,7 +98,7 @@
 <div id="legend" class="mono">
   <div><i style="border-color:rgba(245,243,239,.55)"></i> worn together</div>
   <div><i style="border-color:rgba(245,243,239,.16);border-top-style:dashed"></i> could pair</div>
-  <div><i style="border-color:var(--oxblood);border-top-width:3px"></i> never worn</div>
+  <div><i style="border-color:var(--oxblood)"></i> never worn</div>
 </div>
 
 <div id="controls">
@@ -152,7 +153,10 @@ fetch('/api/galaxy').then(r => r.json()).then(d => {
     return Object.assign({}, n, {
       x: innerWidth/2 + Math.cos(a) * 220 + (Math.random()-.5)*40,
       y: innerHeight/2 + Math.sin(a) * 220 + (Math.random()-.5)*40,
-      vx: 0, vy: 0
+      vx: 0, vy: 0,
+      phase: (i * 2.399) % (Math.PI * 2),        // golden-angle: no two in step
+      // noise-clustered reveal delay, the same shape nav.js uses for its glyphs
+      revealAt: (0.5 + 0.5 * Math.sin(i * 0.9)) * 900 + Math.random() * 900
     });
   });
   const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
@@ -188,10 +192,28 @@ fetch('/api/galaxy').then(r => r.json()).then(d => {
   });
 
   NODES.forEach(n => { if (n.img) { const im = new Image(); im.src = n.img; IMG[n.id] = im; } });
+  revealT0 = performance.now();
+  scrambleIn(document.getElementById('stats'));
   requestAnimationFrame(tick);
 });
 
 // ── force layout: 58 nodes, so plain O(n^2) is fine (plan E.3) ──────────────
+// The field never comes to rest. After the initial settle each node keeps a slow
+// wander on its own phase, so the constellation breathes the way a real one
+// would. Hovering does not freeze it — it drops to a crawl, which reads as
+// attention rather than as a paused animation.
+let motion = 1, motionTarget = 1, T0 = performance.now();
+
+function drift(now) {
+  const t = (now - T0) / 1000;
+  for (let i = 0; i < NODES.length; i++) {
+    const n = NODES[i];
+    const a = t * 0.055 + n.phase;
+    n.vx += Math.cos(a) * 0.020 * motion;
+    n.vy += Math.sin(a * 0.83 + n.phase) * 0.020 * motion;
+  }
+}
+
 function step() {
   const cx = innerWidth / 2, cy = innerHeight / 2;
   for (const n of NODES) { n.vx *= 0.86; n.vy *= 0.86; }
@@ -220,7 +242,7 @@ function step() {
     const fx = (dx / d) * f, fy = (dy / d) * f;
     e.s.vx += fx; e.s.vy += fy; e.t.vx -= fx; e.t.vy -= fy;
   }
-  for (const n of NODES) { n.x += n.vx; n.y += n.vy; }
+  for (const n of NODES) { n.x += n.vx * motion; n.y += n.vy * motion; }
 }
 
 function neighbours(n) {
@@ -233,7 +255,23 @@ function neighbours(n) {
   return s;
 }
 
-function draw() {
+// The same idea as the menu's glyph resolve (nav.js): nothing arrives in order.
+// Nodes surface on noise-clustered delays and their plate resolves from the Ink
+// ground rather than fading from nothing, so the field assembles out of the dark
+// instead of sliding in.
+const REVEAL_MS = 620;
+let revealT0 = null;
+
+function revealOf(n, now) {
+  if (revealT0 === null) return 0;
+  const e = (now - revealT0) - n.revealAt;
+  if (e <= 0) return 0;
+  if (e >= REVEAL_MS) return 1;
+  return e / REVEAL_MS;
+}
+
+function draw(now) {
+  now = now || performance.now();
   ctx.save();
   ctx.fillStyle = '#0E0E10';
   ctx.fillRect(0, 0, innerWidth, innerHeight);
@@ -245,14 +283,16 @@ function draw() {
   // edges, additive so overlaps bloom rather than muddy (plan E.3)
   ctx.globalCompositeOperation = 'lighter';
   for (const e of EDGES) {
+    const rv = Math.min(revealOf(e.s, now), revealOf(e.t, now));
+    if (rv <= 0) continue;                     // an edge cannot precede its nodes
     const off = dimmed(e.a) || dimmed(e.b);
     const worn = e.kind === 'worn';
     ctx.beginPath();
     ctx.setLineDash(worn ? [] : [3, 5]);
     ctx.lineWidth = worn ? Math.min(1 + e.weight * 0.5, 3) : 1;
     ctx.strokeStyle = worn
-      ? `rgba(245,243,239,${(off ? 0.06 : 0.5) * lineAlpha})`
-      : `rgba(245,243,239,${(off ? 0.02 : 0.14) * lineAlpha})`;
+      ? `rgba(245,243,239,${(off ? 0.06 : 0.5) * lineAlpha * rv})`
+      : `rgba(245,243,239,${(off ? 0.02 : 0.14) * lineAlpha * rv})`;
     ctx.moveTo(e.s.x, e.s.y); ctx.lineTo(e.t.x, e.t.y);
     ctx.stroke();
   }
@@ -260,8 +300,12 @@ function draw() {
   ctx.globalCompositeOperation = 'source-over';
 
   for (const n of NODES) {
+    const rv = revealOf(n, now);
+    if (rv <= 0) continue;
     const r = radius(n), off = dimmed(n.id);
-    ctx.globalAlpha = off ? 0.22 : 1;
+    // ease the plate up out of the ground, not in from white
+    const ease = rv < 1 ? rv * rv * (3 - 2 * rv) : 1;
+    ctx.globalAlpha = (off ? 0.22 : 1) * ease;
 
     // white plate: a near-black garment must still read on a near-black field
     ctx.fillStyle = PAPER;
@@ -278,8 +322,8 @@ function draw() {
       ctx.drawImage(im, n.x - w/2, n.y - h/2, w, h);
     }
     if (n.orphan) {                       // reserved alert token, never colour alone
-      ctx.strokeStyle = OX; ctx.lineWidth = 2.5;
-      ctx.strokeRect(n.x - r - 1.5, n.y - r - 1.5, r*2 + 3, r*2 + 3);
+      ctx.strokeStyle = OX; ctx.lineWidth = 1;
+      ctx.strokeRect(n.x - r - 1, n.y - r - 1, r*2 + 2, r*2 + 2);
     }
     if (selected && selected.id === n.id) {
       ctx.strokeStyle = AMBER; ctx.lineWidth = 2;
@@ -292,11 +336,47 @@ function draw() {
 
 const byCat = id => (NODES.find(n => n.id === id) || {}).category;
 
+// Lifted from nav.js so the two entrances read as one gesture: characters settle
+// on clustered delays, and the true glyph becomes likelier as each one resolves.
+function scrambleIn(el) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/·—+=<>[]{}|0123456789'.split('');
+  const text = el.textContent, start = performance.now();
+  const delays = text.split('').map((_, i) =>
+    (0.5 + 0.5 * Math.sin(i * 0.9)) * 260 + Math.random() * 420);
+  (function run(now) {
+    const t = now - start; let done = true, out = '';
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === ' ') { out += ' '; continue; }
+      const e = t - delays[i];
+      if (e >= 520) { out += ch; continue; }
+      done = false;
+      out += e < 0 ? ' '
+           : (Math.random() < e / 520 ? ch : POOL[(Math.random() * POOL.length) | 0]);
+    }
+    el.textContent = out;
+    if (!done) requestAnimationFrame(run);
+  })(performance.now());
+}
+
 let settle = 900;
-function tick() {
-  if (settle > 0) { step(); settle--; }
-  else if (hover || selected) { step(); }
-  draw();
+// A field that never rests also never stops costing CPU. Nothing is animating
+// for anyone when the tab is hidden, so the loop yields until it returns.
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) { T0 += performance.now() - hiddenAt; requestAnimationFrame(tick); }
+  else hiddenAt = performance.now();
+});
+let hiddenAt = 0;
+
+function tick(now) {
+  if (document.hidden) return;
+  // hover/selection slows the field to a crawl; it never stops
+  motionTarget = (hover || selected) ? 0.06 : 1;
+  motion += (motionTarget - motion) * 0.06;
+  if (settle > 0) { settle--; step(); }
+  else { drift(now || performance.now()); step(); }
+  draw(now || performance.now());
   requestAnimationFrame(tick);
 }
 
