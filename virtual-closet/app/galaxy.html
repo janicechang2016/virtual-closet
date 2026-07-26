@@ -639,8 +639,10 @@ const GLASS_GL = (() => {
     let mx = M.x, my = M.y;
     if (REDUCED) { mx = (x0 + x1) / 2; my = 0.5; }
     else {
-      // ~14s orbit, slow enough to sit beside the field's own drift
-      const a = now / 1000 * 0.45;
+      // The reference's own cadence: uTime += 0.01/frame x speed 2.5 = 1.5 rad/s,
+      // a ~4.2s orbit. Faster than this page's ambient drift on purpose — the
+      // glass is a surface catching light, not part of the field's motion.
+      const a = now / 1000 * 1.5;
       const ox = (x0 + x1) / 2 + Math.cos(a) * (x1 - x0) * 0.5;
       const oy = 0.5 + Math.sin(a * 0.7) * 0.34;
       M.auto += (((now - M.moved > 1600) ? 1 : 0) - M.auto) * 0.03;
