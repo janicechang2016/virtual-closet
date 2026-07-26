@@ -1,5 +1,36 @@
 # Decision log
 
+## 2026-07-26 — Galaxy: cybercore via processing artifacts, not colour
+
+Two references supplied (Refractive Glass Studio; Vision Boundary Engine). **The decisive
+observation is that both are monochrome** — neither gets its futurism from colour but from
+processing artifacts: refraction, dithering, machine-vision overlay. So the palette is
+untouched: Ink, paper, oxblood for alert, amber for selected.
+
+**1. Nodes are Bayer-dithered dot fields; the white plates are gone.** Beyond the look, dot
+DENSITY carries luminance, so a near-black garment renders as a DENSE field of light rather
+than vanishing — which is the exact problem that forced the plates. A dithered silhouette is
+also quieter than a photograph at 30px, which was her "make the nodes cleaner" ask. Coverage
+is floored at 0.30 so a white garment still reads.
+
+**2. Detection HUD on hover.** Corner-ticked bounding box, dotted tracking lines to every
+linked garment, and a readout — their placeholder `909` becomes the real record
+(`52-CAMPER-FLATS · FLAT · 9 WEARS · $98`). This is functional, not decorative: previously a
+node had to be CLICKED before it identified itself. Drawn in screen space after the world
+transform is restored, so brackets and type keep their weight at any zoom — a HUD that
+scales with the scene stops being an instrument.
+
+**3. Reeded glass, actually refracting.** Most sites can only fake this because they do not
+own the pixels behind the panel; the galaxy is a canvas we draw, so the region behind the
+detail panel is snapshotted and redrawn as 21 ribs, each sampling a wider slice and
+squeezing it into the rib width — the magnify-and-displace behaviour of real fluted glass.
+Plus frosting grain and a specular rim. The CSS `backdrop-filter` was removed; the element
+now carries only content.
+
+**Deliberately not borrowed: the reference's poetic text fragments** ("ghosted shapes / luma
+fades like memory"). That is its artistic conceit; copying it would be costume. Our
+equivalent is the real readout, which earns its place.
+
 ## 2026-07-26 — Track E `/galaxy` prototype; node colour freed from garment colour
 
 **Her question dissolved the blocker.** Plan E.2 encodes node colour as the actual garment
