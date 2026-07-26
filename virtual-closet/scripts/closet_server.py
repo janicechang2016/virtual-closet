@@ -344,6 +344,44 @@ def stylist_history(limit=24):
     return rows[:limit]
 
 
+# How tall a garment should be drawn, as a multiple of the card's base unit.
+# Category alone is too coarse: a mini skirt and a maxi skirt are both "bottom",
+# and forcing them to one height made the mini enormous and very wide. Length
+# comes from the garment's own name, which already carries mini/midi/maxi.
+def _draw_scale(meta, category):
+    text = " ".join(str(meta.get(k, "")) for k in ("name", "subcategory", "fit")).lower()
+
+    def has(*words):
+        return any(w in text for w in words)
+
+    if category == "shoes":
+        return 0.46 if has("boot") else 0.32
+    if category == "dress":
+        if has("mini"):
+            return 0.66
+        if has("midi"):
+            return 0.90
+        return 1.00                      # maxi, column, floor-length, unspecified
+    if category == "outerwear":
+        return 0.98 if has("coat", "maxi", "long") else 0.76
+    if category == "bottom":
+        if has("mini", "micro"):
+            return 0.44
+        if has("short"):
+            return 0.46
+        if has("midi"):
+            return 0.76
+        if has("maxi", "column", "floor"):
+            return 0.98
+        return 0.88                      # trousers, jeans, pants
+    # tops
+    if has("vest", "cami", "tank", "bralette"):
+        return 0.52
+    if has("sweater", "cardigan", "long-sleeve", "long sleeve", "shirt", "blouse"):
+        return 0.62
+    return 0.56
+
+
 def _garment_names():
     """id -> the human name from meta.json. The snapshot carries subcategory,
     which is a taxonomy label; copy wants "samira draped tank", not "tank"."""
@@ -508,6 +546,14 @@ def stylist_suggest(occasion="", n=6):
         wildcard = dict(random.choice(by_garment[target]), wildcard=True)
 
     names = _garment_names()
+    metas = {}
+    for gid in by_id:
+        mp = ROOT / "garments" / gid / "meta.json"
+        if mp.is_file():
+            try:
+                metas[gid] = json.loads(mp.read_text())
+            except ValueError:
+                pass
     # Disambiguate collisions with the measured dominant colour: three garments
     # are called "scoop tank" and two "pointelle midi skirt", so an un-prefixed
     # rationale would name two different pieces identically.
@@ -533,6 +579,7 @@ def stylist_suggest(occasion="", n=6):
             "unworn": gid not in worn,
             "img": _stylist_thumb(gid)[0],
             "framed": not _stylist_thumb(gid)[1],
+            "scale": _draw_scale(metas.get(gid, {}), by_id[gid].get("category")),
         } for gid in o["garment_ids"]]
         return out
 

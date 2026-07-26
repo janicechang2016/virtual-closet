@@ -76,17 +76,20 @@
   /* Sizes are a fixed unit, NOT a percentage of the card. Percentages meant the
      hero — which is taller — inflated everything inside it, so the same tank
      rendered small in a grid card and enormous in the lead. */
-  .flat { --u:230px; }
-  .flat .it[data-c="dress"] img     { max-height:calc(var(--u) * 1.00); }
-  .flat .it[data-c="outerwear"] img { max-height:calc(var(--u) * 0.92); }
-  .flat .it[data-c="bottom"] img    { max-height:calc(var(--u) * 0.86); }
-  .flat .it[data-c="top"] img       { max-height:calc(var(--u) * 0.56); }
-  .flat .it[data-c="shoes"] img     { max-height:calc(var(--u) * 0.34); }
+  .flat { --u:236px; }
+  /* Per-garment scale, computed server-side from the garment's own length —
+     see _draw_scale(). Width is capped too: a short wide garment forced to a
+     height would otherwise sprawl sideways. */
+  .flat img { max-height:calc(var(--u) * var(--s, 0.7));
+              max-width:calc(var(--u) * var(--s, 0.7) * 1.15); }
   /* Seven garments have no usable cutout. Rather than pretend, they are framed
      as reference photographs at a fixed size — a deliberate second register,
      the same distinction dragcut makes between silhouettes and framed cards. */
   .flat .it.framed { align-self:flex-start; }
-  .flat .it.framed img { max-height:calc(var(--u) * 0.60) !important;
+  /* Reference photos are full-body shots, so they need more height than the
+     garment inside them would suggest. */
+  .flat .it.framed img { max-height:calc(var(--u) * 0.86) !important;
+    max-width:calc(var(--u) * 0.62) !important;
     border:1px solid rgba(0,0,0,.22); background:#fff; }
 
   /* the glass */
@@ -181,7 +184,8 @@ const nameOf = g => (g.name || g.subcategory || g.category || g.id);
 
 function cardHTML(o, i, wild) {
   const items = o.garments.map(g => `
-    <div class="it${g.framed ? ' framed' : ''}" data-c="${g.category}">${g.img
+    <div class="it${g.framed ? ' framed' : ''}" data-c="${g.category}"
+         style="--s:${g.scale || 0.7}">${g.img
       ? `<img src="${g.img}" alt="" loading="lazy">` : ''}</div>`).join('');
   const rows = o.garments.map(g => nameOf(g)).join(' · ');
   const blame = o.garments.map(g =>

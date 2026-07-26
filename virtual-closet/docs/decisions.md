@@ -4,10 +4,16 @@
 
 Garment sizes were percentages of the card's height, so the hero — which is taller —
 inflated everything inside it: the same tank rendered small in a grid card and enormous in
-the lead. Sizes are now a fixed `--u` (230px; 290px in the hero), with per-category
-multipliers off it, so proportion is identical everywhere and the lead steps up by a bounded
-amount. Shoes raised to 0.34u (they read too small), tops down to 0.56u. Card heights
-tightened to suit the corrected art.
+the lead. Sizes are now a fixed `--u` (236px; 290px in the hero), so proportion is identical
+everywhere and the lead steps up by a bounded amount.
+
+**Category turned out to be too coarse a scale key.** A mini skirt and a maxi skirt are both
+`bottom`, so one height made the mini enormous and very wide. Scale is now computed
+per garment server-side (`_draw_scale`) from its own name/fit text, which already carries
+mini/midi/maxi: mini skirt 0.44, midi 0.76, trousers 0.88, maxi 0.98; tanks 0.52, sweaters
+0.62; boots 0.46, other shoes 0.32. Width is capped alongside height, or a short wide
+garment sprawls sideways when forced to a height. Reference photos are full-body shots and
+take 0.86u — sized for the photo, not the garment inside it.
 
 **Priority note (her question, agreed):** explore mode and pairwise compatibility are NOT
 priorities. Both are reasonable ideas recorded for later; chasing them now would be
