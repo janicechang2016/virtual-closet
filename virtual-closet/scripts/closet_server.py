@@ -239,12 +239,8 @@ def _engine():
     return gaps, preference
 
 
-def stylist_feedback():
-    """Verdicts from disk, shaped for engine.preference.
-
-    A "yes" credits every garment in the outfit. A "no" penalises only the
-    garment she blamed; an unattributed "no" is dropped rather than smeared.
-    """
+def stylist_log_entries():
+    """Every line in the log, oldest first. Malformed lines are skipped."""
     out = []
     if not STYLIST_LOG.exists():
         return out
@@ -252,14 +248,62 @@ def stylist_feedback():
         if not line.strip():
             continue
         try:
-            e = json.loads(line)
+            out.append(json.loads(line))
         except ValueError:
             continue
+    return out
+
+
+def stylist_current():
+    """Resolve the log to her CURRENT judgement per outfit, newest wins.
+
+    The log stays append-only — changing your mind should not erase what you
+    first thought, and a retraction is itself a fact worth keeping. Editing
+    appends a new verdict for the same outfit; retracting appends a tombstone.
+    Only the surviving verdict is fed to the model.
+    """
+    current = {}
+    for e in stylist_log_entries():
+        ids = e.get("ids") or []
+        if not ids:
+            continue
+        sig = tuple(sorted(ids))
+        if e.get("verdict") == "retracted":
+            current.pop(sig, None)
+        elif e.get("verdict") in ("yes", "no"):
+            current[sig] = e
+    return current
+
+
+def stylist_feedback():
+    """Current verdicts, shaped for engine.preference.
+
+    A "yes" credits every garment in the outfit. A "no" penalises only the
+    garment she blamed; an unattributed "no" is dropped rather than smeared.
+    """
+    out = []
+    for e in stylist_current().values():
         if e.get("verdict") == "yes":
             out.append(({"ids": e.get("ids") or []}, "yes"))
         elif e.get("verdict") == "no" and e.get("blame"):
             out.append(({"ids": [e["blame"]]}, "no"))
     return out
+
+
+def stylist_history(limit=24):
+    """Her standing decisions, newest first, for the review panel."""
+    rows = []
+    for e in stylist_current().values():
+        rows.append({
+            "ids": e.get("ids") or [],
+            "verdict": e.get("verdict"),
+            "blame": e.get("blame"),
+            "occasion": e.get("occasion") or "",
+            "ts": e.get("ts"),
+            "garments": [{"id": g, "img": _stylist_thumb(g)} for g in (e.get("ids") or [])],
+        })
+    rows.sort(key=lambda r: r["ts"] or "", reverse=True)
+    return rows[:limit]
 
 
 def _stylist_thumb(gid):
@@ -281,20 +325,8 @@ def _stylist_thumb(gid):
 
 
 def _judged_signatures():
-    """Outfits already ruled on — never show the same combination twice."""
-    sigs = set()
-    if not STYLIST_LOG.exists():
-        return sigs
-    for line in STYLIST_LOG.read_text().splitlines():
-        if not line.strip():
-            continue
-        try:
-            e = json.loads(line)
-        except ValueError:
-            continue
-        if e.get("ids"):
-            sigs.add(tuple(sorted(e["ids"])))
-    return sigs
+    """Outfits with a standing judgement — not shown again until retracted."""
+    return set(stylist_current().keys())
 
 
 def stylist_suggest(occasion="", n=6):
@@ -430,6 +462,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._file(ROOT / "app" / "sourcing.html")
         if url.path == "/stylist":
             return self._file(ROOT / "app" / "stylist.html")
+        if url.path == "/api/stylist/history":
+            return self._json({"history": stylist_history()})
         if url.path == "/api/stylist/suggest":
             q = parse_qs(url.query)
             try:
@@ -481,6 +515,16 @@ class Handler(SimpleHTTPRequestHandler):
         url = urlparse(self.path)
         length = int(self.headers.get("Content-Length", 0))
         data = json.loads(self.rfile.read(length) or b"{}")
+        if url.path == "/api/stylist/retract":
+            ids = data.get("ids") or []
+            if not ids:
+                return self._json({"error": "no ids"}, 400)
+            entry = {"ts": datetime.now(timezone.utc).isoformat(),
+                     "ids": ids, "verdict": "retracted"}
+            STYLIST_LOG.parent.mkdir(exist_ok=True)
+            with STYLIST_LOG.open("a") as f:
+                f.write(json.dumps(entry) + "\n")
+            return self._json({"ok": True, "count": len(stylist_feedback())})
         if url.path == "/api/stylist/feedback":
             entry = {
                 "ts": datetime.now(timezone.utc).isoformat(),

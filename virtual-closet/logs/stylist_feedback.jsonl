@@ -5,3 +5,6 @@
 {"ts": "2026-07-26T03:39:16.296177+00:00", "ids": ["05-hardest-item", "56-mizuno-sneakers"], "verdict": "no", "blame": "56-mizuno-sneakers", "occasion": "", "wildcard": false}
 {"ts": "2026-07-26T03:39:21.393435+00:00", "ids": ["08-bunnyhill-grey-top", "47-woodrose-deli-skirt", "49-jil-sander-boots"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
 {"ts": "2026-07-26T03:40:09.917758+00:00", "ids": ["19-coucou-white-scoop-tank", "02-jeans", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": true}
+{"ts": "2026-07-26T03:42:17.269298+00:00", "ids": ["25-kotn-samira-tank", "02-jeans", "51-weejuns-loafers"], "verdict": "no", "blame": "51-weejuns-loafers", "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:42:17.287205+00:00", "ids": ["25-kotn-samira-tank", "02-jeans", "51-weejuns-loafers"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:42:17.385914+00:00", "ids": ["25-kotn-samira-tank", "02-jeans", "51-weejuns-loafers"], "verdict": "retracted"}

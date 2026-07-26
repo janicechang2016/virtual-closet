@@ -67,7 +67,27 @@
 
   .tag { position:absolute; top:0; left:0; background:#000; color:#fff;
     padding:6px 12px; z-index:2; }
-  .done { padding:14px; color:var(--dim); border-top:1px solid var(--line); }
+  .done { padding:0; border-top:1px solid var(--line); display:flex; align-items:stretch; }
+  .done .lab { flex:1; padding:14px; color:var(--dim); }
+  .done button { border:0; border-left:1px solid var(--line); padding:14px 14px; }
+
+  /* decisions drawer — every judgement stays revisable */
+  .drawer { display:none; border-bottom:1px solid var(--line); }
+  .drawer.open { display:block; }
+  .hrow { display:flex; align-items:center; gap:14px; padding:12px 24px;
+    border-bottom:1px solid rgba(0,0,0,.12); flex-wrap:wrap; }
+  .hrow:last-child { border-bottom:0; }
+  .hrow .v { width:88px; }
+  .hrow .v.yes { color:#000; } .hrow .v.no { color:var(--dim); }
+  .hrow .thumbs { display:flex; gap:6px; align-items:center; }
+  .hrow .thumbs img { height:38px; width:30px; object-fit:contain; }
+  .hrow .why { color:var(--dim); flex:1; }
+  .hrow .acts2 { display:flex; }
+  .hrow .acts2 button { border:1px solid var(--line); margin-right:-1px; padding:7px 12px; }
+  .hblame { padding:0 24px 14px 24px; display:none; }
+  .hblame.open { display:block; }
+  .hblame .opts { display:flex; max-width:460px; }
+  .hblame .opts button { flex:1; border:1px solid var(--line); margin-right:-1px; padding:8px 4px; }
   footer { padding:30px 24px 70px; color:var(--dim); font-size:11px; max-width:70ch; }
 </style></head>
 <body>
@@ -85,8 +105,10 @@
       <option>event / formal</option><option>travel</option><option>home / lounge</option>
     </select>
   </label>
+  <button id="hist">decisions</button>
   <button id="again" class="primary">suggest again</button>
 </header>
+<div class="drawer" id="drawer"></div>
 
 <div class="strip up" id="strip">loading…</div>
 <div class="grid" id="grid"></div>
@@ -97,6 +119,10 @@
   <b>not this</b> asks which piece was wrong: an unattributed rejection can't be
   assigned blame and would penalise the garments that were fine. Nothing here spends
   anything; suggestions are your existing cutouts, not renders.
+  <br><br>Every judgement is revisable — <b>undo</b> or <b>change</b> on the card, or
+  <b>decisions</b> in the header to revisit anything you have ruled on. Changing your mind
+  appends rather than rewrites: the log keeps what you first thought, and only your current
+  verdict is fed to the model. An undone outfit becomes eligible to be suggested again.
 </footer>
 
 <script>
@@ -161,8 +187,37 @@ async function send(i, verdict, blame) {
   const card = document.getElementById('card-' + i);
   card.classList.remove('asking');
   card.classList.add('gone');
-  card.querySelector('.acts').outerHTML =
-    `<div class="done up">${verdict === 'yes' ? 'saved as worn' : 'noted' + (blame ? ' · ' + blame : '')}</div>`;
+  card.querySelector('.acts').outerHTML = `
+    <div class="done up">
+      <span class="lab">${verdict === 'yes' ? 'saved as worn' : 'noted' + (blame ? ' · ' + blame : '')}</span>
+      <button data-change="${i}">change</button>
+      <button data-undo="${i}">undo</button>
+    </div>`;
+}
+
+function actsHTML(i) {
+  return `<div class="acts">
+      <button data-yes="${i}">wear this</button>
+      <button data-no="${i}">not this</button>
+    </div>`;
+}
+
+async function retract(ids) {
+  const j = await fetch('/api/stylist/retract', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ids})
+  }).then(r => r.json());
+  strip.textContent = strip.textContent.replace(/\d+ judgements/, j.count + ' judgements');
+}
+
+function reopen(i) {
+  const card = document.getElementById('card-' + i);
+  card.classList.remove('gone', 'asking');
+  card.querySelector('.done').outerHTML = actsHTML(i);
+}
+
+function allItems() {
+  return DATA.suggestions.concat(DATA.wildcard ? [DATA.wildcard] : []);
 }
 
 grid.addEventListener('click', e => {
@@ -174,7 +229,81 @@ grid.addEventListener('click', e => {
     return;
   }
   if (b.dataset.blame) return send(+b.dataset.i, 'no', b.dataset.blame);
+  if (b.dataset.undo !== undefined) {
+    const i = +b.dataset.undo;
+    return retract(allItems()[i].garment_ids).then(() => reopen(i));
+  }
+  if (b.dataset.change !== undefined) return reopen(+b.dataset.change);
 });
+
+// ---- decisions drawer -------------------------------------------------------
+const drawer = document.getElementById('drawer');
+
+async function loadHistory() {
+  const {history} = await fetch('/api/stylist/history').then(r => r.json());
+  if (!history.length) {
+    drawer.innerHTML = '<div class="hrow up" style="color:var(--dim)">no decisions yet</div>';
+    return;
+  }
+  drawer.innerHTML = history.map((h, k) => `
+    <div class="hrow" id="h${k}">
+      <span class="v up ${h.verdict}">${h.verdict === 'yes' ? 'would wear' : 'not this'}</span>
+      <span class="thumbs">${h.garments.map(g =>
+        g.img ? `<img src="${g.img}" alt="" loading="lazy">` : '').join('')}</span>
+      <span class="why up">${h.blame ? 'blamed · ' + h.blame : ''}${h.occasion ? ' · ' + h.occasion : ''}</span>
+      <span class="acts2">
+        <button data-hflip="${k}">change</button>
+        <button data-hundo="${k}">undo</button>
+      </span>
+    </div>
+    <div class="hblame" id="hb${k}">
+      <div class="up" style="color:var(--dim);margin-bottom:8px">
+        change to — or pick the piece that was wrong</div>
+      <div class="opts">
+        <button data-hyes="${k}">would wear</button>
+        ${h.ids.map(id => `<button data-hno="${k}" data-hblame="${id}">not · ${id.replace(/^\d+-/, '')}</button>`).join('')}
+      </div>
+    </div>`).join('');
+  drawer._history = history;
+}
+
+async function judge(ids, verdict, blame) {
+  const j = await fetch('/api/stylist/feedback', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ids, verdict, blame})
+  }).then(r => r.json());
+  strip.textContent = strip.textContent.replace(/\d+ judgements/, j.count + ' judgements');
+}
+
+drawer.addEventListener('click', async e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const H = drawer._history || [];
+  if (b.dataset.hflip !== undefined) {
+    document.getElementById('hb' + b.dataset.hflip).classList.toggle('open');
+    return;
+  }
+  if (b.dataset.hundo !== undefined) {
+    await retract(H[+b.dataset.hundo].ids);
+    return loadHistory();
+  }
+  if (b.dataset.hyes !== undefined) {
+    await judge(H[+b.dataset.hyes].ids, 'yes', null);
+    return loadHistory();
+  }
+  if (b.dataset.hno !== undefined) {
+    await judge(H[+b.dataset.hno].ids, 'no', b.dataset.hblame);
+    return loadHistory();
+  }
+});
+
+document.getElementById('hist').addEventListener('click', () => {
+  drawer.classList.toggle('open');
+  if (drawer.classList.contains('open')) loadHistory();
+});
+
+// #decisions deep-links straight to the review drawer
+if (location.hash === '#decisions') { drawer.classList.add('open'); loadHistory(); }
 
 occ.addEventListener('change', load);
 document.getElementById('again').addEventListener('click', load);

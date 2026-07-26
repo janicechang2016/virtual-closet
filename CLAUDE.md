@@ -102,7 +102,11 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   built around a never-worn garment — affinity alone would make the stylist a mirror and
   never surface the 23 unworn pieces. Feedback: "wear this" credits every garment; "not
   this" asks **which piece was wrong** and penalises only that one — an unattributed
-  rejection cannot be assigned blame and measurably made prediction worse. Writes
+  rejection cannot be assigned blame and measurably made prediction worse. **Every judgement is revisable:** undo/change on the card, or the `decisions`
+  drawer (`/stylist#decisions`) to revisit anything ruled on. The log stays APPEND-ONLY —
+  re-judging appends a new verdict, undo appends a `retracted` tombstone, and
+  `stylist_current()` resolves newest-wins per outfit. Only the surviving verdict feeds the
+  model; an undone outfit becomes suggestable again. Writes
   `logs/stylist_feedback.jsonl`; `server/scripts/sync_stylist_feedback.py` carries it into
   Postgres `interaction_log` (blamed garment in `reason_code`). **Local-only by design:**
   putting `APP_SECRET` in a public page would undo the auth guardrail the hosted-Postgres
