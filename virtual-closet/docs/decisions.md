@@ -1,5 +1,23 @@
 # Decision log
 
+## 2026-07-26 — Deploy source is `main`; the `production` branch retired
+
+**Decision (user):** point Vercel at `main`. One branch means live; no promotion step.
+
+**Why it came up:** the session's work was pushed to `main` and nothing appeared on the site.
+Not a build failure — **Vercel's production branch was `production`**, 38 commits behind at a
+07-20 commit, so every push was aimed at a branch nothing was watching. Diagnosed by hashing
+the deployed `/app/carousel.html` against each candidate branch: it matched
+`origin/production` byte for byte. Grepping for markers only established "old"; the hash
+established *which*.
+
+`production` was fast-forwarded (a clean ancestor, no force) to ship the phone-layout fix,
+then the setting moved to `main`. Deploy verified live at a true 390px viewport: HUD stacked,
+no overlap, both flanking figures legible, `nav.js` 200.
+
+**`production` is now vestigial and should be deleted** — leaving a same-named branch that no
+longer deploys is exactly the ambiguity that caused this.
+
 ## 2026-07-26 — Merge to `main` and deploy; Railway kept warm
 
 **Decisions (user):** (1) get the session's work onto `main` so the branch stops diverging —

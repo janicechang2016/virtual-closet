@@ -9,8 +9,14 @@ carries the standing rules). Plans: `virtual-closet-execution-plan.md` (v1),
 
 ## v2 state (2026-07-26) — foundation + engine + stylist all done, $0.00 API spend
 
-Branch `2d-reboot` (pushed). `main` is untouched and is what Vercel builds the live archive
-from — **do not merge**.
+**DEPLOY SOURCE: `main`** (Vercel → Settings → Git → Production Branch, switched 07-26).
+Pushing to `main` deploys the public archive; verify at virtual-closet-seven.vercel.app.
+
+Historical trap, recorded so it is not re-learned: Vercel deployed from a separate
+**`production`** branch until 07-26, which sat **38 commits behind**. Work pushed to `main`
+was correct and simply invisible — the giveaway was hashing the deployed
+`/app/carousel.html` against each branch, since marker-grepping alone only says "old", not
+"which". If a deploy ever looks stale, check the production-branch setting first.
 
 - **Phase 0 — hosted backend.** Railway (Hobby, $5/mo): Postgres 18 + `virtual-closet-api`
   at https://virtual-closet-api-production.up.railway.app. Both reversal guardrails verified
