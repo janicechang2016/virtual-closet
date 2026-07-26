@@ -50,7 +50,7 @@
       '#navsheet ul{list-style:none;margin:0;padding:0;text-align:center;}',
       '#navsheet li{margin:0 0 18px;}',
       '#navsheet a{display:inline-block;text-decoration:none;color:#000;',
-      "  font:400 26px/1.2 'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;",
+      "  font:italic 400 26px/1.2 'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;",
       '  letter-spacing:.06em;text-transform:uppercase;white-space:pre;}',
       '#navsheet a:hover{background:linear-gradient(180deg,#f6f7f9,#e9ebef 55%,#dee1e6);}',
       // keyboard focus stays visible but in the brand's ink, not the browser blue

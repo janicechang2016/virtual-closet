@@ -23,7 +23,7 @@
   }
   nav { position: absolute; top: 12px; z-index: 10; }
   #nav-left { left: 12px; }
-  #nav-right { right: 12px; text-align: right; width: 120px; }
+  #nav-right { right: 58px; text-align: right; width: 120px; }  /* clears the menu button */
   nav a, nav span { display: block; cursor: pointer; text-decoration: none; color: #000; }
   nav .spacer { height: 16px; }
   nav .on { text-decoration: underline; }
@@ -191,8 +191,8 @@
   /* read-only demo (static export, body.demo via manifest): sourcing and
      stylist both need the local server, so both hide. sourcing is
      local-only and the try-on/re-render CTA has no server behind it */
-  body.demo a[href="/sourcing"], body.demo a[href="/stylist"],
-  body.demo a[href="/insights"],
+  /* the cross-page links now live in the shared menu, which does its own demo
+     filtering (nav.js); only the page's own dead-end control hides here */
   body.demo #cta { display: none !important; }
   /* budget meter is a working instrument, not portfolio copy (Janice 07-20);
      the "Archive demo" status line goes with it — the export shouldn't
@@ -206,11 +206,6 @@
   <nav id="nav-left">
     <span class="viewtab on" data-v="carousel">Carousel</span>
     <span class="viewtab" data-v="index">Index</span>
-    <div class="spacer"></div>
-    <a href="/fitting-room">Fitting room</a>
-    <a href="/sourcing">Sourcing</a>
-    <a href="/stylist">Stylist</a>
-    <a href="/insights">Insights</a>
   </nav>
   <nav id="nav-right">
     <span class="quiet" id="nav-avatar"></span>
@@ -704,12 +699,17 @@ $('#detail-open').addEventListener('click', () => {
   location.href = '/fitting-room';
 });
 
-// plain header navigation gets a quiet crossfade, not a figure-to-figure morph
-document.querySelector('#nav-left a[href="/fitting-room"]').addEventListener('click', () => {
+// Plain navigation gets a quiet crossfade, not a figure-to-figure morph — the
+// morph is reserved for the deliberate door (hero -> stage). The inline header
+// links moved into the shared menu, so this listens at the document instead of
+// binding to one anchor that no longer exists.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a[href="/fitting-room"]');
+  if (!a) return;
   suppressFigure = true;
   els.forEach((el) => { el.style.viewTransitionName = 'none'; });
   $('#detail-img').style.viewTransitionName = 'none';
-});
+}, true);
 
 async function boot() {
   M = await (await fetch('/api/manifest')).json();

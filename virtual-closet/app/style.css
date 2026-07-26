@@ -328,3 +328,6 @@ body.demo #cost-meter, body.demo .dot-cost { display: none !important; }
   header { flex-wrap: wrap; gap: 6px 10px; }
   .strip-left, .strip-right { font-size: 9px; }
 }
+
+/* the shared menu button is fixed at top-right; keep the header clear of it */
+header { padding-right: 52px; }

@@ -1,5 +1,25 @@
 # Decision log
 
+## 2026-07-26 — Navigation consolidated into a shared hamburger
+
+**Decision (user):** one menu for every page, italic labels, inline nav retired with a
+recoverable version. Tagged **`inline-nav-v1`** before removal.
+
+**Placement — top-right, reasoned rather than defaulted.** The wordmark owns the left on
+three of five pages and is the brand anchor; the archive's top-left holds the Carousel/Index
+**lens toggle**, which is an in-page control and not navigation, so it stays. Top-right
+carried only readouts (avatar, spend) and actions, both of which shift 46px without losing
+meaning. Reading order also puts identity left and controls right.
+
+**The reveal is the entrance run backwards.** The entrance dispels glyphs under a decaying
+envelope with noise-clustered per-glyph delays; the menu resolves them under a settling one,
+clustered by row so it materialises roughly downward while characters land out of order.
+
+**Bug caught during removal:** the carousel bound its crossfade handler to
+`#nav-left a[href="/fitting-room"]` — an anchor the consolidation deleted, so the query
+returned null and the page script would have thrown on load, taking the whole carousel with
+it. Now delegated at the document, which also survives the link living in the menu.
+
 ## 2026-07-26 — Insights: pictures and diagrams over number rows; stylist state line cut
 
 **Stylist:** the ambient state line (garments / looks / never worn / idle value) is

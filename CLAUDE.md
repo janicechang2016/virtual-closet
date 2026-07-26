@@ -287,6 +287,16 @@ The liminal-wardrobe venv (Python 3.9) has rembg/cv2/PIL; system python3 is 3.9 
 `str | None` syntax). Headless design QA: Chrome `--headless=new --screenshot=…` then
 actually look at the PNG.
 
+- **SHARED NAV (07-26):** `app/nav.js` injects a hamburger (fixed top-right) on every page.
+  Opens as a top-to-bottom roll (`clip-path`), then labels **resolve out of noise** — the
+  ASCII entrance run backwards, same monospace face, italic. A new route is one line in
+  `ROUTES`. Labels render as real text first, so no-JS and reduced-motion get the finished
+  menu, never noise. `body.demo` omits local-server routes; nav.js is in
+  `export_static.py`'s APP_FILES or the deploy 404s. **Inline per-page nav REMOVED 07-26;
+  the pre-removal state is tagged `inline-nav-v1`** (restore:
+  `git checkout inline-nav-v1 -- virtual-closet/app/carousel.html`). In-page controls stay
+  put — the carousel's Carousel/Index viewtabs are a lens toggle, not navigation.
+
 ## Queued next (do not build until asked)
 
 - **PHONE LAYOUT FIXED 07-26, NOT DEPLOYED.** Both public pages (archive carousel +
