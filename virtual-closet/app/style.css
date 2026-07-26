@@ -102,8 +102,17 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
   display: flex; flex-direction: column; align-items: center;
   max-width: 100%;
 }
+/* The mirror is a CONSTANT box; every image letterboxes inside it.
+   42 of the visible renders are not square (aspect 0.513–1.833) while the avatar
+   is 1.0, and the image was only max-height constrained — so width = height x
+   aspect, and dropping a garment visibly resized the frame. Same fix the spin
+   viewer needed: lock the box, letterbox the frame. */
 #stage-img {
-  max-height: calc(78vh - 130px); max-width: 100%; display: block;
+  height: calc(78vh - 130px);
+  width: calc(78vh - 130px);          /* square, matching the avatar */
+  max-width: 100%;
+  object-fit: contain;                /* letterbox, never crop or stretch */
+  display: block;
   transition: opacity 0.35s ease, transform 0.25s ease, filter 0.25s ease;
 }
 /* she notices the garment: a breath of scale/light when one hovers the mirror */
@@ -324,7 +333,7 @@ body.demo #cost-meter, body.demo .dot-cost { display: none !important; }
   #garment-grid { max-height: none; overflow: visible; }
   #rack-preview { display: none; }  /* hover preview is meaningless on touch */
   #stage-frame { max-width: 100%; }
-  #stage-img { max-height: 62vh; }
+  #stage-img { height: 62vh; width: 62vh; max-width: 100%; }
   header { flex-wrap: wrap; gap: 6px 10px; }
   .strip-left, .strip-right { font-size: 9px; }
 }

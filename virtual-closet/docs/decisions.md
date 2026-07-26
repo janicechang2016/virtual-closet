@@ -1,5 +1,26 @@
 # Decision log
 
+## 2026-07-26 — The mirror is a constant box; `production` branch deleted
+
+**Mirror.** Dropping a garment visibly resized the frame. Cause: `#stage-img` was only
+`max-height` constrained, so displayed width = height × aspect — and **42 of the 126 visible
+renders are not square** (aspect 0.513–1.833) while the avatar is 1.0. Swapping the square
+avatar for a 0.665 render made the image a third narrower and the frame, which hugged its
+content, shrank with it. The caption was suspected first and measured innocent: all three
+caption states render at 27px.
+
+Fixed with the pattern the spin viewer already needed — **lock the box, letterbox the
+frame**: a square `height`/`width` on the image plus `object-fit: contain`. Verified across
+aspect 1.000 / 0.665 / 0.800 / 1.000: frame constant at 657×642, image undistorted.
+
+This is the third instance of the same standing rule ("appearing must never shift the
+centred mirror", 07-15): the mirror's geometry is fixed, and content adapts to it.
+
+**`production` deleted.** Vercel now builds from `main` (verified by pushing a commit to
+`main` alone and watching the live build stamp change to it). A branch named `production`
+that no longer deploys is the exact ambiguity that cost this session two rounds of
+misdiagnosis.
+
 ## 2026-07-26 — Deploy source is `main`; the `production` branch retired
 
 **Decision (user):** point Vercel at `main`. One branch means live; no promotion step.
