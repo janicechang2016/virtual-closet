@@ -25,9 +25,23 @@ oxblood / amber**. Corroborating: the reference preset she saved had `chromatic_
 and `rib_sharpness: 0` — the two shader-only features were already switched off in the
 version she liked.
 
-So it ships at **0**, exposed on a slider (`Refraction` / `Aberration`, beside Spread and
-Line weight) so the call is hers. Refraction 50 = the 2D version's `MAGNIFY` of 1.5, so the
-default look is unchanged.
+So it ships at **0**, and the two glass sliders were removed — they were a way to hand her
+a judgement call she had already made.
+
+**The column read as plain stripes, and the cause was not the shader.** Imaging only the
+strip directly behind the panel gives nothing to refract: that strip is empty ground, and
+refracted black is black. The reference looks alive because its source is a full-bleed
+photograph. So the glass now **gathers** — the ribs image the whole field to their left,
+compressed across the column, the way fluted glass with its subject at a distance takes in a
+wide view rather than a slice. With gather 0.88 and magnification 3.4 the archive appears
+inside the glass as vertical flutes of light. Because the nodes are dithered dot fields the
+streaks come out dashed rather than smooth, which suits the page more than the reference's
+continuous bands would.
+
+**Consequence: `#panel` and `#detail` needed real ground.** Their `.34` ink was tuned for a
+glass that was imaging near-empty black; against gathered streaks the type was unreadable —
+the heading broke up completely. Both now carry `.74`, enough to read against and no more,
+so the refraction still shows through.
 
 **`drawReededGlass()` stays as the fallback** and takes over whenever WebGL is unavailable,
 with the two glass sliders removing themselves so nothing sits there dead. Verified both

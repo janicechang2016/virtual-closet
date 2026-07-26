@@ -197,8 +197,14 @@ hashing files against every branch.
     page stays single-file and offline-capable). It adds mouse-proximity refraction, an idle
     orbit, and a rib-profile knob. **Chromatic aberration ships at 0**: the dithered dot
     nodes are single-pixel high frequency, so separating channels yields rainbow speckle, not
-    edge fringing — and colour is exactly what this page's palette rule excludes. It is on a
-    slider so the call stays hers. `drawReededGlass()` remains the no-WebGL fallback.
+    edge fringing — and colour is exactly what this page's palette rule excludes.
+    `drawReededGlass()` remains the no-WebGL fallback.
+  - **The glass GATHERS.** Imaging only the strip behind the panel made the column read as
+    plain stripes — that strip is empty ground, and refracted black is black (the reference
+    looks alive because its source is a full-bleed photo). The ribs instead image the whole
+    field to their left, compressed across the column, so the archive appears inside the
+    glass as vertical flutes of light. Consequence: `#panel` and `#detail` carry `.74` ink,
+    not the old `.34` — against gathered streaks the type was unreadable.
   - **Do not screenshot this page with `--virtual-time-budget`** — it starves the rAF load-in
     reveal and you will capture an empty field. Drive it over CDP on a real clock.
   - Cybercore comes from processing artifacts (dither, refraction, HUD), NOT colour — both

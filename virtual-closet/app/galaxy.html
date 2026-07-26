@@ -55,7 +55,7 @@
      refract the field behind it; this element only carries the content and lets
      that show through. */
   #detail { position:fixed; top:64px; right:22px; width:290px; z-index:25;
-    background:none; border:0; padding:16px; display:none; }
+    background:rgba(14,14,16,.74); border:0; padding:16px; display:none; }
   #detail.open { display:block; }
   #detail .fig { height:150px; display:flex; align-items:center; justify-content:center;
     background:var(--paper); margin-bottom:12px; }
@@ -73,10 +73,12 @@
 
   /* plain panel beside the graph — the plan's own anti-pattern guard: the graph
      explores, the panel answers */
-  /* sits ON the glass column, so it carries only a hairline and a whisper of
-     ground — the refraction behind it is the surface */
+  /* sits ON the glass column, so it carries only a hairline and its ground —
+     the refraction behind it is the surface. The ground was .34 while the glass
+     was imaging empty ink; now that it gathers the field, streaks ran straight
+     through the type, so it carries enough to read against and no more. */
   #panel { position:fixed; right:22px; bottom:22px; z-index:20; width:290px;
-    border:1px solid rgba(245,243,239,.18); background:rgba(14,14,16,.34);
+    border:1px solid rgba(245,243,239,.18); background:rgba(14,14,16,.74);
     padding:14px 16px; }
   #panel h4 { margin:0 0 10px; font-weight:normal; color:var(--dim); }
   #panel .orow { display:flex; justify-content:space-between; gap:10px;
@@ -118,10 +120,6 @@
     <input id="spread" type="range" min="60" max="300" value="150"></div>
   <div class="ctl mono"><label for="lines">Line weight</label>
     <input id="lines" type="range" min="0" max="100" value="60"></div>
-  <div class="ctl mono glassctl"><label for="refract">Refraction</label>
-    <input id="refract" type="range" min="0" max="100" value="50"></div>
-  <div class="ctl mono glassctl"><label for="aberr">Aberration</label>
-    <input id="aberr" type="range" min="0" max="100" value="0"></div>
   <div class="chips mono" id="chips"></div>
 </div>
 
@@ -490,7 +488,7 @@ uniform sampler2D uTex;
 uniform vec2  uRes;
 uniform vec4  uRect;    // x0, y0, x1, y1 in 0..1, y from top
 uniform vec2  uMouse;   // 0..1, y from top
-uniform float uRibs, uSharp, uMagnify, uCA, uFrost, uTint, uHover, uTime;
+uniform float uRibs, uSharp, uMagnify, uCA, uFrost, uTint, uHover, uTime, uGather;
 varying vec2 vUv;
 
 const vec3 INK   = vec3(0.055, 0.055, 0.063);
@@ -518,15 +516,24 @@ void main() {
   float d = distance(uv * vec2(aspect, 1.0), uMouse * vec2(aspect, 1.0));
   float hoverK = smoothstep(0.42, 0.0, d) * (uHover - 1.0) + 1.0;
 
-  // cylindrical lens: sample a wider slice, squeeze it into the rib
-  float disp = (gw / uRibs) * dn * 0.5 * (uMagnify - 1.0) * hoverK;
+  // GATHER. Imaging only the strip directly behind the panel gives us nothing —
+  // that strip is empty ground, and refracted black is black, which is why the
+  // column read as plain stripes. Fluted glass with its subject at a distance
+  // gathers a wide field instead, so the ribs image the FIELD (everything left
+  // of the column) compressed across the panel. uGather 0 = literal backdrop.
+  float scene = uRect.x;                          // the field ends where we begin
+  float src = mix(uv.x, gx * scene, uGather);
+  float srcRibW = mix(gw, scene, uGather) / uRibs;
+
+  // cylindrical lens: each rib samples a wider slice and squeezes it
+  float disp = srcRibW * dn * 0.5 * (uMagnify - 1.0) * hoverK;
   // fringing is strongest where the curvature turns, zero at the rib's centre
   float ca = uCA * dn * hoverK;
 
   vec3 col = vec3(
-    texture2D(uTex, uv + vec2(disp + ca, 0.0)).r,
-    texture2D(uTex, uv + vec2(disp,      0.0)).g,
-    texture2D(uTex, uv + vec2(disp - ca, 0.0)).b
+    texture2D(uTex, vec2(src + disp + ca, uv.y)).r,
+    texture2D(uTex, vec2(src + disp,      uv.y)).g,
+    texture2D(uTex, vec2(src + disp - ca, uv.y)).b
   );
 
   col = mix(col, INK, uTint);
@@ -585,7 +592,7 @@ const GLASS_GL = (() => {
 
   const U = {};
   for (const n of ['uTex','uRes','uRect','uMouse','uRibs','uSharp','uMagnify',
-                   'uCA','uFrost','uTint','uHover','uTime']) {
+                   'uCA','uFrost','uTint','uHover','uTime','uGather']) {
     U[n] = gl.getUniformLocation(prog, n);
   }
 
@@ -606,7 +613,12 @@ const GLASS_GL = (() => {
   // rainbow speckle. That puts colour into a page whose rule (decisions.md 07-26)
   // is that cybercore comes from processing artifacts and the palette stays Ink/
   // paper/oxblood/amber. The slider is there so the call is hers, not mine.
-  let magnify = 1.5, aberration = 0.0;
+  // Tuned to the reference's own look rather than to the old 2D fallback:
+  // it gathers strongly, magnifies hard (its flutes really smear), and frosts
+  // much heavier than the 2D grain did. Aberration stays 0 — see decisions.md
+  // 07-26: on dithered dot nodes it makes rainbow speckle, not edge fringing,
+  // and colour is what this page's palette rule excludes.
+  const GATHER = 0.88, MAGNIFY_GL = 3.4, ABERRATION = 0.0;
 
   function resize() {
     const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -641,10 +653,11 @@ const GLASS_GL = (() => {
     gl.uniform2f(U.uMouse, mx, my);
     gl.uniform1f(U.uRibs, RIBS);
     gl.uniform1f(U.uSharp, 0.0);
-    gl.uniform1f(U.uMagnify, magnify);
-    gl.uniform1f(U.uCA, aberration);
-    gl.uniform1f(U.uFrost, FROST);
-    gl.uniform1f(U.uTint, 0.20);
+    gl.uniform1f(U.uMagnify, MAGNIFY_GL);
+    gl.uniform1f(U.uCA, ABERRATION);
+    gl.uniform1f(U.uGather, GATHER);
+    gl.uniform1f(U.uFrost, FROST * 2.6);
+    gl.uniform1f(U.uTint, 0.10);
     gl.uniform1f(U.uHover, REDUCED ? 1.0 : 3.0);
     // quantised so the frosting reads as film grain rather than 60fps static
     gl.uniform1f(U.uTime, REDUCED ? 5 : Math.floor(now / 125));
@@ -654,11 +667,7 @@ const GLASS_GL = (() => {
 
   resize();
   addEventListener('resize', resize);   // its own listener: the page's resize()
-  return {                              // runs before this IIFE has evaluated
-    resize, render,
-    setMagnify: v => { magnify = v; },
-    setAberration: v => { aberration = v; }
-  };
+  return { resize, render };            // runs before this IIFE has evaluated
 })();
 
 function drawHUD(n) {
@@ -893,18 +902,5 @@ document.getElementById('spread').addEventListener('input', e => {
 document.getElementById('lines').addEventListener('input', e => {
   lineAlpha = +e.target.value / 60;
 });
-
-// glass instrumentation — only meaningful with the shader layer, so the rows
-// leave with it rather than sitting there dead
-if (GLASS_GL) {
-  document.getElementById('refract').addEventListener('input', e => {
-    GLASS_GL.setMagnify(1 + (+e.target.value / 100));      // 50 = the 2D version's 1.5
-  });
-  document.getElementById('aberr').addEventListener('input', e => {
-    GLASS_GL.setAberration(+e.target.value / 100 * 0.0045); // ~5px separation at full
-  });
-} else {
-  for (const el of document.querySelectorAll('.glassctl')) el.remove();
-}
 </script>
 </body></html>
