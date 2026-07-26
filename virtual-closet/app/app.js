@@ -56,10 +56,16 @@ async function migrateLegacySaves() {
   toast(`migrated ${legacy.length} saved outfit(s) to looks`);
 }
 
-// plain header navigation gets a quiet crossfade, not a figure-to-figure morph
-document.querySelector('.strip-left a[href="/"]').addEventListener("click", () => {
-  $("#stage-img").style.viewTransitionName = "none";
-});
+// Plain navigation gets a quiet crossfade, not a figure-to-figure morph.
+// Delegated at the document: the archive link moved into the shared menu, and
+// binding to one anchor meant a null query threw HERE, at the top level of the
+// module, so nothing below ever ran — the fitting room rendered empty.
+document.addEventListener("click", (e) => {
+  const a = e.target.closest && e.target.closest('a[href="/"]');
+  if (!a) return;
+  const img = $("#stage-img");
+  if (img) img.style.viewTransitionName = "none";
+}, true);
 
 // the archive's "open in fitting room" door
 function consumeIncomingLook() {
