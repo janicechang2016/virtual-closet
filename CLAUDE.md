@@ -17,6 +17,9 @@ Historical trap, recorded so it is not re-learned: Vercel deployed from a separa
 was correct and simply invisible — the giveaway was hashing the deployed
 `/app/carousel.html` against each branch, since marker-grepping alone only says "old", not
 "which". If a deploy ever looks stale, check the production-branch setting first.
+**The deployed build now stamps itself** — `curl -s <site>/api/manifest` returns
+`build: {commit, branch, exported_at}`, so "which commit is live?" is one request instead of
+hashing files against every branch.
 
 - **Phase 0 — hosted backend.** Railway (Hobby, $5/mo): Postgres 18 + `virtual-closet-api`
   at https://virtual-closet-api-production.up.railway.app. Both reversal guardrails verified

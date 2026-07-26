@@ -11,6 +11,7 @@ Run:  python3 scripts/export_static.py [--out ../site]
 """
 import argparse
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -37,6 +38,27 @@ def asset_urls(node, found):
             asset_urls(v, found)
 
 
+def _build_stamp():
+    """Commit and timestamp of the tree being exported. Never fails the build —
+    a missing git (as on some CI images) degrades to 'unknown'."""
+    import subprocess
+    from datetime import datetime, timezone
+
+    def git(*args):
+        try:
+            return subprocess.run(("git",) + args, cwd=str(ROOT), capture_output=True,
+                                  text=True, timeout=10).stdout.strip() or None
+        except Exception:
+            return None
+
+    return {
+        "commit": git("rev-parse", "--short", "HEAD") or "unknown",
+        "branch": (git("rev-parse", "--abbrev-ref", "HEAD")
+                   or os.environ.get("VERCEL_GIT_COMMIT_REF") or "unknown"),
+        "exported_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(ROOT.parent / "site"))
@@ -48,6 +70,11 @@ def main():
     m = closet_server.manifest()
     m["generation_enabled"] = False
     m["demo"] = True
+    # Stamp the build. Twice this session a deploy looked wrong and the only way
+    # to tell WHICH commit was live was hashing files against every branch. The
+    # manifest is already fetched by every page, so this makes it one request:
+    #   curl -s <site>/api/manifest | python3 -c "import json,sys;print(json.load(sys.stdin)['build'])"
+    m["build"] = _build_stamp()
 
     (out / "api").mkdir(parents=True)
     (out / "api" / "manifest.json").write_text(json.dumps(m, indent=1) + "\n")
