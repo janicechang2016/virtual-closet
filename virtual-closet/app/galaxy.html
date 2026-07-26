@@ -202,10 +202,10 @@ fetch('/api/galaxy').then(r => r.json()).then(d => {
 // wander on its own phase, so the constellation breathes the way a real one
 // would. Hovering does not freeze it — it drops to a crawl, which reads as
 // attention rather than as a paused animation.
-let motion = 1, motionTarget = 1, T0 = performance.now();
+let motion = 1, motionTarget = 1;
 
-function drift(now) {
-  const t = (now - T0) / 1000;
+function drift() {
+  const t = clock / 1000;
   for (let i = 0; i < NODES.length; i++) {
     const n = NODES[i];
     const a = t * 0.055 + n.phase;
@@ -280,16 +280,34 @@ function draw(now) {
   const focus = neighbours(selected || hover);
   const dimmed = id => (focus && !focus.has(id)) || (filter && byCat(id) !== filter);
 
-  // edges, additive so overlaps bloom rather than muddy (plan E.3)
+  // Edges, additive so crossings bloom rather than muddy (plan E.3). Each line
+  // is drawn twice: a wide, almost-transparent halo, then the crisp core on top.
+  // Under 'lighter' the halo is what reads as luminous — and because it is
+  // additive, places where several connections converge glow brighter on their
+  // own, which is the nebula behaviour rather than a uniform neon stroke.
+  // Dimmed edges get no halo: light is the signal, so unfocused links must not
+  // emit any.
   ctx.globalCompositeOperation = 'lighter';
   for (const e of EDGES) {
     const rv = Math.min(revealOf(e.s, now), revealOf(e.t, now));
     if (rv <= 0) continue;                     // an edge cannot precede its nodes
     const off = dimmed(e.a) || dimmed(e.b);
     const worn = e.kind === 'worn';
+    const core = worn ? Math.min(1 + e.weight * 0.5, 3) : 1;
+
+    if (!off) {
+      ctx.beginPath();
+      ctx.setLineDash([]);                     // the halo never dashes — a dashed
+                                               // glow reads as a dotted line, not light
+      ctx.lineWidth = core + (worn ? 7 : 5);
+      ctx.strokeStyle = `rgba(226,232,245,${(worn ? 0.055 : 0.022) * lineAlpha * rv})`;
+      ctx.moveTo(e.s.x, e.s.y); ctx.lineTo(e.t.x, e.t.y);
+      ctx.stroke();
+    }
+
     ctx.beginPath();
     ctx.setLineDash(worn ? [] : [3, 5]);
-    ctx.lineWidth = worn ? Math.min(1 + e.weight * 0.5, 3) : 1;
+    ctx.lineWidth = core;
     ctx.strokeStyle = worn
       ? `rgba(245,243,239,${(off ? 0.06 : 0.5) * lineAlpha * rv})`
       : `rgba(245,243,239,${(off ? 0.02 : 0.14) * lineAlpha * rv})`;
@@ -361,22 +379,23 @@ function scrambleIn(el) {
 }
 
 let settle = 900;
-// A field that never rests also never stops costing CPU. Nothing is animating
-// for anyone when the tab is hidden, so the loop yields until it returns.
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) { T0 += performance.now() - hiddenAt; requestAnimationFrame(tick); }
-  else hiddenAt = performance.now();
-});
-let hiddenAt = 0;
+// The browser already throttles rAF to a stop in a hidden tab, so no guard is
+// needed for CPU — and an early `return` here would kill the loop permanently
+// if the page ever loaded hidden. Instead the drift runs on its own clock with
+// a clamped delta, so returning from a background tab resumes smoothly rather
+// than snapping the field to a new phase.
+let clock = 0, lastFrame = null;
 
 function tick(now) {
-  if (document.hidden) return;
+  now = now || performance.now();
+  const dt = lastFrame === null ? 16 : Math.min(now - lastFrame, 50);
+  lastFrame = now; clock += dt;
   // hover/selection slows the field to a crawl; it never stops
   motionTarget = (hover || selected) ? 0.06 : 1;
   motion += (motionTarget - motion) * 0.06;
   if (settle > 0) { settle--; step(); }
-  else { drift(now || performance.now()); step(); }
-  draw(now || performance.now());
+  else { drift(); step(); }
+  draw(now);
   requestAnimationFrame(tick);
 }
 
