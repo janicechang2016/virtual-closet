@@ -17,6 +17,8 @@ Serves the app UI, repo assets, and a small JSON API:
   POST /api/source/save   {picks, slug} -> write picks into garments/raw/
   GET  /api/source/staged        -> files staged in garments/raw/
   POST /api/source/discard{name} -> move a staged file to garments/raw/_discarded/
+  GET  /insights                 sustainability / cost-per-wear dashboard ($0)
+  GET  /api/insights             the numbers behind it
   GET  /stylist                  the stylist UI ($0, no generation)
   GET  /api/stylist/suggest      ?occasion=&n=  ranked outfits + one wildcard
   POST /api/stylist/feedback     {ids, verdict, blame} -> logs/stylist_feedback.jsonl
@@ -473,6 +475,110 @@ def _judged_signatures():
     return set(stylist_current().keys())
 
 
+def insights_data():
+    """Track C numbers. $0, offline, straight from the snapshot.
+
+    WEARS ARE A FLOOR, NOT THE TRUTH: they count appearances in published looks,
+    which is the only wear record that exists. A garment worn every week but
+    never photographed reads as never worn. Every surface that shows a wear count
+    says so — an unqualified "never worn $2,381" would be an accusation the data
+    cannot support.
+    """
+    if not SNAPSHOT.exists():
+        return {"error": "no closet snapshot - run server/scripts/dump_closet.py"}
+    data = json.loads(SNAPSHOT.read_text())
+    garments, outfits = data["garments"], data["outfits"]
+    looks = [o for o in outfits if o.get("source") == "manual"]
+    names = _garment_names()
+
+    wears = {}
+    for lk in looks:
+        for gid in (lk.get("garment_ids") or []):
+            wears[gid] = wears.get(gid, 0) + 1
+
+    def price(g):
+        v = (g.get("purchase") or {}).get("price_usd")
+        return float(v) if v is not None else None
+
+    rows = []
+    for g in garments:
+        pr = price(g)
+        n = wears.get(g["id"], 0)
+        rows.append({
+            "id": g["id"],
+            "name": names.get(g["id"], g["id"]),
+            "category": g.get("category"),
+            "subcategory": g.get("subcategory"),
+            "price": pr,
+            "wears": n,
+            "cpw": (round(pr / n, 2) if pr is not None and n else None),
+            "bought": (g.get("purchase") or {}).get("date"),
+        })
+
+    priced = [r for r in rows if r["price"] is not None]
+    idle = [r for r in priced if r["wears"] == 0]
+    worn = [r for r in priced if r["wears"] > 0]
+
+    def by_cat(subset):
+        agg = {}
+        for r in subset:
+            a = agg.setdefault(r["category"], {"category": r["category"],
+                                               "value": 0.0, "count": 0})
+            a["value"] += r["price"]
+            a["count"] += 1
+        out = sorted(agg.values(), key=lambda a: -a["value"])
+        for a in out:
+            a["value"] = round(a["value"])
+        return out
+
+    dist = {}
+    for r in rows:
+        k = r["wears"] if r["wears"] < 3 else 3
+        dist[k] = dist.get(k, 0) + 1
+    distribution = [{"label": ("never" if k == 0 else ("%d wear" % k if k == 1
+                     else ("%d wears" % k if k < 3 else "3+ wears"))),
+                     "wears": k, "count": dist.get(k, 0)}
+                    for k in (0, 1, 2, 3)]
+
+    years = {}
+    for r in priced:
+        y = (r["bought"] or "")[:4]
+        if not y:
+            continue
+        a = years.setdefault(y, {"year": y, "value": 0.0, "count": 0})
+        a["value"] += r["price"]
+        a["count"] += 1
+    timeline = sorted(years.values(), key=lambda a: a["year"])
+    for a in timeline:
+        a["value"] = round(a["value"])
+
+    total = sum(r["price"] for r in priced)
+    idle_value = sum(r["price"] for r in idle)
+    cpws = sorted([r["cpw"] for r in worn if r["cpw"] is not None])
+    median_cpw = (cpws[len(cpws) // 2] if cpws else None)
+
+    return {
+        "totals": {
+            "garments": len(garments),
+            "priced": len(priced),
+            "value": round(total),
+            "idle_value": round(idle_value),
+            "idle_share": round(100.0 * idle_value / total) if total else 0,
+            "never_worn": len(idle),
+            "worn": len(worn),
+            "looks": len(looks),
+            "median_cpw": median_cpw,
+        },
+        "idle_by_category": by_cat(idle),
+        "spend_by_category": by_cat(priced),
+        "distribution": distribution,
+        "timeline": timeline,
+        "best_cpw": sorted(worn, key=lambda r: r["cpw"])[:8],
+        "idle_top": sorted(idle, key=lambda r: -r["price"])[:8],
+        "all_rows": sorted(rows, key=lambda r: (r["wears"], -(r["price"] or 0))),
+    }
+
+
 def stylist_suggest(occasion="", n=6):
     if not SNAPSHOT.exists():
         return {"error": "no closet snapshot - run server/scripts/dump_closet.py"}
@@ -646,6 +752,10 @@ class Handler(SimpleHTTPRequestHandler):
             return self._file(ROOT / "app" / "sourcing.html")
         if url.path == "/stylist":
             return self._file(ROOT / "app" / "stylist.html")
+        if url.path == "/insights":
+            return self._file(ROOT / "app" / "insights.html")
+        if url.path == "/api/insights":
+            return self._json(insights_data())
         if url.path == "/api/feedback/history":
             q = parse_qs(url.query)
             try:

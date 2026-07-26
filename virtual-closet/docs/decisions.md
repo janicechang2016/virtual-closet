@@ -1,5 +1,34 @@
 # Decision log
 
+## 2026-07-26 — `/insights` shipped (Track C), $0
+
+Second UI after the stylist. Same pattern: local-only, reads `closet_snapshot.json`,
+no generation and no network.
+
+**The honest-framing decision, and the one that mattered most.** Wear counts come from the
+18 published looks — the only wear record that exists. A garment worn weekly but never
+photographed reads as never worn. So every surface qualifies it ("no recorded wear", and a
+standing caveat line under the KPI row). Shipping an unqualified "**$2,381 never worn**"
+would have been an accusation the data cannot support, and the number is prominent enough
+that the qualification has to travel with it.
+
+**Form follows the dataviz method, not taste:**
+- Headline numbers are **stat tiles**, not one-bar charts — closet value, value never worn,
+  never-worn count, median cost per wear.
+- Comparisons are thin horizontal bars (15px in a 28px band — air in the slot), 4px rounded
+  data-end, square at the baseline, 2px surface gaps, recessive hairline baseline.
+- Per-mark hover tooltips with the value leading and the label secondary; 37 marks are
+  keyboard-reachable; a **58-row table view** means nothing is gated behind hover.
+- **Not a categorical palette.** One ink (#000) for the single series, plus the brand's
+  documented oxblood `#6F2B2B` alert token for the idle measure only. The validator's
+  lightness/chroma checks are scoped to categorical palettes and do not apply; the checks
+  that do — contrast vs surface — pass for all three inks, and oxblood separates from the
+  greys at ΔE 24+ under deuteranopia. Status colour never appears without a written label.
+
+**What the data says:** $6,298 closet · **$2,381 (38%) with no recorded wear** · 23 of 58
+garments · median cost-per-wear $75, best is square-toe flats at $10.89 over 9 wears. Idle
+value concentrates in dresses ($814) and tops ($791); shoes are only 3 garments but $578.
+
 ## 2026-07-26 — Phone layout fixed on the two public pages
 
 **The bug (found 2026-07-21 in a portfolio sweep, never recorded in the repo until now —

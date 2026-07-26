@@ -168,6 +168,17 @@ from — **do not merge**.
   reference photos — generating silhouettes for them was tried and reverted as worse than
   the photo. Queued, not priority: vertical body-stacked outfits, wildcard as a full-width
   interruption.
+- **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
+  value, spend and wear distribution, computed by `insights_data()` from the same snapshot
+  the stylist uses. **Wears are a FLOOR, not the truth** — they count appearances in the 18
+  published looks, the only wear record that exists, so a garment worn often but never
+  photographed reads as never worn; every surface says so, because an unqualified "$2,381
+  never worn" would be an accusation the data cannot support. Built to the dataviz method:
+  headline numbers are stat tiles (not one-bar charts), comparisons are thin bars in a
+  single ink with direct labels, per-mark hover tooltips, and a full 58-row table view so
+  nothing is gated behind hover. **Not a categorical palette** — one ink for the series plus
+  the brand's reserved oxblood `#6F2B2B` alert token for the idle measure only, never used
+  without a written label. Local-only like the stylist; hidden in the static demo.
 - **`/sourcing` — photo-sourcing UI (07-15):** SYVE-styled third page over
   `ingest_fetch.py` (imported as a module; the only route needing `requests`).
   Paste a product URL → `/api/source/scan` ranks candidates (bytes held in

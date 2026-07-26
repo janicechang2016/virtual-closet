@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>the archive — insights</title>
+<style>
+  /* SYVE: white void, 1px black hairlines, uppercase Helvetica, italic wordmark.
+     COLOUR PLAN (dataviz method): this is not a categorical palette — it is one
+     ink for a single data series, plus the brand's reserved status colour.
+       --ink      #000     the data
+       --alert    #6F2B2B  oxblood, the documented alert/redundancy token; used
+                           ONLY for idle/never-worn, and never alone — every
+                           oxblood mark carries a written label
+       --dim      #8a8a8a  de-emphasis text
+       --rule     #e6e6e6  gridlines, hairline, solid, recessive
+     Contrast checked against the white surface: all three clear 3:1, and oxblood
+     separates from the greys at deltaE 24+ under deuteranopia. */
+  :root { --line:#000; --bg:#fff; --dim:#8a8a8a; --ink:#000; --alert:#6F2B2B;
+          --rule:#e6e6e6; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:#000;
+    font:13px/1.45 Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  .up { text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+
+  header { position:sticky; top:0; z-index:20; background:var(--bg);
+    border-bottom:1px solid var(--line); padding:16px 24px;
+    display:flex; align-items:baseline; gap:22px; flex-wrap:wrap; }
+  .wordmark { font-style:italic; font-size:17px; }
+  nav { display:flex; gap:16px; }
+  nav a { color:var(--dim); } nav a:hover { color:#000; }
+  .spacer { flex:1; }
+  button { font:inherit; text-transform:uppercase; letter-spacing:.14em; font-size:10px;
+    background:var(--bg); border:1px solid var(--line); padding:9px 16px; cursor:pointer; }
+  button:hover { opacity:.72; }
+
+  /* ── KPI row: a headline number is a tile, not a one-bar chart ── */
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    border-bottom:1px solid var(--line); }
+  .kpi { padding:20px 24px; border-right:1px solid var(--line); }
+  .kpi:last-child { border-right:0; }
+  .kpi .k { color:var(--dim); }
+  .kpi .v { font-size:40px; line-height:1.05; margin-top:10px; letter-spacing:-.01em; }
+  .kpi .v.alert { color:var(--alert); }
+  .kpi .s { color:var(--dim); margin-top:6px; font-size:11px; }
+
+  .caveat { padding:12px 24px; border-bottom:1px solid var(--line);
+    color:var(--dim); font-size:11px; }
+
+  section { border-bottom:1px solid var(--line); padding:22px 24px 26px; }
+  .h { display:flex; align-items:baseline; gap:14px; margin-bottom:18px; }
+  .h h2 { margin:0; font-size:12px; text-transform:uppercase; letter-spacing:.14em;
+    font-weight:normal; }
+  .h .sub { color:var(--dim); font-size:11px; }
+
+  /* ── horizontal bars ─────────────────────────────────────────────────
+     <=24px thick, 4px rounded data-end and square at the baseline, growing
+     from one baseline. Rows are 2px apart in the surface colour — the gap does
+     the separating, never a stroke. */
+  .bars { display:flex; flex-direction:column; gap:2px; }
+  .row { display:grid; grid-template-columns:150px 1fr 92px; align-items:center;
+    gap:14px; min-height:28px; }
+  .row .lab { color:var(--dim); text-align:right; }
+  .track { position:relative; height:15px; }
+  /* recessive baseline the bars grow from */
+  .track::before { content:""; position:absolute; left:0; top:-6px; bottom:-6px;
+    border-left:1px solid var(--rule); }
+  /* thin mark, air in the band — the bar never fills its slot */
+  .bar { height:15px; background:var(--ink); border-radius:0 4px 4px 0;
+    min-width:2px; cursor:default; transition:opacity .12s ease; }
+  .bar.alert { background:var(--alert); }
+  .row:hover .bar { opacity:.72; }
+  .row .val { font-variant-numeric:tabular-nums; }
+  .row .val .muted { color:var(--dim); }
+
+  /* ── columns ── */
+  .cols { display:flex; align-items:flex-end; gap:2px; height:170px;
+    border-bottom:1px solid var(--line); }
+  .col { flex:1; display:flex; flex-direction:column; justify-content:flex-end;
+    align-items:center; height:100%; cursor:default; }
+  .col .cbar { width:100%; max-width:24px; background:var(--ink);
+    border-radius:4px 4px 0 0; min-height:2px; transition:opacity .12s ease; }
+  .col:hover .cbar { opacity:.72; }
+  .col .cbar.alert { background:var(--alert); }
+  .col .cv { font-size:11px; margin-bottom:6px; font-variant-numeric:tabular-nums; }
+  .collabs { display:flex; gap:2px; margin-top:8px; }
+  .collabs div { flex:1; text-align:center; color:var(--dim); }
+
+  /* ── list rows ── */
+  .list { display:flex; flex-direction:column; }
+  .lrow { display:grid; grid-template-columns:1fr 120px 90px; gap:14px;
+    padding:9px 0; border-bottom:1px solid var(--rule); align-items:baseline; }
+  .lrow:last-child { border-bottom:0; }
+  .lrow .n { font-size:12px; }
+  .lrow .m { color:var(--dim); font-size:11px; font-variant-numeric:tabular-nums; }
+  .lrow .big { font-variant-numeric:tabular-nums; }
+
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th, td { text-align:left; padding:7px 10px; border-bottom:1px solid var(--rule); }
+  th { color:var(--dim); text-transform:uppercase; letter-spacing:.1em; font-size:9px;
+    font-weight:normal; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  #tablewrap { display:none; overflow-x:auto; }
+  #tablewrap.open { display:block; }
+
+  #tip { position:fixed; z-index:60; background:#000; color:#fff; padding:8px 10px;
+    font-size:11px; pointer-events:none; opacity:0; transition:opacity .1s ease;
+    max-width:260px; }
+  #tip.on { opacity:1; }
+  #tip .tv { font-size:13px; }
+  #tip .tl { color:#bbb; font-size:10px; text-transform:uppercase;
+    letter-spacing:.1em; margin-top:2px; }
+
+  footer { padding:26px 24px 70px; color:var(--dim); font-size:11px; max-width:76ch; }
+  @media (max-width:760px) {
+    .row { grid-template-columns:110px 1fr 78px; gap:8px; }
+    .kpi .v { font-size:30px; }
+  }
+</style></head>
+<body>
+<header>
+  <span class="wordmark">the archive.</span>
+  <nav class="up">
+    <a href="/">Archive</a><a href="/fitting-room">Fitting room</a>
+    <a href="/stylist">Stylist</a><a href="/sourcing">Sourcing</a>
+  </nav>
+  <span class="up" style="color:var(--dim)">Insights</span>
+  <span class="spacer"></span>
+  <button id="tabletoggle">table view</button>
+</header>
+
+<div class="kpis" id="kpis"></div>
+<div class="caveat up" id="caveat"></div>
+
+<section>
+  <div class="h"><h2>Where the value sleeps</h2>
+    <span class="sub">purchase value of garments with no recorded wear, by category</span></div>
+  <div class="bars" id="idle"></div>
+</section>
+
+<section>
+  <div class="h"><h2>Spend by category</h2>
+    <span class="sub">all 58 garments</span></div>
+  <div class="bars" id="spend"></div>
+</section>
+
+<section>
+  <div class="h"><h2>Wear distribution</h2>
+    <span class="sub">garments by number of recorded wears</span></div>
+  <div class="cols" id="dist"></div>
+  <div class="collabs up" id="distlabs"></div>
+</section>
+
+<section>
+  <div class="h"><h2>Acquired by year</h2>
+    <span class="sub">spend, and number of garments</span></div>
+  <div class="cols" id="years"></div>
+  <div class="collabs up" id="yearlabs"></div>
+</section>
+
+<section>
+  <div class="h"><h2>Best cost per wear</h2>
+    <span class="sub">price ÷ recorded wears — the pieces earning their keep</span></div>
+  <div class="list" id="bestcpw"></div>
+</section>
+
+<section>
+  <div class="h"><h2>Most value, never worn</h2>
+    <span class="sub">the biggest single pieces with no recorded wear</span></div>
+  <div class="list" id="idletop"></div>
+</section>
+
+<div id="tablewrap"><table id="table"></table></div>
+
+<footer id="foot"></footer>
+<div id="tip"><div class="tv"></div><div class="tl"></div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const money = n => '$' + Math.round(n).toLocaleString();
+const tip = $('#tip');
+
+// Labels come from garment metadata — insert as text, never as HTML.
+function setTip(value, label) {
+  tip.querySelector('.tv').textContent = value;
+  tip.querySelector('.tl').textContent = label;
+}
+function bindTip(el, value, label) {
+  const show = e => {
+    setTip(value, label);
+    tip.classList.add('on');
+    const x = (e.clientX ?? 0) + 14, y = (e.clientY ?? 0) + 14;
+    tip.style.left = Math.min(x, innerWidth - 280) + 'px';
+    tip.style.top = Math.min(y, innerHeight - 70) + 'px';
+  };
+  el.addEventListener('pointermove', show);
+  el.addEventListener('focus', e => {
+    const r = el.getBoundingClientRect();
+    show({clientX: r.right, clientY: r.top});
+  });
+  el.addEventListener('pointerleave', () => tip.classList.remove('on'));
+  el.addEventListener('blur', () => tip.classList.remove('on'));
+  el.tabIndex = 0;
+}
+
+function barRow(host, {label, value, max, text, alert, tipLabel}) {
+  const row = document.createElement('div');
+  row.className = 'row';
+  const lab = document.createElement('div');
+  lab.className = 'lab up'; lab.textContent = label;
+  const track = document.createElement('div'); track.className = 'track';
+  const bar = document.createElement('div');
+  bar.className = 'bar' + (alert ? ' alert' : '');
+  bar.style.width = Math.max(2, (value / max) * 100) + '%';
+  track.appendChild(bar);
+  const val = document.createElement('div');
+  val.className = 'val'; val.textContent = text;
+  row.append(lab, track, val);
+  host.appendChild(row);
+  bindTip(row, text, tipLabel || label);
+}
+
+function columns(host, labhost, items, {valueOf, textOf, labelOf, alertOf, tipOf}) {
+  const max = Math.max(...items.map(valueOf), 1);
+  host.innerHTML = ''; labhost.innerHTML = '';
+  items.forEach(it => {
+    const col = document.createElement('div'); col.className = 'col';
+    const cv = document.createElement('div'); cv.className = 'cv';
+    cv.textContent = textOf(it);
+    const bar = document.createElement('div');
+    bar.className = 'cbar' + (alertOf && alertOf(it) ? ' alert' : '');
+    bar.style.height = Math.max(2, (valueOf(it) / max) * 130) + 'px';
+    col.append(cv, bar);
+    host.appendChild(col);
+    const l = document.createElement('div'); l.textContent = labelOf(it);
+    labhost.appendChild(l);
+    bindTip(col, textOf(it), tipOf ? tipOf(it) : labelOf(it));
+  });
+}
+
+function listRows(host, items, {nameOf, midOf, bigOf, tipOf}) {
+  host.innerHTML = '';
+  items.forEach(it => {
+    const r = document.createElement('div'); r.className = 'lrow';
+    const n = document.createElement('div'); n.className = 'n'; n.textContent = nameOf(it);
+    const m = document.createElement('div'); m.className = 'm'; m.textContent = midOf(it);
+    const b = document.createElement('div'); b.className = 'big'; b.textContent = bigOf(it);
+    r.append(n, m, b); host.appendChild(r);
+    bindTip(r, bigOf(it), tipOf(it));
+  });
+}
+
+fetch('/api/insights').then(r => r.json()).then(d => {
+  if (d.error) { document.body.insertAdjacentText('afterbegin', d.error); return; }
+  const t = d.totals;
+
+  const kpis = [
+    {k: 'closet value', v: money(t.value), s: t.priced + ' garments priced'},
+    {k: 'value never worn', v: money(t.idle_value), s: t.idle_share + '% of the closet',
+     alert: true},
+    {k: 'never worn', v: t.never_worn + ' / ' + t.garments, s: 'no recorded wear',
+     alert: true},
+    {k: 'median cost per wear', v: t.median_cpw != null ? money(t.median_cpw) : '—',
+     s: 'across ' + t.worn + ' worn garments'},
+  ];
+  $('#kpis').innerHTML = '';
+  kpis.forEach(o => {
+    const el = document.createElement('div'); el.className = 'kpi';
+    const k = document.createElement('div'); k.className = 'k up'; k.textContent = o.k;
+    const v = document.createElement('div');
+    v.className = 'v' + (o.alert ? ' alert' : ''); v.textContent = o.v;
+    const s = document.createElement('div'); s.className = 's'; s.textContent = o.s;
+    el.append(k, v, s); $('#kpis').appendChild(el);
+  });
+
+  $('#caveat').textContent =
+    'wear counts come from your ' + t.looks + ' published looks — the only wear record '
+    + 'that exists. a garment worn often but never photographed reads here as never worn.';
+
+  const idleMax = Math.max(...d.idle_by_category.map(c => c.value), 1);
+  $('#idle').innerHTML = '';
+  d.idle_by_category.forEach(c => barRow($('#idle'), {
+    label: c.category, value: c.value, max: idleMax, alert: true,
+    text: money(c.value), tipLabel: c.count + ' garments never worn · ' + c.category}));
+
+  const spendMax = Math.max(...d.spend_by_category.map(c => c.value), 1);
+  $('#spend').innerHTML = '';
+  d.spend_by_category.forEach(c => barRow($('#spend'), {
+    label: c.category, value: c.value, max: spendMax,
+    text: money(c.value), tipLabel: c.count + ' garments · ' + c.category}));
+
+  columns($('#dist'), $('#distlabs'), d.distribution, {
+    valueOf: i => i.count, textOf: i => i.count, labelOf: i => i.label,
+    alertOf: i => i.wears === 0,
+    tipOf: i => i.count + ' garments · ' + i.label});
+
+  columns($('#years'), $('#yearlabs'), d.timeline, {
+    valueOf: i => i.value, textOf: i => money(i.value), labelOf: i => i.year,
+    tipOf: i => i.count + ' garments bought in ' + i.year});
+
+  listRows($('#bestcpw'), d.best_cpw, {
+    nameOf: r => r.name, midOf: r => r.wears + (r.wears === 1 ? ' wear' : ' wears')
+      + ' · ' + money(r.price),
+    bigOf: r => money(r.cpw) + ' / wear',
+    tipOf: r => r.id});
+
+  listRows($('#idletop'), d.idle_top, {
+    nameOf: r => r.name, midOf: r => r.category + (r.bought ? ' · ' + r.bought : ''),
+    bigOf: r => money(r.price), tipOf: r => r.id + ' · never worn'});
+
+  // Table view — every value above is reachable without hovering anything.
+  const cols = ['garment', 'category', 'price', 'wears', 'cost / wear', 'bought'];
+  const tbl = $('#table');
+  const thead = document.createElement('thead');
+  const htr = document.createElement('tr');
+  cols.forEach((c, i) => {
+    const th = document.createElement('th');
+    if (i >= 2 && i <= 4) th.className = 'num';
+    th.textContent = c; htr.appendChild(th);
+  });
+  thead.appendChild(htr);
+  const tb = document.createElement('tbody');
+  d.all_rows.forEach(r => {
+    const tr = document.createElement('tr');
+    [[r.name], [r.category], [r.price != null ? money(r.price) : '—', 1],
+     [r.wears, 1], [r.cpw != null ? money(r.cpw) : '—', 1], [r.bought || '—']]
+      .forEach(([v, num]) => {
+        const td = document.createElement('td');
+        if (num) td.className = 'num';
+        td.textContent = v; tr.appendChild(td);
+      });
+    tb.appendChild(tr);
+  });
+  tbl.innerHTML = ''; tbl.append(thead, tb);
+
+  $('#foot').textContent =
+    'Every figure here is computed from your own records — purchase prices you entered and '
+    + 'appearances in published looks. Nothing is estimated and nothing was generated. '
+    + '"Never worn" means no recorded wear, not unworn: it is a floor. Oxblood marks the '
+    + 'idle measure only, and always beside a written label.';
+});
+
+$('#tabletoggle').addEventListener('click', () => {
+  const w = $('#tablewrap');
+  w.classList.toggle('open');
+  $('#tabletoggle').textContent = w.classList.contains('open') ? 'hide table' : 'table view';
+  if (w.classList.contains('open')) w.scrollIntoView({behavior: 'smooth'});
+});
+</script>
+</body></html>
