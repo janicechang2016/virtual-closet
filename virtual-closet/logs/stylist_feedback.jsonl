@@ -1,0 +1,7 @@
+{"ts": "2026-07-26T03:38:50.439766+00:00", "ids": ["25-kotn-samira-tank", "02-jeans", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:38:54.438029+00:00", "ids": ["37-realisation-gia-dress", "50-yello-heels"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:39:00.181626+00:00", "ids": ["24-issey-silver-tank", "32-personal-language-skirt", "57-puma-ssg-sneakers"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:39:08.840849+00:00", "ids": ["48-woodrose-deli-sweater", "26-liniss-dune-pants", "53-keen-sandals"], "verdict": "no", "blame": "53-keen-sandals", "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:39:16.296177+00:00", "ids": ["05-hardest-item", "56-mizuno-sneakers"], "verdict": "no", "blame": "56-mizuno-sneakers", "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:39:21.393435+00:00", "ids": ["08-bunnyhill-grey-top", "47-woodrose-deli-skirt", "49-jil-sander-boots"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:40:09.917758+00:00", "ids": ["19-coucou-white-scoop-tank", "02-jeans", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": true}

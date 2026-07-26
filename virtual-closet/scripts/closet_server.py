@@ -28,6 +28,7 @@ Run:  python3 scripts/closet_server.py   ->  http://localhost:8765
 """
 import json
 import os
+import random
 import re
 import subprocess
 import sys
@@ -279,6 +280,23 @@ def _stylist_thumb(gid):
     return ""
 
 
+def _judged_signatures():
+    """Outfits already ruled on — never show the same combination twice."""
+    sigs = set()
+    if not STYLIST_LOG.exists():
+        return sigs
+    for line in STYLIST_LOG.read_text().splitlines():
+        if not line.strip():
+            continue
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if e.get("ids"):
+            sigs.add(tuple(sorted(e["ids"])))
+    return sigs
+
+
 def stylist_suggest(occasion="", n=6):
     if not SNAPSHOT.exists():
         return {"error": "no closet snapshot - run server/scripts/dump_closet.py"}
@@ -300,6 +318,18 @@ def stylist_suggest(occasion="", n=6):
 
     aff = preference.affinity(garments, prior, stylist_feedback())
     ranked = gaps.ranked_outfits(garments, affinity=aff)
+
+    # Rotate. Ranking is deterministic, so without this every "suggest again"
+    # returned the identical six cards and the feedback loop could never be fed.
+    # Sample from a high-scoring pool rather than the strict top: the top of the
+    # list is not meaningfully better than the rest of that band, and showing
+    # different clothes is worth more than a third decimal place of score.
+    judged = _judged_signatures()
+    ranked = [o for o in ranked if tuple(sorted(o["garment_ids"])) not in judged]
+    pool_size = max(n * 6, int(len(ranked) * 0.15))
+    pool = ranked[:pool_size]
+    random.shuffle(pool)
+    ranked = pool + ranked[pool_size:]
 
     worn = set()
     for o in published:
@@ -325,10 +355,24 @@ def stylist_suggest(occasion="", n=6):
     # Affinity alone would never surface these - unworn garments sit at neutral
     # and lose to her favourites forever, which makes the stylist a mirror.
     wildcard = None
-    for o in ranked:
-        if any(g not in worn for g in o["garment_ids"]):
-            wildcard = dict(o, wildcard=True)
-            break
+    unworn_pool = [o for o in ranked[:pool_size * 3]
+                   if any(g not in worn for g in o["garment_ids"])
+                   and tuple(sorted(o["garment_ids"])) not in judged]
+    if unworn_pool:
+        # Work through the 23 unworn garments rather than re-offering one.
+        # Anything already judged is exhausted evidence; prefer what has never
+        # been put in front of her.
+        judged_garments = set()
+        for sig in judged:
+            judged_garments.update(sig)
+        by_garment = {}
+        for o in unworn_pool:
+            for g in o["garment_ids"]:
+                if g not in worn:
+                    by_garment.setdefault(g, []).append(o)
+        fresh = [g for g in by_garment if g not in judged_garments]
+        target = random.choice(fresh or list(by_garment))
+        wildcard = dict(random.choice(by_garment[target]), wildcard=True)
 
     def decorate(o):
         out = dict(o)
