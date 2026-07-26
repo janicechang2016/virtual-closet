@@ -1,5 +1,46 @@
 # Decision log
 
+## 2026-07-25 — Ranking calibrated: colour theory is chance, preference is learned
+
+**Method:** blind set of 42 outfits — her 18 published looks (the control) mixed with 24
+engine picks sampled across the score range, shuffled, **scores hidden** so they could not
+anchor her answers. She judged all 42 "would wear / would not".
+
+**Result, measured on the 24 engine picks the model never saw:**
+
+| signal | AUC |
+|---|---|
+| colour harmony + constraints | **0.491** — chance |
+| affinity learned from her 18 looks | **0.824** — predictive |
+| looks + her negative verdicts | 0.583 — *worse* |
+
+She would wear **18/18** of her own looks and **6/24** engine picks; of the 3 picks the
+engine ranked in its top decile, 1.
+
+**The finding: colour was not miscalibrated, it was the wrong signal.** What separates her
+yes from her no is WHICH GARMENTS are in the outfit, footwear above all — camper flats 92%
+accepted (11/12), weejuns loafers 0% (0/3), salomon sneakers 25%, vortex boots 17%, on
+outfits whose colour logic is identical. All three rejected all-black outfits were
+black-on-black with loafers or sneakers; the same colour logic with flats she accepts.
+
+**Two wrong turns, caught by checking rather than reporting:**
+1. Mean lightness spread looked decisive (would-wear ΔL* 40 vs would-not 63) and suggested
+   "she dresses tonally". False — all-black outfits are accepted **12 to 3**. The means were
+   driven by tails, not a tonal preference.
+2. Affinity first measured AUC **0.928**. That was leakage: 18 of the 42 judged outfits ARE
+   her looks and the affinity was built from those looks. Evaluated only on picks the model
+   never saw, the honest figure is 0.824.
+
+**Negative feedback is not yet usable.** An outfit-level "no" cannot be attributed — the
+penalty smears across garments that were fine, which is why adding her rejections made
+prediction worse. Capturing *which garment* killed an outfit is the fix; NOT built.
+
+**Consequence for the architecture:** hard constraints filter (they work — all 18 looks
+pass), learned preference ranks, colour is a tiebreak at low weight. `engine/preference.py`
+learns smoothed per-garment affinity; `ranked_outfits(affinity=...)` leads with it. Her 42
+verdicts persisted to `interaction_log` (24 favourited / 18 rejected); judged engine picks
+stored as `outfit` rows with `source='stylist'`.
+
 ## 2026-07-25 — Phase 2 constraint engine built; its taste does NOT match hers
 
 **Built ($0, offline, 26 unit tests passing):** `engine/colour.py` (LAB, neutral detection,
