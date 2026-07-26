@@ -38,6 +38,23 @@ inside the glass as vertical flutes of light. Because the nodes are dithered dot
 streaks come out dashed rather than smooth, which suits the page more than the reference's
 continuous bands would.
 
+**The flutes had to be given light to catch.** The reference drives only the REFRACTION
+from its travelling point, and that reads as light because its source is a photograph —
+bending a bright image around is itself visible. Bending near-black ground yields near-black,
+so on this page the reference's own mechanism produced almost nothing. The moving highlight
+now drives the SPECULAR as well: each flute lights along the edge where its curvature turns,
+with a broad sheen behind it, PAPER only and no second hue. The idle orbit also takes the
+reference's real cadence — the supplied HTML pins it at 1.5 rad/s, a ~4.2s sweep, where a
+first pass had reasoned 0.45 from this page's ambient-drift language. The glass is a surface
+catching light, not part of the field's motion, so it is allowed to move faster than the field.
+
+**The supplied HTML added no shader changes** — it is byte-identical to the `.tsx`, and the
+rest is Base44 export scaffold. What it settled: `uGlassRect.x` is the panel's CENTRE, so the
+reference's glass is right-anchored across 35.5% of the width (ours is 34%, arrived at
+independently), and its `gl_FragColor` writes alpha 1.0 over a full-viewport quad — its canvas
+IS the photograph. There was never a scene behind a panel, which is why gathering was the fix
+rather than a workaround.
+
 **Consequence: `#panel` and `#detail` needed real ground.** Their `.34` ink was tuned for a
 glass that was imaging near-empty black; against gathered streaks the type was unreadable —
 the heading broke up completely. Both now carry `.74`, enough to read against and no more,

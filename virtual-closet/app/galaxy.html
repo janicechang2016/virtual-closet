@@ -537,7 +537,16 @@ void main() {
   );
 
   col = mix(col, INK, uTint);
-  col += PAPER * max(0.0, -dn) * 0.075;          // bright edge where it turns
+
+  // The flutes CATCH the light. The reference drives only the refraction from
+  // its moving point, which reads as light because its source is a photograph —
+  // bending a bright image around is itself visible. Bending near-black ground
+  // yields near-black, so here the light is added: the travelling highlight
+  // drives the specular, each flute lighting along the edge where its curvature
+  // turns, with a broad sheen behind it. PAPER only — no second hue.
+  float lightK = smoothstep(0.55, 0.0, d);
+  col += PAPER * max(0.0, -dn) * (0.075 + 0.40 * lightK);
+  col += PAPER * lightK * 0.035;
   col = mix(col, INK, max(0.0, dn) * 0.20);      // shadow where it leaves
   col += (hash(uv * uRes + uTime) - 0.35) * uFrost;
 
