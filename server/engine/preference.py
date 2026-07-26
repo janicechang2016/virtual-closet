@@ -18,19 +18,37 @@ garments with no evidence sit at neutral instead of zero.
 
 PRIOR_STRENGTH = 2.0   # Beta(a,a): how much evidence before affinity moves off 0.5
 LOOK_WEIGHT = 1.0      # a published look is one positive observation per garment
-VERDICT_WEIGHT = 1.5   # an explicit yes/no is worth slightly more — it is direct
+VERDICT_WEIGHT = 1.5   # an explicit yes is worth slightly more — it is direct
+
+# Negatives are COLLECTED but not applied. Measured twice, on independent data:
+# the 42-outfit blind calibration (unattributed) and 70 stylist judgements (all
+# attributed). Both say rejections hurt, and the stylist sweep is monotone —
+# ignore 0.638, 1x 0.605, 2x 0.577.
+#
+# The likely reason is that a rejection is contextual, not absolute. She blamed
+# the keen sandals six times, but that means "wrong shoe for THIS outfit", not
+# "I dislike these sandals" — and a per-garment scalar cannot hold the
+# difference, so the model concludes she hates most of her shoes. Attribution
+# was still worth building: it lifted rejections from actively inverted (0.386)
+# to roughly neutral. The blame data is the raw material for a pairwise
+# compatibility model, which is what it actually encodes.
+NEGATIVE_WEIGHT = 0.0
 
 # A single disliked garment sinks an outfit; a good average does not rescue it.
 # This is the loafer case: everything else fine, still would not wear it.
 MIN_WEIGHT = 0.5
 
 
-def affinity(garments, looks=(), verdicts=()):
+def affinity(garments, looks=(), verdicts=(), negative_weight=None):
     """Per-garment affinity in 0..1. 0.5 = no evidence either way.
 
     `looks`    : iterable of {"garment_ids": [...]} she published
     `verdicts` : iterable of ({"ids": [...]}, "yes"/"no")
+    `negative_weight` : multiplier on rejections; defaults to NEGATIVE_WEIGHT
+                        (0.0 — see the note there, this is measured, not a guess)
     """
+    negative_weight = (NEGATIVE_WEIGHT if negative_weight is None
+                       else negative_weight)
     pos = {g["id"]: 0.0 for g in garments}
     neg = {g["id"]: 0.0 for g in garments}
 
@@ -40,10 +58,13 @@ def affinity(garments, looks=(), verdicts=()):
                 pos[gid] += LOOK_WEIGHT
 
     for entry, verdict in verdicts:
+        weight = VERDICT_WEIGHT if verdict == "yes" else VERDICT_WEIGHT * negative_weight
+        if not weight:
+            continue
         bucket = pos if verdict == "yes" else neg
         for gid in (entry.get("ids") or []):
             if gid in bucket:
-                bucket[gid] += VERDICT_WEIGHT
+                bucket[gid] += weight
 
     out = {}
     for gid in pos:

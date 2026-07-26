@@ -246,8 +246,14 @@ class TestPreference(unittest.TestCase):
         self.assertGreater(aff["liked"], 0.5)
         self.assertAlmostEqual(aff["unseen"], 0.5)
 
-    def test_rejection_lowers_affinity(self):
+    def test_rejections_ignored_by_default(self):
+        """Measured twice: applying rejections makes prediction worse."""
         aff = preference.affinity(self.closet, [], [({"ids": ["disliked"]}, "no")] * 3)
+        self.assertAlmostEqual(aff["disliked"], 0.5)
+
+    def test_rejection_lowers_affinity_when_weighted(self):
+        aff = preference.affinity(self.closet, [], [({"ids": ["disliked"]}, "no")] * 3,
+                                  negative_weight=1.0)
         self.assertLess(aff["disliked"], 0.5)
 
     def test_smoothing_bounds_thin_evidence(self):

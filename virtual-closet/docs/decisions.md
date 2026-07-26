@@ -1,5 +1,34 @@
 # Decision log
 
+## 2026-07-26 — Rejections are COLLECTED but not applied (measured, twice)
+
+**Question:** after 77 stylist judgements — all 42 rejections attributed to a garment —
+does feedback improve prediction? Leave-one-out, so nothing scores its own verdict.
+
+| model | AUC |
+|---|---|
+| published looks only | 0.572 |
+| + feedback, rejections un-attributed | **0.420** (inverted) |
+| + feedback, rejections attributed | 0.654 |
+| + feedback, **positives only** | **0.668** ← shipped |
+
+**Attribution was worth building** — it lifted rejections from actively inverted (0.420) to
+roughly neutral. **But applying them still costs accuracy**, and a weight sweep is monotone:
+ignore 0.638, 1× 0.605, 2× 0.577. Two independent datasets now agree (the 42-outfit blind
+calibration and these 77), so `NEGATIVE_WEIGHT = 0.0`.
+
+**Why, most likely: a rejection is contextual, not absolute.** 28 of 42 blames are shoes —
+keen sandals six times, jil sander boots five. That means "wrong shoe for THIS outfit", not
+"I dislike these sandals". A per-garment scalar cannot hold the difference, so the model
+concludes she dislikes most of her shoes. **The blame data is still the right thing to
+collect: it is the raw material for a pairwise compatibility model, which is what it
+actually encodes.** Keep gathering it; do not feed it to the scalar.
+
+**Second effect worth naming: range restriction.** Affinity scored 0.824 on the blind
+calibration set but only ~0.67 here. The stylist now shows only what it already rates
+highly, so the easy discrimination is gone and it is being graded on a narrow band of its
+own choosing. An explore mode that samples across the range is the fix, and it is not built.
+
 ## 2026-07-26 — Stylist design pass: proportion, rationale, hierarchy, state
 
 **Shipped (her picks 1/2/3/6 from the design options):**
