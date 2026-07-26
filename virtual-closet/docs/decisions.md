@@ -2,10 +2,30 @@
 
 ## 2026-07-26 — Merge to `main` and deploy; Railway kept warm
 
-**Decisions (user):** (1) merge the session's work to `main` so the branch stops diverging —
+**Decisions (user):** (1) get the session's work onto `main` so the branch stops diverging —
 this is what Vercel builds, so it deploys the public site; (2) **keep Railway warm** rather
 than pausing it, accepting the $5/mo while `/stylist` and `/insights` remain local-only and
 snapshot-driven.
+
+**A naive merge would have been destructive, and the check caught it.** `main` was not an
+ancestor of `2d-reboot`: it carried **31 commits of the 360/spin work** — the full spin batch
+(58 garments + 18 looks × 7 angle frames, ~1,300 files), `spin_smooth.py`, `spin_video.py`,
+and the paid renders — none of which the 2D rollback has. Worse,
+**`archive/360-avatar-v4-20260724` had never been pushed**, so `main` was the only remote
+copy of roughly $23 of generated assets.
+
+Sequence actually run: push the archive branch to origin → verify **every** commit on `main`
+is reachable from it (`git rev-list --count archive..main` = 0, so `main` held nothing
+unique) → tag `main-pre-v2-20260726` at the old tip → move `main` to the v2 line with
+`--force-with-lease`.
+
+`main` is now the current 2D + v2 line rather than a merge, because the 360 rollback was a
+deliberate product decision and a merge would have resurrected the spin code paths and
+conflicted in `closet_server.py`, `tryon.py`, `fal_generate.py` and `genlog.py` — all of
+which would have been resolved in the 2D line's favour anyway.
+
+**Recovery:** `git reset --hard main-pre-v2-20260726`, or the full 360 history on
+`origin/archive/360-avatar-v4-20260724`.
 
 **A real bug was caught by checking the built export before merging, not after.** `nav.js`
 read `body.demo` when it built the menu — but that class is applied only *after* the
