@@ -46,3 +46,28 @@
 {"ts": "2026-07-26T03:50:57.875236+00:00", "ids": ["41-sagittarius-top", "32-personal-language-skirt", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "dinner", "wildcard": false}
 {"ts": "2026-07-26T03:51:04.092289+00:00", "ids": ["37-realisation-gia-dress", "49-jil-sander-boots"], "verdict": "yes", "blame": null, "occasion": "dinner", "wildcard": false}
 {"ts": "2026-07-26T03:51:06.956404+00:00", "ids": ["08-bunnyhill-grey-top", "15-coucou-mini-skirt", "53-keen-sandals"], "verdict": "no", "blame": "53-keen-sandals", "occasion": "dinner", "wildcard": false}
+{"ts": "2026-07-26T03:51:10.936187+00:00", "ids": ["13-coucou-long-sleeve-top", "10-coucou-black-midi-skirt", "49-jil-sander-boots"], "verdict": "no", "blame": "49-jil-sander-boots", "occasion": "dinner", "wildcard": true}
+{"ts": "2026-07-26T03:51:13.622269+00:00", "ids": ["24-issey-silver-tank", "27-liniss-pants", "57-puma-ssg-sneakers"], "verdict": "no", "blame": "57-puma-ssg-sneakers", "occasion": "dinner", "wildcard": false}
+{"ts": "2026-07-26T03:51:27.275825+00:00", "ids": ["19-coucou-white-scoop-tank", "02-jeans", "58-vortex-long-boots"], "verdict": "yes", "blame": null, "occasion": "dinner", "wildcard": false}
+{"ts": "2026-07-26T03:51:39.379724+00:00", "ids": ["25-kotn-samira-tank", "10-coucou-black-midi-skirt", "50-yello-heels"], "verdict": "yes", "blame": null, "occasion": "dinner", "wildcard": false}
+{"ts": "2026-07-26T03:51:52.155686+00:00", "ids": ["41-sagittarius-top", "42-sagittarius-trousers", "50-yello-heels"], "verdict": "no", "blame": "41-sagittarius-top", "occasion": "work", "wildcard": false}
+{"ts": "2026-07-26T03:51:58.496257+00:00", "ids": ["48-woodrose-deli-sweater", "32-personal-language-skirt", "52-camper-flats"], "verdict": "no", "blame": "48-woodrose-deli-sweater", "occasion": "work", "wildcard": false}
+{"ts": "2026-07-26T03:52:01.834994+00:00", "ids": ["09-bunnyhill-white-top", "02-jeans", "49-jil-sander-boots"], "verdict": "no", "blame": "09-bunnyhill-white-top", "occasion": "work", "wildcard": false}
+{"ts": "2026-07-26T03:52:06.413704+00:00", "ids": ["08-bunnyhill-grey-top", "15-coucou-mini-skirt", "58-vortex-long-boots"], "verdict": "no", "blame": "08-bunnyhill-grey-top", "occasion": "work", "wildcard": false}
+{"ts": "2026-07-26T03:52:21.467969+00:00", "ids": ["19-coucou-white-scoop-tank", "27-liniss-pants", "56-mizuno-sneakers"], "verdict": "yes", "blame": null, "occasion": "work", "wildcard": false}
+{"ts": "2026-07-26T03:52:23.013439+00:00", "ids": ["25-kotn-samira-tank", "10-coucou-black-midi-skirt", "53-keen-sandals"], "verdict": "no", "blame": "53-keen-sandals", "occasion": "work", "wildcard": false}
+{"ts": "2026-07-26T03:52:31.077623+00:00", "ids": ["12-coucou-black-scoop-tank", "26-liniss-dune-pants", "49-jil-sander-boots"], "verdict": "no", "blame": "49-jil-sander-boots", "occasion": "work", "wildcard": true}
+{"ts": "2026-07-26T03:52:40.688694+00:00", "ids": ["31-orseund-iris-top", "15-coucou-mini-skirt", "50-yello-heels"], "verdict": "yes", "blame": null, "occasion": "home / lounge", "wildcard": false}
+{"ts": "2026-07-26T03:52:42.076023+00:00", "ids": ["25-kotn-samira-tank", "27-liniss-pants", "58-vortex-long-boots"], "verdict": "yes", "blame": null, "occasion": "home / lounge", "wildcard": false}
+{"ts": "2026-07-26T03:52:43.693117+00:00", "ids": ["24-issey-silver-tank", "02-jeans", "49-jil-sander-boots"], "verdict": "yes", "blame": null, "occasion": "home / lounge", "wildcard": false}
+{"ts": "2026-07-26T03:52:48.172308+00:00", "ids": ["19-coucou-white-scoop-tank", "10-coucou-black-midi-skirt", "56-mizuno-sneakers"], "verdict": "no", "blame": "56-mizuno-sneakers", "occasion": "home / lounge", "wildcard": false}
+{"ts": "2026-07-26T03:53:03.046423+00:00", "ids": ["37-realisation-gia-dress", "53-keen-sandals"], "verdict": "no", "blame": "37-realisation-gia-dress", "occasion": "home / lounge", "wildcard": false}
+{"ts": "2026-07-26T03:53:05.055453+00:00", "ids": ["39-realisation-ivy-dress", "50-yello-heels"], "verdict": "no", "blame": "50-yello-heels", "occasion": "home / lounge", "wildcard": true}
+{"ts": "2026-07-26T03:53:06.767976+00:00", "ids": ["03-patterned-dress", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "home / lounge", "wildcard": false}
+{"ts": "2026-07-26T03:54:22.703775+00:00", "ids": ["25-kotn-samira-tank", "42-sagittarius-trousers", "49-jil-sander-boots"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:54:27.080440+00:00", "ids": ["43-subtle-mermaid-top", "15-coucou-mini-skirt", "50-yello-heels"], "verdict": "no", "blame": "15-coucou-mini-skirt", "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:54:32.834101+00:00", "ids": ["23-issey-black-tank", "02-jeans", "58-vortex-long-boots"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:54:34.963202+00:00", "ids": ["12-coucou-black-scoop-tank", "27-liniss-pants", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:54:38.608307+00:00", "ids": ["17-coucou-slip-dress", "49-jil-sander-boots"], "verdict": "no", "blame": "49-jil-sander-boots", "occasion": "", "wildcard": true}
+{"ts": "2026-07-26T03:54:40.359023+00:00", "ids": ["19-coucou-white-scoop-tank", "32-personal-language-skirt", "53-keen-sandals"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T03:54:43.616737+00:00", "ids": ["24-issey-silver-tank", "10-coucou-black-midi-skirt", "56-mizuno-sneakers"], "verdict": "no", "blame": "56-mizuno-sneakers", "occasion": "", "wildcard": false}

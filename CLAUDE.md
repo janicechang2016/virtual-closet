@@ -118,6 +118,14 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   Postgres `interaction_log` (blamed garment in `reason_code`). **Local-only by design:**
   putting `APP_SECRET` in a public page would undo the auth guardrail the hosted-Postgres
   reversal depends on. Hidden in the static demo (`body.demo`) like Sourcing.
+  **Design pass 07-26:** flat-lay scaled by category off a shared top line (a flat is not
+  the size of trousers); per-card rationale from computed data ("built around your samira
+  draped tank"), with names disambiguated by dominant colour since three garments are called
+  "scoop tank"; lead suggestion spans two columns; ambient state line (garments / looks /
+  never worn / idle value / judgements). The 7 garments with no usable cutout are FRAMED as
+  reference photos — generating silhouettes for them was tried and reverted as worse than
+  the photo. Queued, not priority: vertical body-stacked outfits, wildcard as a full-width
+  interruption.
 - **`/sourcing` — photo-sourcing UI (07-15):** SYVE-styled third page over
   `ingest_fetch.py` (imported as a module; the only route needing `requests`).
   Paste a product URL → `/api/source/scan` ranks candidates (bytes held in

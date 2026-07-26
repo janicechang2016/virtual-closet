@@ -337,28 +337,92 @@ def stylist_history(limit=24):
             "blame": e.get("blame"),
             "occasion": e.get("occasion") or "",
             "ts": e.get("ts"),
-            "garments": [{"id": g, "img": _stylist_thumb(g)} for g in (e.get("ids") or [])],
+            "garments": [{"id": g, "img": _stylist_thumb(g)[0]}
+                         for g in (e.get("ids") or [])],
         })
     rows.sort(key=lambda r: r["ts"] or "", reverse=True)
     return rows[:limit]
 
 
+def _garment_names():
+    """id -> the human name from meta.json. The snapshot carries subcategory,
+    which is a taxonomy label; copy wants "samira draped tank", not "tank"."""
+    out = {}
+    gdir = ROOT / "garments"
+    if not gdir.is_dir():
+        return out
+    for d in gdir.iterdir():
+        mp = d / "meta.json"
+        if mp.is_file():
+            try:
+                m = json.loads(mp.read_text())
+            except ValueError:
+                continue
+            out[d.name] = m.get("name") or d.name
+    return out
+
+
+def _rationale(o, aff, names, worn, occasion, is_wildcard):
+    """One line saying WHY this outfit is here.
+
+    The cards used to read "NO FLAGS", which is engine jargon. Everything needed
+    for a real sentence is already computed — which garment anchors the outfit,
+    whether anything in it has never been worn, and which soft rule fired.
+    Deterministic templates, no LLM, no spend.
+    """
+    ids = o["garment_ids"]
+    unworn = [g for g in ids if g not in worn]
+    nm = lambda g: names.get(g, g)
+
+    if is_wildcard and unworn:
+        lead = "first outing for the %s" % nm(unworn[0])
+    elif unworn:
+        lead = "puts the %s to work" % nm(unworn[0])
+    else:
+        anchor = max(ids, key=lambda g: aff.get(g, 0.5))
+        if aff.get(anchor, 0.5) > 0.6:
+            lead = "built around your %s" % nm(anchor)
+        else:
+            lead = "a combination you have not tried"
+
+    if occasion:
+        lead += " · for %s" % occasion
+
+    caution = ""
+    notes = o.get("notes") or []
+    if notes:
+        # Soft rules are judgement, not error — phrase them as a caveat she can
+        # overrule, which is what they are.
+        pretty = {"oversized on oversized": "volume on volume",
+                  "warmth spread": "mixed warmth",
+                  "formality spread": "mixed formality"}
+        caution = "; ".join(pretty.get(n.split(" ")[0] + " " + " ".join(n.split(" ")[1:-1]).strip(),
+                                       pretty.get(n, n)) for n in notes[:2])
+    return lead, caution
+
+
 def _stylist_thumb(gid):
-    """Cutout for a garment, as an /assets/ URL. Falls back to the raw photo."""
+    """(url, is_cutout) for a garment.
+
+    Seven garments have no usable cutout — cloth-seg cannot separate them from
+    the model, and a ragged silhouette reads worse than the photo. They fall back
+    to the product shot and are FRAMED in the UI, the same distinction dragcut.py
+    already makes between bare silhouettes and framed cards.
+    """
     clean = ROOT / "garments" / gid / "clean"
     if clean.is_dir():
         files = sorted(f.name for f in clean.iterdir() if f.is_file())
         pick = ([f for f in files if "_dragcut" in f]
                 or [f for f in files if "_extracted" in f] or files)
         if pick:
-            return "/assets/garments/%s/clean/%s" % (gid, pick[0])
+            return "/assets/garments/%s/clean/%s" % (gid, pick[0]), True
     raw = ROOT / "garments" / gid / "raw"
     if raw.is_dir():
         files = sorted(f.name for f in raw.iterdir()
                        if f.is_file() and not f.name.startswith("."))
         if files:
-            return "/assets/garments/%s/raw/%s" % (gid, files[0])
-    return ""
+            return "/assets/garments/%s/raw/%s" % (gid, files[0]), False
+    return "", True
 
 
 def _judged_signatures():
@@ -443,24 +507,55 @@ def stylist_suggest(occasion="", n=6):
         target = random.choice(fresh or list(by_garment))
         wildcard = dict(random.choice(by_garment[target]), wildcard=True)
 
-    def decorate(o):
+    names = _garment_names()
+    # Disambiguate collisions with the measured dominant colour: three garments
+    # are called "scoop tank" and two "pointelle midi skirt", so an un-prefixed
+    # rationale would name two different pieces identically.
+    from collections import Counter as _C
+    dupes = {n for n, k in _C(names.values()).items() if k > 1}
+    for gid, nm in list(names.items()):
+        if nm in dupes:
+            cols = (by_id.get(gid) or {}).get("colors") or []
+            if cols:
+                names[gid] = "%s %s" % (cols[0].get("name", ""), nm)
+
+    def decorate(o, wild=False):
         out = dict(o)
+        lead, caution = _rationale(o, aff, names, worn, occasion, wild)
+        out["why"] = lead
+        out["caution"] = caution
         out["garments"] = [{
             "id": gid,
+            "name": names.get(gid, gid),
             "category": by_id[gid].get("category"),
             "subcategory": by_id[gid].get("subcategory"),
             "affinity": round(aff.get(gid, 0.5), 3),
             "unworn": gid not in worn,
-            "img": _stylist_thumb(gid),
+            "img": _stylist_thumb(gid)[0],
+            "framed": not _stylist_thumb(gid)[1],
         } for gid in o["garment_ids"]]
         return out
+
+    idle = 0.0
+    for g in garments:
+        if g["id"] not in worn:
+            price = (g.get("purchase") or {}).get("price_usd")
+            if price:
+                idle += float(price)
 
     return {
         "occasion": occasion,
         "prior_looks": len(prior),
         "suggestions": [decorate(o) for o in picks],
-        "wildcard": decorate(wildcard) if wildcard else None,
+        "wildcard": decorate(wildcard, wild=True) if wildcard else None,
         "feedback_count": len(stylist_feedback()),
+        "state": {
+            "garments": len(garments),
+            "unworn": sum(1 for g in garments if g["id"] not in worn),
+            "idle_usd": round(idle),
+            "judgements": len(stylist_current()),
+            "looks": len(published),
+        },
     }
 
 

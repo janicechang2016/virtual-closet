@@ -1,5 +1,34 @@
 # Decision log
 
+## 2026-07-26 — Stylist design pass: proportion, rationale, hierarchy, state
+
+**Shipped (her picks 1/2/3/6 from the design options):**
+1. **Flat-lay proportion.** Equal flex widths made a ballet flat the size of a pair of
+   trousers — a row of product thumbnails. Garments now hang from a shared top line, scaled
+   by category (dress 100% → shoes 26%), shoes bottom-aligned.
+2. **Rationale.** Cards read "NO FLAGS", which is engine jargon. Now a sentence built from
+   data already computed: "built around your samira draped tank", "first outing for the
+   gorum wrap-collar shirt", with soft rules phrased as a caveat ("mixed warmth"). $0,
+   deterministic templates, no LLM. Colliding garment names are disambiguated by measured
+   dominant colour — three garments are called "scoop tank".
+3. **Hierarchy.** The lead suggestion spans two columns; the rest recede. Spanning ROWS was
+   tried first and let the flat area grow unbounded, pushing the panel and actions off the
+   card entirely.
+6. **Ambient state line** — `garments 58 · published looks 18 · never worn 23 · idle value
+   $2,381 · judgements 70`. Ties the stylist to the sustainability track in SYVE's own
+   technical-label register.
+
+**Deferred, her call: (4) vertical body-stacked outfits and (5) the wildcard styled as a
+full-width interruption.** Both are good ideas; neither is a priority now.
+
+**Attempted and REVERTED: cutouts for the 7 un-cut garments.** The `full`-mask + band
+fallback that recovered them for colour extraction produces poor *silhouettes* — 09 and 47
+came back with the model's hands and boots attached, 29 full of holes. A ragged silhouette
+reads worse than the product photo, which is why dragcut fell back to framed cards in the
+first place. `dragcut.py` left unchanged. Instead the stylist FRAMES those seven as
+reference photographs at fixed size — a deliberate second register, matching the
+silhouette-vs-framed-card distinction dragcut already makes.
+
 ## 2026-07-25 — Feedback is revisable everywhere (stylist + fitting room)
 
 **Decision (user):** a judgement should never be final by accident. Applied first to the

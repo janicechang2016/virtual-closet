@@ -32,27 +32,67 @@
 
   .strip { padding:12px 24px; border-bottom:1px solid var(--line);
     color:var(--dim); display:flex; gap:20px; flex-wrap:wrap; align-items:center; }
+  /* the closet's standing state — technical labels, SYVE's own register */
+  .state { padding:11px 24px; border-bottom:1px solid var(--line);
+    display:flex; gap:26px; flex-wrap:wrap; }
+  .state b { font-weight:normal; color:#000; }
+  .state span { color:var(--dim); }
 
   .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); }
   .card { border-right:1px solid var(--line); border-bottom:1px solid var(--line);
     display:flex; flex-direction:column; min-height:470px; position:relative; }
   .card.gone { opacity:.35; }
 
-  /* The flat-lay deliberately runs BEHIND the panel: glass with nothing behind
-     it is just a white box. The overlap is what makes the translucency read. */
+  /* Hierarchy: the lead suggestion is the page's subject, the rest recede —
+     the archive's own hero-and-remainder language rather than a flat grid. */
+  @media (min-width:1000px) {
+    .grid { grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
+    /* Wider, not taller. Spanning rows let the flat area grow unbounded and
+       pushed the panel and actions off the card entirely. */
+    .card.hero { grid-column:span 2; min-height:560px; }
+    .card.hero .flat { padding:34px 40px 40px; gap:26px; }
+    .card.hero .why { font-size:16px; }
+    .card.hero .panel { left:22px; right:22px; bottom:18px; }
+  }
+
+  /* Flat-lay proportion. A ballet flat is not the size of a pair of trousers;
+     equal flex widths made every card read as a row of product thumbnails.
+     Garments hang from a shared top line and are scaled by category, so the
+     composition reads as an outfit laid out rather than objects in a row. */
   .flat { position:relative; flex:1; display:flex; align-items:flex-start;
-    justify-content:center; gap:10px; padding:22px 18px 30px; overflow:hidden; }
-  .flat .it { flex:1; display:flex; align-items:center; justify-content:center; }
-  .flat img { max-height:290px; max-width:100%; object-fit:contain; }
+    justify-content:center; gap:14px; padding:26px 20px 34px; overflow:hidden; }
+  .flat .it { display:flex; align-items:flex-start; justify-content:center;
+    height:100%; min-width:0; }
+  .flat img { max-width:100%; object-fit:contain; object-position:top center;
+    display:block; }
+  /* height as a share of the frame, by category */
+  .flat .it[data-c="dress"]      { flex:2.4; }
+  .flat .it[data-c="outerwear"]  { flex:2.2; }
+  .flat .it[data-c="bottom"]     { flex:2.1; }
+  .flat .it[data-c="top"]        { flex:1.8; }
+  .flat .it[data-c="shoes"]      { flex:1.0; align-self:flex-end; }
+  .flat .it[data-c="dress"] img     { max-height:100%; }
+  .flat .it[data-c="outerwear"] img { max-height:92%; }
+  .flat .it[data-c="bottom"] img    { max-height:88%; }
+  .flat .it[data-c="top"] img       { max-height:62%; }
+  .flat .it[data-c="shoes"] img     { max-height:26%; }
+  /* Seven garments have no usable cutout. Rather than pretend, they are framed
+     as reference photographs at a fixed size — a deliberate second register,
+     the same distinction dragcut makes between silhouettes and framed cards. */
+  .flat .it.framed { align-self:flex-start; }
+  .flat .it.framed img { max-height:46% !important; border:1px solid rgba(0,0,0,.22);
+    padding:0; background:#fff; }
+  .card.hero .flat .it.framed img { max-height:52% !important; }
 
   /* the glass */
   .panel { position:absolute; left:14px; right:14px; bottom:14px; padding:12px 14px;
     background:rgba(255,255,255,.42); backdrop-filter:blur(16px) saturate(1.5);
     -webkit-backdrop-filter:blur(16px) saturate(1.5);
     border:1px solid rgba(0,0,0,.6); }
-  .panel .items { display:flex; flex-direction:column; gap:2px; }
-  .panel .items span { font-size:11px; }
-  .panel .meta { color:var(--dim); margin-top:6px; }
+  .panel .why { font-size:13px; line-height:1.35; }
+  .panel .caution { color:var(--dim); margin-top:5px; }
+  .panel .items { color:var(--dim); margin-top:7px; font-size:10px;
+    text-transform:uppercase; letter-spacing:.1em; }
 
   .acts { display:flex; border-top:1px solid var(--line); }
   .acts button { flex:1; border:0; border-right:1px solid var(--line); padding:13px 0; }
@@ -110,6 +150,7 @@
 </header>
 <div class="drawer" id="drawer"></div>
 
+<div class="state up" id="state"></div>
 <div class="strip up" id="strip">loading…</div>
 <div class="grid" id="grid"></div>
 
@@ -131,13 +172,13 @@ const strip = document.getElementById('strip');
 const occ = document.getElementById('occ');
 let DATA = null;
 
-const nameOf = g => (g.subcategory || g.category || g.id);
+const nameOf = g => (g.name || g.subcategory || g.category || g.id);
 
 function cardHTML(o, i, wild) {
   const items = o.garments.map(g => `
-    <div class="it">${g.img ? `<img src="${g.img}" alt="" loading="lazy">` : ''}</div>`).join('');
-  const rows = o.garments.map(g =>
-    `<span>${nameOf(g)}${g.unworn ? ' · never worn' : ''}</span>`).join('');
+    <div class="it${g.framed ? ' framed' : ''}" data-c="${g.category}">${g.img
+      ? `<img src="${g.img}" alt="" loading="lazy">` : ''}</div>`).join('');
+  const rows = o.garments.map(g => nameOf(g)).join(' · ');
   const blame = o.garments.map(g =>
     `<button data-blame="${g.id}" data-i="${i}">${nameOf(g)}</button>`).join('');
   return `
@@ -146,8 +187,9 @@ function cardHTML(o, i, wild) {
     <div class="flat">
       ${items}
       <div class="panel">
+        <div class="why">${o.why || ''}</div>
+        ${o.caution ? `<div class="caution up">${o.caution}</div>` : ''}
         <div class="items">${rows}</div>
-        <div class="meta up">${o.notes && o.notes.length ? o.notes.join(' · ') : 'no flags'}</div>
       </div>
     </div>
     <div class="acts">
@@ -169,6 +211,15 @@ async function load() {
   const all = DATA.suggestions.slice();
   if (DATA.wildcard) all.push(DATA.wildcard);
   grid.innerHTML = all.map((o, i) => cardHTML(o, i, !!o.wildcard)).join('');
+  const first = document.getElementById('card-0');
+  if (first) first.classList.add('hero');
+  const st = DATA.state || {};
+  document.getElementById('state').innerHTML = [
+    ['garments', st.garments], ['published looks', st.looks],
+    ['never worn', st.unworn], ['idle value', st.idle_usd ? '$' + st.idle_usd.toLocaleString() : null],
+    ['judgements', st.judgements],
+  ].filter(([, v]) => v !== null && v !== undefined)
+   .map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join('');
   strip.textContent =
     `${DATA.suggestions.length} suggestions · learned from ${DATA.prior_looks} published looks · `
     + `${DATA.feedback_count} judgements recorded`;
