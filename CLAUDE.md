@@ -1,10 +1,43 @@
 # Virtual Closet (wardrobe-v3)
 
-Photorealistic virtual try-on with a persistent personal avatar. Single-user, local-first.
-Working code in `virtual-closet/`; plan in `virtual-closet-execution-plan.md`; running
-decisions in `virtual-closet/docs/decisions.md` (read it — it carries the standing rules).
+Photorealistic virtual try-on with a persistent personal avatar, now extending into a
+utility wardrobe tool. Working code in `virtual-closet/` (the 2D app) and `server/` (the v2
+backend + engine); running decisions in `virtual-closet/docs/decisions.md` (read it — it
+carries the standing rules). Plans: `virtual-closet-execution-plan.md` (v1),
+`virtual-closet-plan-v2.md` (v2 spec), `virtual-closet-v2-foundation-plan.md` (Phases 0–2),
+`virtual-closet-v2-HANDOFF.md` (cold-resume).
 
-## Current state (2026-07-19)
+## v2 state (2026-07-26) — foundation + engine + stylist all done, $0.00 API spend
+
+Branch `2d-reboot` (pushed). `main` is untouched and is what Vercel builds the live archive
+from — **do not merge**.
+
+- **Phase 0 — hosted backend.** Railway (Hobby, $5/mo): Postgres 18 + `virtual-closet-api`
+  at https://virtual-closet-api-production.up.railway.app. Both reversal guardrails verified
+  live: `/health` open, `/budget` 401 without the bearer token, correct JSON with it via a
+  real Postgres round-trip. Token in `server/.app_secret` (gitignored). R2 and the worker
+  service are deliberately deferred. `railway up` (CLI upload) 403s for reasons never
+  established — deploys come from GitHub instead.
+- **Phase 1 — data.** 58 garments + 18 published looks in Postgres, fully attributed:
+  measured LAB colour, category/subcategory, silhouette volume, formality, warmth, seasons,
+  and purchase price/date (closet value $6,298). Looks carry occasion. Capture UIs are
+  generated HTML opened via `file://` (`make_attr_grid.py`, `make_occasion_form.py`,
+  `make_purchase_form.py` + matching `apply_*.py`); **she prefers browser forms to editing
+  TSV in an editor.** `scripts/verify_backfill.sql` is the re-runnable acceptance check.
+- **Phase 2 — engine.** `server/engine/`: `colour.py`, `constraints.py`, `gaps.py`,
+  `preference.py` — pure functions, 33 stdlib unit tests, no I/O. `dump_closet.py` snapshots
+  Postgres to JSON so the engine needs no database. 2220 valid outfits = (21×10 + 12)×10.
+- **THE FINDING that shaped everything after it: colour theory does not predict her taste.**
+  Measured blind on 24 outfits the model had never seen — colour + constraints AUC **0.491**
+  (chance), learned per-garment affinity **0.824**. Hard constraints filter, learned
+  preference ranks, colour is a low-weight tiebreak. Rejections are collected but NOT
+  applied (`NEGATIVE_WEIGHT = 0.0`): measured twice, they cost accuracy, because a rejection
+  is contextual ("wrong shoe for this outfit") and a per-garment scalar cannot hold that.
+- **Track C preview:** 23 of 58 garments appear in no published look, **$2,381 idle**.
+- Deferred, recorded, NOT priorities (her call): explore mode, pairwise compatibility,
+  vertical body-stacked outfit cards, wildcard as a full-width interruption.
+
+## v1 state (2026-07-19)
 
 - **Repo on GitHub (07-17):** github.com/janicechang2016/virtual-closet — PRIVATE
   until Janice flips it for the portfolio; all rollback tags pushed. **README
