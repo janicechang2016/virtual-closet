@@ -56,6 +56,7 @@
       '#navsheet.open{clip-path:inset(0 0 0 0);pointer-events:auto;}',
       '#navsheet ul{list-style:none;margin:0;padding:0;text-align:center;}',
       '#navsheet li{margin:0 0 18px;}',
+      '#navsheet li:last-child{margin-bottom:0;}',
       '#navsheet a{display:inline-block;text-decoration:none;color:#000;',
       "  font:italic 400 26px/1.2 'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;",
       '  letter-spacing:.06em;text-transform:uppercase;white-space:pre;}',
@@ -65,7 +66,6 @@
       '#navsheet a:focus:not(:focus-visible){outline:none;}',
       '#navburger:focus-visible{outline:1px solid #000;outline-offset:3px;}',
       '#navsheet a[aria-current="page"]{text-decoration:underline;text-underline-offset:6px;}',
-      '#navsheet .rule{width:38px;height:1px;background:#000;margin:0 auto 26px;}',
       '@media (max-width:760px){#navsheet a{font-size:19px;}}',
       '@media (prefers-reduced-motion:reduce){',
       '  #navsheet{transition:none;}}'
@@ -95,7 +95,6 @@
     var here = location.pathname.replace(/\/$/, '') || '/';
 
     var wrap = document.createElement('div');
-    var rule = document.createElement('div'); rule.className = 'rule';
     var ul = document.createElement('ul');
     ROUTES.forEach(function (r) {
       if (demo && r.local) return;               // needs the local server
@@ -108,7 +107,7 @@
       if ((r.href.replace(/\/$/, '') || '/') === here) a.setAttribute('aria-current', 'page');
       li.appendChild(a); ul.appendChild(li);
     });
-    wrap.appendChild(rule); wrap.appendChild(ul);
+    wrap.appendChild(ul);
     sheet.appendChild(wrap);
 
     document.body.appendChild(sheet);
