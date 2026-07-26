@@ -32,11 +32,6 @@
 
   .strip { padding:12px 24px; border-bottom:1px solid var(--line);
     color:var(--dim); display:flex; gap:20px; flex-wrap:wrap; align-items:center; }
-  /* the closet's standing state — technical labels, SYVE's own register */
-  .state { padding:11px 24px; border-bottom:1px solid var(--line);
-    display:flex; gap:26px; flex-wrap:wrap; }
-  .state b { font-weight:normal; color:#000; }
-  .state span { color:var(--dim); }
 
   .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); }
   .card { border-right:1px solid var(--line); border-bottom:1px solid var(--line);
@@ -169,7 +164,6 @@
 </header>
 <div class="drawer" id="drawer"></div>
 
-<div class="state up" id="state"></div>
 <div class="strip up" id="strip">loading…</div>
 <div class="grid" id="grid"></div>
 
@@ -256,13 +250,6 @@ function render() {
   if (DATA.wildcard) SHOWN.push(DATA.wildcard);
   grid.innerHTML = SHOWN.map((o, i) => cardHTML(o, i, !!o.wildcard)).join('');
   fitGrey();
-  const st = DATA.state || {};
-  document.getElementById('state').innerHTML = [
-    ['garments', st.garments], ['published looks', st.looks],
-    ['never worn', st.unworn], ['idle value', st.idle_usd ? '$' + st.idle_usd.toLocaleString() : null],
-    ['judgements', st.judgements],
-  ].filter(([, v]) => v !== null && v !== undefined)
-   .map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join('');
   strip.textContent =
     `${SHOWN.length - (DATA.wildcard ? 1 : 0)} suggestions + wildcard · learned from `
     + `${DATA.prior_looks} published looks · ${DATA.feedback_count} judgements recorded`;

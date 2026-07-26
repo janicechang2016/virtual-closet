@@ -1,5 +1,24 @@
 # Decision log
 
+## 2026-07-26 — Insights: pictures and diagrams over number rows; stylist state line cut
+
+**Stylist:** the ambient state line (garments / looks / never worn / idle value) is
+**removed** — it duplicated `/insights`, which now owns those numbers. It was design option
+6 from the 07-26 pass; superseded rather than wrong.
+
+**Insights, made visual on her ask.** Order now tells a story rather than listing measures:
+- **Unit chart first** — 58 marks, one per garment, ordered so the unworn block reads as a
+  block. Four columns hid the population; this shows every garment and lets her hover any
+  single one. Ramp steps encode wear count, oxblood is the reserved zero state, and a legend
+  with counts is mandatory because identity must never rest on colour alone.
+  The "1 wear" step was first `#c9c9c9` and measured **1.66:1** on white — invisible as a
+  mark. Re-stepped to `#8f8f8f` (3.23:1), `#5c5c5c` (6.69:1), `#000`.
+- **Meter** for the idle share — the skill's form for a single ratio against a limit, fill
+  and track being steps of one ramp. Replaces a percentage buried in stat-tile subtext.
+- **Photographs** for "most value never worn" and "earning their keep". The subject is
+  clothes; numbers alone read as a spreadsheet about a wardrobe rather than a view of one.
+  Cutouts already exist for 51 of 58 garments, so this cost nothing.
+
 ## 2026-07-26 — `/insights` shipped (Track C), $0
 
 Second UI after the stylist. Same pattern: local-only, reads `closet_snapshot.json`,

@@ -157,8 +157,7 @@ from — **do not merge**.
   **Design pass 07-26:** flat-lay scaled by category off a shared top line (a flat is not
   the size of trousers); per-card rationale from computed data ("built around your samira
   draped tank"), with names disambiguated by dominant colour since three garments are called
-  "scoop tank"; lead suggestion spans two columns; ambient state line (garments / looks /
-  never worn / idle value / judgements). **The text panel is a FIXED 104px** — it is
+  "scoop tank"; lead suggestion spans two columns; **The text panel is a FIXED 104px** — it is
   bottom-anchored, so a longer item list used to push it upward and cards in a row ended up
   with visibly different text blocks. The black rationale holds 13px (it is the sentence
   worth reading); only the grey block auto-fits, stepping down to as low as 6.5px.
@@ -170,7 +169,10 @@ from — **do not merge**.
   interruption.
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
-  the stylist uses. **Wears are a FLOOR, not the truth** — they count appearances in the 18
+  the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear
+  count, oxblood for never-worn) and a **meter** for the idle share, then garment
+  **photographs** for the never-worn and best-cost-per-wear lists — the subject is clothes,
+  and numbers alone read as a spreadsheet about a wardrobe rather than a view of one. **Wears are a FLOOR, not the truth** — they count appearances in the 18
   published looks, the only wear record that exists, so a garment worn often but never
   photographed reads as never worn; every surface says so, because an unqualified "$2,381
   never worn" would be an accusation the data cannot support. Built to the dataviz method:

@@ -513,6 +513,7 @@ def insights_data():
             "wears": n,
             "cpw": (round(pr / n, 2) if pr is not None and n else None),
             "bought": (g.get("purchase") or {}).get("date"),
+            "img": _stylist_thumb(g["id"])[0],
         })
 
     priced = [r for r in rows if r["price"] is not None]
@@ -573,8 +574,11 @@ def insights_data():
         "spend_by_category": by_cat(priced),
         "distribution": distribution,
         "timeline": timeline,
-        "best_cpw": sorted(worn, key=lambda r: r["cpw"])[:8],
-        "idle_top": sorted(idle, key=lambda r: -r["price"])[:8],
+        "best_cpw": sorted(worn, key=lambda r: r["cpw"])[:6],
+        "idle_top": sorted(idle, key=lambda r: -r["price"])[:6],
+        # one mark per garment for the unit chart — the closet at a glance,
+        # ordered so the unworn block reads as a block
+        "units": sorted(rows, key=lambda r: (r["wears"], r["category"] or "", r["id"])),
         "all_rows": sorted(rows, key=lambda r: (r["wears"], -(r["price"] or 0))),
     }
 

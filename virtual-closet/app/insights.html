@@ -85,6 +85,47 @@
   .collabs { display:flex; gap:2px; margin-top:8px; }
   .collabs div { flex:1; text-align:center; color:var(--dim); }
 
+  /* ── meter: a single ratio against a limit is a meter, not a pie of two ──
+     Fill and track are steps of the same ramp, so the state reads across the
+     whole bar rather than only where the fill ends. */
+  .meter { margin-top:14px; }
+  .mtrack { height:26px; background:#efe9e9; position:relative; }
+  .mfill { height:100%; background:var(--alert); border-radius:0 4px 4px 0; }
+  .mlabels { display:flex; justify-content:space-between; margin-top:8px;
+    color:var(--dim); }
+
+  /* ── unit chart: one mark per garment, the closet at a glance ──
+     58 marks beat four columns here — the reader sees the actual population and
+     can hover any single garment. Steps of one ramp encode wear count; oxblood
+     is the reserved zero/alert state and carries a key. */
+  .units { display:flex; flex-wrap:wrap; gap:4px; }
+  .unit { width:26px; height:26px; border-radius:3px; background:#000; cursor:default;
+    transition:transform .1s ease; }
+  .unit:hover, .unit:focus { transform:scale(1.18); outline:none; }
+  .unit.w0 { background:var(--alert); }
+  /* Steps of one ramp, each >= 3:1 on the white surface. #c9c9c9 was tried for
+     "1 wear" and measured 1.66:1 — invisible as a mark. */
+  .unit.w1 { background:#8f8f8f; }   /* 3.23:1 */
+  .unit.w2 { background:#5c5c5c; }   /* 6.69:1 */
+  .unit.w3 { background:#000; }      /* 21:1   */
+  .key { display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; color:var(--dim); }
+  .key span { display:flex; align-items:center; gap:7px; }
+  .key i { width:12px; height:12px; border-radius:2px; display:block; }
+
+  /* ── picture rows: the subject is clothes, so show the clothes ── */
+  .pics { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0; }
+  .pic { border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:16px 14px 14px; display:flex; flex-direction:column; gap:10px;
+    cursor:default; }
+  .pic:hover { background:linear-gradient(180deg,#f6f7f9,#e9ebef 55%,#dee1e6); }
+  .pic .fig { height:132px; display:flex; align-items:center; justify-content:center; }
+  .pic .fig img { max-height:100%; max-width:100%; object-fit:contain; }
+  .pic .nm { font-size:11px; line-height:1.3; min-height:2.6em; }
+  .pic .big { font-size:15px; font-variant-numeric:tabular-nums; }
+  .pic .big.alert { color:var(--alert); }
+  .pic .sub2 { color:var(--dim); font-size:10px; text-transform:uppercase;
+    letter-spacing:.1em; }
+
   /* ── list rows ── */
   .list { display:flex; flex-direction:column; }
   .lrow { display:grid; grid-template-columns:1fr 120px 90px; gap:14px;
@@ -132,6 +173,34 @@
 <div class="caveat up" id="caveat"></div>
 
 <section>
+  <div class="h"><h2>How much of the closet is in play</h2>
+    <span class="sub">every garment, one mark — hover any of them</span></div>
+  <div class="units" id="units"></div>
+  <div class="key up" id="unitkey"></div>
+</section>
+
+<section>
+  <div class="h"><h2>The share standing still</h2>
+    <span class="sub">value with no recorded wear, against the whole closet</span></div>
+  <div class="meter">
+    <div class="mtrack"><div class="mfill" id="mfill"></div></div>
+    <div class="mlabels up"><span id="mleft"></span><span id="mright"></span></div>
+  </div>
+</section>
+
+<section>
+  <div class="h"><h2>Most value, never worn</h2>
+    <span class="sub">the biggest single pieces with no recorded wear</span></div>
+  <div class="pics" id="idletop"></div>
+</section>
+
+<section>
+  <div class="h"><h2>Earning their keep</h2>
+    <span class="sub">lowest cost per wear — price ÷ recorded wears</span></div>
+  <div class="pics" id="bestcpw"></div>
+</section>
+
+<section>
   <div class="h"><h2>Where the value sleeps</h2>
     <span class="sub">purchase value of garments with no recorded wear, by category</span></div>
   <div class="bars" id="idle"></div>
@@ -144,29 +213,10 @@
 </section>
 
 <section>
-  <div class="h"><h2>Wear distribution</h2>
-    <span class="sub">garments by number of recorded wears</span></div>
-  <div class="cols" id="dist"></div>
-  <div class="collabs up" id="distlabs"></div>
-</section>
-
-<section>
   <div class="h"><h2>Acquired by year</h2>
     <span class="sub">spend, and number of garments</span></div>
   <div class="cols" id="years"></div>
   <div class="collabs up" id="yearlabs"></div>
-</section>
-
-<section>
-  <div class="h"><h2>Best cost per wear</h2>
-    <span class="sub">price ÷ recorded wears — the pieces earning their keep</span></div>
-  <div class="list" id="bestcpw"></div>
-</section>
-
-<section>
-  <div class="h"><h2>Most value, never worn</h2>
-    <span class="sub">the biggest single pieces with no recorded wear</span></div>
-  <div class="list" id="idletop"></div>
 </section>
 
 <div id="tablewrap"><table id="table"></table></div>
@@ -237,16 +287,49 @@ function columns(host, labhost, items, {valueOf, textOf, labelOf, alertOf, tipOf
   });
 }
 
-function listRows(host, items, {nameOf, midOf, bigOf, tipOf}) {
+// The subject is clothes, so show the clothes. Numbers alone made the page read
+// as a spreadsheet about a wardrobe rather than a view of one.
+function picCards(host, items, {nameOf, bigOf, subOf, tipOf, alert}) {
   host.innerHTML = '';
   items.forEach(it => {
-    const r = document.createElement('div'); r.className = 'lrow';
-    const n = document.createElement('div'); n.className = 'n'; n.textContent = nameOf(it);
-    const m = document.createElement('div'); m.className = 'm'; m.textContent = midOf(it);
-    const b = document.createElement('div'); b.className = 'big'; b.textContent = bigOf(it);
-    r.append(n, m, b); host.appendChild(r);
-    bindTip(r, bigOf(it), tipOf(it));
+    const c = document.createElement('div'); c.className = 'pic';
+    const fig = document.createElement('div'); fig.className = 'fig';
+    if (it.img) {
+      const img = document.createElement('img');
+      img.src = it.img; img.alt = ''; img.loading = 'lazy';
+      fig.appendChild(img);
+    }
+    const big = document.createElement('div');
+    big.className = 'big' + (alert ? ' alert' : ''); big.textContent = bigOf(it);
+    const nm = document.createElement('div'); nm.className = 'nm'; nm.textContent = nameOf(it);
+    const sub = document.createElement('div'); sub.className = 'sub2'; sub.textContent = subOf(it);
+    c.append(fig, big, nm, sub); host.appendChild(c);
+    bindTip(c, bigOf(it), tipOf(it));
   });
+}
+
+function unitChart(host, keyHost, units) {
+  host.innerHTML = ''; keyHost.innerHTML = '';
+  units.forEach(u => {
+    const d = document.createElement('div');
+    const step = u.wears === 0 ? 'w0' : u.wears === 1 ? 'w1' : u.wears === 2 ? 'w2' : 'w3';
+    d.className = 'unit ' + step;
+    host.appendChild(d);
+    bindTip(d, u.name, (u.wears === 0 ? 'never worn' : u.wears + (u.wears === 1 ? ' wear' : ' wears'))
+                      + (u.price != null ? ' · $' + Math.round(u.price) : ''));
+  });
+  // Legend is mandatory: identity must never rest on colour alone.
+  const counts = {w0: 0, w1: 0, w2: 0, w3: 0};
+  units.forEach(u => counts[u.wears === 0 ? 'w0' : u.wears === 1 ? 'w1'
+                        : u.wears === 2 ? 'w2' : 'w3']++);
+  [['w0', 'never worn'], ['w1', '1 wear'], ['w2', '2 wears'], ['w3', '3+ wears']]
+    .forEach(([k, label]) => {
+      const sp = document.createElement('span');
+      const i = document.createElement('i'); i.className = 'unit ' + k;
+      i.style.width = '12px'; i.style.height = '12px';
+      const t = document.createTextNode(label + ' · ' + counts[k]);
+      sp.append(i, t); keyHost.appendChild(sp);
+    });
 }
 
 fetch('/api/insights').then(r => r.json()).then(d => {
@@ -255,8 +338,7 @@ fetch('/api/insights').then(r => r.json()).then(d => {
 
   const kpis = [
     {k: 'closet value', v: money(t.value), s: t.priced + ' garments priced'},
-    {k: 'value never worn', v: money(t.idle_value), s: t.idle_share + '% of the closet',
-     alert: true},
+    {k: 'value never worn', v: money(t.idle_value), s: 'no recorded wear', alert: true},
     {k: 'never worn', v: t.never_worn + ' / ' + t.garments, s: 'no recorded wear',
      alert: true},
     {k: 'median cost per wear', v: t.median_cpw != null ? money(t.median_cpw) : '—',
@@ -288,24 +370,26 @@ fetch('/api/insights').then(r => r.json()).then(d => {
     label: c.category, value: c.value, max: spendMax,
     text: money(c.value), tipLabel: c.count + ' garments · ' + c.category}));
 
-  columns($('#dist'), $('#distlabs'), d.distribution, {
-    valueOf: i => i.count, textOf: i => i.count, labelOf: i => i.label,
-    alertOf: i => i.wears === 0,
-    tipOf: i => i.count + ' garments · ' + i.label});
+  unitChart($('#units'), $('#unitkey'), d.units);
+
+  // meter: fill and track are steps of one ramp
+  $('#mfill').style.width = t.idle_share + '%';
+  $('#mleft').textContent = money(t.idle_value) + ' never worn · ' + t.idle_share + '%';
+  $('#mright').textContent = money(t.value) + ' closet';
 
   columns($('#years'), $('#yearlabs'), d.timeline, {
     valueOf: i => i.value, textOf: i => money(i.value), labelOf: i => i.year,
     tipOf: i => i.count + ' garments bought in ' + i.year});
 
-  listRows($('#bestcpw'), d.best_cpw, {
-    nameOf: r => r.name, midOf: r => r.wears + (r.wears === 1 ? ' wear' : ' wears')
-      + ' · ' + money(r.price),
-    bigOf: r => money(r.cpw) + ' / wear',
-    tipOf: r => r.id});
+  picCards($('#bestcpw'), d.best_cpw, {
+    nameOf: r => r.name, bigOf: r => money(r.cpw) + ' / wear',
+    subOf: r => r.wears + (r.wears === 1 ? ' wear' : ' wears') + ' · ' + money(r.price),
+    tipOf: r => r.name});
 
-  listRows($('#idletop'), d.idle_top, {
-    nameOf: r => r.name, midOf: r => r.category + (r.bought ? ' · ' + r.bought : ''),
-    bigOf: r => money(r.price), tipOf: r => r.id + ' · never worn'});
+  picCards($('#idletop'), d.idle_top, {
+    alert: true, nameOf: r => r.name, bigOf: r => money(r.price),
+    subOf: r => 'never worn · ' + r.category,
+    tipOf: r => r.name + ' · never worn'});
 
   // Table view — every value above is reachable without hovering anything.
   const cols = ['garment', 'category', 'price', 'wears', 'cost / wear', 'bought'];
