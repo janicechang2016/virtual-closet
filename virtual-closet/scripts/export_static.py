@@ -20,7 +20,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import closet_server
 
 # sourcing.html stays out: its scan/save routes need the live local server
-APP_FILES = ["carousel.html", "index.html", "app.js", "style.css", "entrance-bg.jpg"]
+APP_FILES = ["carousel.html", "index.html", "app.js", "nav.js", "style.css",
+             "entrance-bg.jpg"]
 
 
 def asset_urls(node, found):

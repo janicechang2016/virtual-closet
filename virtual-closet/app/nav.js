@@ -1,0 +1,191 @@
+/* Shared navigation — a hamburger that rolls open top-to-bottom and resolves
+   its labels out of noise.
+   -------------------------------------------------------------------------
+   Why one file: the page links were duplicated inline across five pages, and
+   every new page meant editing all of them. This is injected, so a new route is
+   one line here.
+
+   The reveal is the ASCII entrance run backwards. The entrance dispels glyphs
+   under a DECAYING envelope with noise-clustered per-glyph delays
+   (`0.5 + 0.5*sin(x*0.011 + y*0.017)`); this resolves them under a SETTLING one,
+   delays clustered by row so the menu materialises roughly downward while
+   individual characters still land out of order. Same monospace face, same
+   black-on-white, so it reads as the same hand.
+
+   Respects `body.demo`: routes that need the local server are omitted from the
+   static export, exactly as the inline links were. */
+(function () {
+  'use strict';
+
+  var ROUTES = [
+    { href: '/',             label: 'Archive' },
+    { href: '/fitting-room', label: 'Fitting room' },
+    { href: '/stylist',      label: 'Stylist',  local: true },
+    { href: '/insights',     label: 'Insights', local: true },
+    { href: '/sourcing',     label: 'Sourcing', local: true }
+  ];
+
+  // Glyph pool: the menu's own letters plus technical punctuation, the same
+  // trick the entrance uses (it scrambles with the passage it is drawing).
+  var POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/·—+=<>[]{}|0123456789'.split('');
+  var SETTLE = 620;   // ms for one label to resolve once it starts
+  var ROW_STEP = 90;  // ms between rows — the downward roll
+  var JITTER = 220;   // ms of per-character disorder inside a label
+
+  function css() {
+    return [
+      '#navburger{position:fixed;top:12px;right:14px;z-index:120;width:34px;height:34px;',
+      '  border:1px solid #000;background:#fff;cursor:pointer;padding:0;display:flex;',
+      '  flex-direction:column;align-items:center;justify-content:center;gap:4px;}',
+      '#navburger span{display:block;width:16px;height:1px;background:#000;',
+      '  transition:transform .28s ease,opacity .2s ease;}',
+      '#navburger.open span:nth-child(1){transform:translateY(5px) rotate(45deg);}',
+      '#navburger.open span:nth-child(2){opacity:0;}',
+      '#navburger.open span:nth-child(3){transform:translateY(-5px) rotate(-45deg);}',
+      '#navsheet{position:fixed;inset:0;z-index:110;background:#fff;',
+      // the roll: revealed top-to-bottom, not faded in
+      '  clip-path:inset(0 0 100% 0);transition:clip-path .52s cubic-bezier(.22,.61,.36,1);',
+      '  pointer-events:none;display:flex;align-items:center;justify-content:center;}',
+      '#navsheet.open{clip-path:inset(0 0 0 0);pointer-events:auto;}',
+      '#navsheet ul{list-style:none;margin:0;padding:0;text-align:center;}',
+      '#navsheet li{margin:0 0 18px;}',
+      '#navsheet a{display:inline-block;text-decoration:none;color:#000;',
+      "  font:400 26px/1.2 'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;",
+      '  letter-spacing:.06em;text-transform:uppercase;white-space:pre;}',
+      '#navsheet a:hover{background:linear-gradient(180deg,#f6f7f9,#e9ebef 55%,#dee1e6);}',
+      // keyboard focus stays visible but in the brand's ink, not the browser blue
+      '#navsheet a:focus-visible{outline:1px solid #000;outline-offset:5px;}',
+      '#navsheet a:focus:not(:focus-visible){outline:none;}',
+      '#navburger:focus-visible{outline:1px solid #000;outline-offset:3px;}',
+      '#navsheet a[aria-current="page"]{text-decoration:underline;text-underline-offset:6px;}',
+      '#navsheet .rule{width:38px;height:1px;background:#000;margin:0 auto 26px;}',
+      '@media (max-width:760px){#navsheet a{font-size:19px;}}',
+      '@media (prefers-reduced-motion:reduce){',
+      '  #navsheet{transition:none;}}'
+    ].join('');
+  }
+
+  function build() {
+    if (document.getElementById('navburger')) return;
+
+    var style = document.createElement('style');
+    style.textContent = css();
+    document.head.appendChild(style);
+
+    var burger = document.createElement('button');
+    burger.id = 'navburger';
+    burger.setAttribute('aria-label', 'Menu');
+    burger.setAttribute('aria-expanded', 'false');
+    for (var i = 0; i < 3; i++) burger.appendChild(document.createElement('span'));
+
+    var sheet = document.createElement('div');
+    sheet.id = 'navsheet';
+    sheet.setAttribute('role', 'dialog');
+    sheet.setAttribute('aria-modal', 'true');
+    sheet.hidden = false;
+
+    var demo = document.body.classList.contains('demo');
+    var here = location.pathname.replace(/\/$/, '') || '/';
+
+    var wrap = document.createElement('div');
+    var rule = document.createElement('div'); rule.className = 'rule';
+    var ul = document.createElement('ul');
+    ROUTES.forEach(function (r) {
+      if (demo && r.local) return;               // needs the local server
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = r.href;
+      a.dataset.text = r.label;
+      a.textContent = r.label;                    // untrusted-safe, and the
+                                                  // no-JS/reduced-motion state
+      if ((r.href.replace(/\/$/, '') || '/') === here) a.setAttribute('aria-current', 'page');
+      li.appendChild(a); ul.appendChild(li);
+    });
+    wrap.appendChild(rule); wrap.appendChild(ul);
+    sheet.appendChild(wrap);
+
+    document.body.appendChild(sheet);
+    document.body.appendChild(burger);
+
+    var open = false, raf = null;
+
+    function scramble() {
+      var links = [].slice.call(sheet.querySelectorAll('a'));
+      var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduced) {                              // resolve immediately
+        links.forEach(function (a) { a.textContent = a.dataset.text; });
+        return;
+      }
+      var start = performance.now();
+      var plan = links.map(function (a, row) {
+        var text = a.dataset.text;
+        return {
+          el: a,
+          text: text,
+          // Row sets the downward roll; the sine gives the same clustered
+          // disorder the entrance uses, so characters do not land in reading
+          // order.
+          delays: text.split('').map(function (_, i) {
+            var cluster = 0.5 + 0.5 * Math.sin(i * 0.9 + row * 1.7);
+            return row * ROW_STEP + cluster * JITTER + Math.random() * JITTER;
+          })
+        };
+      });
+
+      cancelAnimationFrame(raf);
+      (function tick(now) {
+        var t = now - start, done = true;
+        plan.forEach(function (p) {
+          var out = '';
+          for (var i = 0; i < p.text.length; i++) {
+            var ch = p.text[i];
+            if (ch === ' ') { out += ' '; continue; }
+            var e = t - p.delays[i];
+            if (e >= SETTLE) { out += ch; continue; }
+            done = false;
+            if (e < 0) { out += ' '; continue; }
+            // settle: the closer to resolved, the likelier the true glyph
+            out += (Math.random() < e / SETTLE) ? ch
+                 : POOL[(Math.random() * POOL.length) | 0];
+          }
+          p.el.textContent = out;
+        });
+        if (!done) raf = requestAnimationFrame(tick);
+      })(performance.now());
+    }
+
+    function setOpen(v) {
+      open = v;
+      sheet.classList.toggle('open', v);
+      burger.classList.toggle('open', v);
+      burger.setAttribute('aria-expanded', String(v));
+      document.documentElement.style.overflow = v ? 'hidden' : '';
+      if (v) {
+        // let the roll get underway before the labels resolve
+        setTimeout(scramble, 160);
+        var first = sheet.querySelector('a');
+        if (first) setTimeout(function () { first.focus(); }, 220);
+      } else {
+        cancelAnimationFrame(raf);
+        [].forEach.call(sheet.querySelectorAll('a'), function (a) {
+          a.textContent = a.dataset.text;
+        });
+        burger.focus();
+      }
+    }
+
+    burger.addEventListener('click', function () { setOpen(!open); });
+    sheet.addEventListener('click', function (e) {
+      if (e.target === sheet || e.target === wrap) setOpen(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && open) setOpen(false);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', build);
+  } else {
+    build();
+  }
+})();
