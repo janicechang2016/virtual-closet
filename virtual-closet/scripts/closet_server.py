@@ -17,6 +17,8 @@ Serves the app UI, repo assets, and a small JSON API:
   POST /api/source/save   {picks, slug} -> write picks into garments/raw/
   GET  /api/source/staged        -> files staged in garments/raw/
   POST /api/source/discard{name} -> move a staged file to garments/raw/_discarded/
+  GET  /galaxy                   constellation view (Track E) — nodes + edges ($0)
+  GET  /api/galaxy               the graph behind it
   GET  /insights                 sustainability / cost-per-wear dashboard ($0)
   GET  /api/insights             the numbers behind it
   GET  /stylist                  the stylist UI ($0, no generation)
@@ -475,6 +477,119 @@ def _judged_signatures():
     return set(stylist_current().keys())
 
 
+def galaxy_data(potential_per_node=3):
+    """Track E graph. $0, offline, no new tables (v2 plan E.7).
+
+    Nodes are garments; colour is the MEASURED garment colour, which is the whole
+    point — it exposes the real palette rather than a decorative one.
+
+    Two edge kinds, per E.2:
+      worn      co-occurrence in her published looks — a real combination
+      potential the constraint engine says these CAN pair — unexplored
+
+    Potential edges are capped per node. Unfiltered, every top pairs with every
+    bottom and shoe: ~520 edges across 58 nodes, which is the hairball the plan's
+    own anti-pattern guard (E.5) warns about. Showing each garment's few best
+    unexplored partners keeps the encoding decision-driving.
+    """
+    if not SNAPSHOT.exists():
+        return {"error": "no closet snapshot - run server/scripts/dump_closet.py"}
+    if str(ENGINE_DIR) not in sys.path:
+        sys.path.insert(0, str(ENGINE_DIR))
+    from engine import gaps, preference
+
+    data = json.loads(SNAPSHOT.read_text())
+    garments = data["garments"]
+    by_id = {g["id"]: g for g in garments}
+    looks = [o for o in data["outfits"] if o.get("source") == "manual"]
+    names = _garment_names()
+
+    wears = {}
+    for lk in looks:
+        for gid in (lk.get("garment_ids") or []):
+            wears[gid] = wears.get(gid, 0) + 1
+
+    def hexcol(g):
+        cols = g.get("colors") or []
+        if not cols:
+            return "#888888"
+        r, gr, b = cols[0].get("rgb") or [136, 136, 136]
+        return "#%02x%02x%02x" % (int(r), int(gr), int(b))
+
+    nodes = []
+    for g in garments:
+        cols = g.get("colors") or []
+        nodes.append({
+            "id": g["id"],
+            "name": names.get(g["id"], g["id"]),
+            "category": g.get("category"),
+            "subcategory": g.get("subcategory"),
+            "hex": hexcol(g),
+            "lab": (cols[0]["lab"] if cols else [50, 0, 0]),
+            "wears": wears.get(g["id"], 0),
+            "price": (g.get("purchase") or {}).get("price_usd"),
+            "img": _stylist_thumb(g["id"])[0],
+        })
+
+    # worn edges: co-occurrence inside a published look
+    worn = {}
+    for lk in looks:
+        ids = sorted(set(lk.get("garment_ids") or []))
+        for i in range(len(ids)):
+            for j in range(i + 1, len(ids)):
+                worn[(ids[i], ids[j])] = worn.get((ids[i], ids[j]), 0) + 1
+
+    # potential edges: best unexplored partners per garment, from the engine
+    aff = preference.affinity(garments, looks, [])
+    ranked = gaps.ranked_outfits(garments, affinity=aff)
+    best = {}
+    for o in ranked:
+        ids = sorted(set(o["garment_ids"]))
+        for i in range(len(ids)):
+            for j in range(i + 1, len(ids)):
+                key = (ids[i], ids[j])
+                if key in worn:
+                    continue
+                if o["score"] > best.get(key, 0):
+                    best[key] = o["score"]
+
+    keep = set()
+    per_node = {}
+    for key, sc in sorted(best.items(), key=lambda kv: -kv[1]):
+        a, b = key
+        if per_node.get(a, 0) >= potential_per_node or per_node.get(b, 0) >= potential_per_node:
+            continue
+        keep.add(key)
+        per_node[a] = per_node.get(a, 0) + 1
+        per_node[b] = per_node.get(b, 0) + 1
+
+    edges = ([{"a": a, "b": b, "kind": "worn", "weight": w} for (a, b), w in worn.items()]
+             + [{"a": a, "b": b, "kind": "potential",
+                 "weight": round(best[(a, b)], 3)} for (a, b) in keep])
+
+    degree = {}
+    for e in edges:
+        if e["kind"] == "worn":
+            degree[e["a"]] = degree.get(e["a"], 0) + 1
+            degree[e["b"]] = degree.get(e["b"], 0) + 1
+    for nd in nodes:
+        nd["worn_links"] = degree.get(nd["id"], 0)
+        nd["orphan"] = nd["wears"] == 0        # never in a published look
+
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "stats": {
+            "garments": len(nodes),
+            "orphans": sum(1 for n in nodes if n["orphan"]),
+            "worn_edges": len(worn),
+            "potential_edges": len(keep),
+            "looks": len(looks),
+            "dark_nodes": sum(1 for n in nodes if n["lab"][0] < 25),
+        },
+    }
+
+
 def insights_data():
     """Track C numbers. $0, offline, straight from the snapshot.
 
@@ -760,6 +875,10 @@ class Handler(SimpleHTTPRequestHandler):
             return self._file(ROOT / "app" / "insights.html")
         if url.path == "/api/insights":
             return self._json(insights_data())
+        if url.path == "/galaxy":
+            return self._file(ROOT / "app" / "galaxy.html")
+        if url.path == "/api/galaxy":
+            return self._json(galaxy_data())
         if url.path == "/api/feedback/history":
             q = parse_qs(url.query)
             try:
