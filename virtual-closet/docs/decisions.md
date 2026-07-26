@@ -24,10 +24,21 @@ chrome-silver wash already used by the index lens and stylist cards — same sig
 geometry. Traced through a real drag: frame 852×837 and image 738×738 constant at every
 phase.
 
+**Reported STILL shifting after both fixes.** The approach was wrong, not just incomplete:
+the frame sized itself to its contents, so every fix chased one more thing that could push
+the border — aspect ratio, hover scale, shadow weight, caption wrapping. Four causes, three
+rounds, and no guarantee a fifth did not exist.
+
+**The frame now has explicit dimensions** (`width: min(760px,100%)`, `height: min(78vh,860px)`,
+`flex: none`); the image fills what is left with `object-fit: contain`, and the caption
+reserves two lines. Content adapts to the border, never the reverse. Measured 760×860
+identically at 1440/1700/1999/2400px, across four caption strings, 14 garments, and every
+phase of a real drag.
+
 This is the third instance of the same standing rule ("appearing must never shift the
-centred mirror", 07-15): the mirror's geometry is fixed, and content adapts to it. The
-lesson that generalises — **an effect that is "just visual" still counts as movement if it
-changes apparent size.**
+centred mirror", 07-15). Two lessons worth keeping: **an effect that is "just visual" still
+counts as movement if it changes apparent size**, and **when a fix needs a third round,
+stop fixing causes and remove the degree of freedom.**
 
 **`production` deleted.** Vercel now builds from `main` (verified by pushing a commit to
 `main` alone and watching the live build stamp change to it). A branch named `production`

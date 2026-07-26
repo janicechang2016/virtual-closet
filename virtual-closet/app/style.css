@@ -97,10 +97,18 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 20px 24px;
 }
+/* THE MIRROR IS A FIXED RECTANGLE.
+   Previously the frame sized itself to its contents, so anything inside could
+   move the black border: image aspect (42 of 126 renders are not square), the
+   hover scale, the drop shadow's weight, caption line count. Fixing each cause
+   in turn kept missing one. The border now has explicit dimensions and the
+   CONTENT adapts to it — the only direction that is safe. */
 #stage-frame {
   border: 1px solid #000; padding: 34px 56px 16px;
   display: flex; flex-direction: column; align-items: center;
-  max-width: 100%;
+  width: min(760px, 100%);
+  height: min(78vh, 860px);
+  flex: none;                    /* never shrink to fit a flex parent */
 }
 /* The mirror is a CONSTANT box; every image letterboxes inside it.
    42 of the visible renders are not square (aspect 0.513–1.833) while the avatar
@@ -108,12 +116,11 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
    aspect, and dropping a garment visibly resized the frame. Same fix the spin
    viewer needed: lock the box, letterbox the frame. */
 #stage-img {
-  height: calc(78vh - 130px);
-  width: calc(78vh - 130px);          /* square, matching the avatar */
-  max-width: 100%;
+  flex: 1 1 auto; min-height: 0;      /* fills whatever the frame leaves */
+  width: 100%; height: 100%;
   object-fit: contain;                /* letterbox, never crop or stretch */
   display: block;
-  transition: opacity 0.35s ease, transform 0.25s ease, filter 0.25s ease;
+  transition: opacity 0.35s ease, filter 0.25s ease;
 }
 /* She notices the garment: light only, never scale. The 1.5% "breath" grew the
    image 738->749px mid-drag, which reads as the mirror changing size — the one
@@ -121,10 +128,15 @@ h2::after { content: ""; display: block; height: 1px; background: #000; margin-t
    geometric cost. */
 #stage-frame.drop-hot #stage-img { filter: brightness(1.06); }
 #stage-img.loading { opacity: 0.25; }
+/* Two lines reserved, always. A caption that wraps differently would otherwise
+   change the frame's height — the same footprint discipline the feedback bar
+   has carried since 07-15. */
 #stage-caption {
   text-align: center; margin-top: 20px; padding-top: 10px;
-  border-top: 1px solid #000; align-self: stretch;
-  font-size: 9px; letter-spacing: 0.22em;
+  border-top: 1px solid #000; align-self: stretch; flex: none;
+  height: 3.9em; display: flex; align-items: center; justify-content: center;
+  font-size: 9px; letter-spacing: 0.22em; line-height: 1.45;
+  overflow: hidden;
 }
 #feedback-bar {
   margin-top: 12px; display: flex; gap: 5px; align-items: center;
@@ -341,7 +353,7 @@ body.demo #cost-meter, body.demo .dot-cost { display: none !important; }
   #garment-grid { max-height: none; overflow: visible; }
   #rack-preview { display: none; }  /* hover preview is meaningless on touch */
   #stage-frame { max-width: 100%; }
-  #stage-img { height: 62vh; width: 62vh; max-width: 100%; }
+  #stage-frame { width: 100%; height: 74vh; }
   header { flex-wrap: wrap; gap: 6px 10px; }
   .strip-left, .strip-right { font-size: 9px; }
 }
