@@ -1,5 +1,36 @@
 # Decision log
 
+## 2026-07-25 — `/stylist` v1 shipped (Track B), local-only, $0
+
+**Decision (user):** first UI is the stylist, run **local-only**. Shipping it publicly would
+put `APP_SECRET` in a public page, and that secret is what stands between the internet and
+the fal budget — the exact guarantee the 07-25 hosted-Postgres reversal was granted on. A
+Vercel serverless proxy holding the secret is the upgrade path when it earns it.
+
+**Built:** `/stylist` route in `closet_server.py` + `app/stylist.html`. Reads
+`server/scripts/closet_snapshot.json`, ranks with `engine.preference` (affinity), filters
+with `engine.constraints`. Six suggestions + one wildcard. No generation, no LLM, no network.
+
+**Three design calls worth keeping:**
+1. **Diversity is enforced.** Pure ranking returned six variations of one favourite top,
+   because affinity is a property of garments and the best garment wins every slot. A
+   garment now cannot repeat until the pool is exhausted.
+2. **The wildcard is deliberate.** Affinity ranks what she already wears, so the 23 unworn
+   garments sit at neutral and lose forever — a filter bubble, and directly against Track C.
+   One suggestion per load is the best outfit built around something never worn.
+3. **Rejections ask which garment was wrong.** This is the fix for the attribution problem
+   that made her calibration rejections *lower* prediction quality. Verified: blaming the
+   loafers dropped them to 0.286 while the jeans in the same rejected outfit rose to 0.867.
+
+**Occasion is an optional filter, not the primary input** — her occasion data is 12 "day
+out" against 3 work / 1 dinner / 1 event / 1 home, so anything else is too thin to ground a
+suggestion. Falls back to the full history when an occasion has fewer than 4 looks.
+
+**Glassmorphism, honestly:** applied to the card info panel per the 07-25 re-homing, with
+the flat-lay running behind it so it has a backdrop. It is still barely perceptible — the
+same white-void problem that got it thrown off the archive. Kept because it is restrained
+and SYVE-consistent, but it is doing very little work and dropping it would cost nothing.
+
 ## 2026-07-25 — Ranking calibrated: colour theory is chance, preference is learned
 
 **Method:** blind set of 42 outfits — her 18 published looks (the control) mixed with 24

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>the archive — stylist</title>
+<style>
+  /* SYVE: white void, 1px black hairlines, uppercase Helvetica, italic wordmark.
+     Glass appears ONLY on the card's info panel, over the flat-lay imagery —
+     that is the one place it has a backdrop to work against, and translucency
+     there reads as "suggestion, not yet committed" (decisions.md 2026-07-25).
+     The archive itself stays glass-free by design. */
+  :root { --line:#000; --bg:#fff; --dim:#8a8a8a; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:#000;
+    font:13px/1.45 Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  .up { text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+
+  header { position:sticky; top:0; z-index:20; background:var(--bg);
+    border-bottom:1px solid var(--line); padding:16px 24px;
+    display:flex; align-items:baseline; gap:22px; flex-wrap:wrap; }
+  .wordmark { font-style:italic; font-size:17px; }
+  nav { display:flex; gap:16px; }
+  nav a { color:var(--dim); }
+  nav a:hover { color:#000; }
+  .spacer { flex:1; }
+  select, button { font:inherit; background:var(--bg); border:1px solid var(--line);
+    border-radius:0; cursor:pointer; }
+  select { font-size:11px; padding:7px 10px; }
+  button { text-transform:uppercase; letter-spacing:.14em; font-size:10px; padding:9px 16px; }
+  button.primary { background:#000; color:#fff; }
+  button:hover { opacity:.72; }
+
+  .strip { padding:12px 24px; border-bottom:1px solid var(--line);
+    color:var(--dim); display:flex; gap:20px; flex-wrap:wrap; align-items:center; }
+
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); }
+  .card { border-right:1px solid var(--line); border-bottom:1px solid var(--line);
+    display:flex; flex-direction:column; min-height:470px; position:relative; }
+  .card.gone { opacity:.35; }
+
+  /* The flat-lay deliberately runs BEHIND the panel: glass with nothing behind
+     it is just a white box. The overlap is what makes the translucency read. */
+  .flat { position:relative; flex:1; display:flex; align-items:flex-start;
+    justify-content:center; gap:10px; padding:22px 18px 30px; overflow:hidden; }
+  .flat .it { flex:1; display:flex; align-items:center; justify-content:center; }
+  .flat img { max-height:290px; max-width:100%; object-fit:contain; }
+
+  /* the glass */
+  .panel { position:absolute; left:14px; right:14px; bottom:14px; padding:12px 14px;
+    background:rgba(255,255,255,.42); backdrop-filter:blur(16px) saturate(1.5);
+    -webkit-backdrop-filter:blur(16px) saturate(1.5);
+    border:1px solid rgba(0,0,0,.6); }
+  .panel .items { display:flex; flex-direction:column; gap:2px; }
+  .panel .items span { font-size:11px; }
+  .panel .meta { color:var(--dim); margin-top:6px; }
+
+  .acts { display:flex; border-top:1px solid var(--line); }
+  .acts button { flex:1; border:0; border-right:1px solid var(--line); padding:13px 0; }
+  .acts button:last-child { border-right:0; }
+
+  .blame { border-top:1px solid var(--line); padding:14px; display:none; }
+  .card.asking .blame { display:block; }
+  .blame .q { color:var(--dim); margin-bottom:9px; }
+  .blame .opts { display:flex; }
+  .blame .opts button { flex:1; border:1px solid var(--line); margin-right:-1px;
+    padding:9px 4px; letter-spacing:.08em; }
+
+  .tag { position:absolute; top:0; left:0; background:#000; color:#fff;
+    padding:6px 12px; z-index:2; }
+  .done { padding:14px; color:var(--dim); border-top:1px solid var(--line); }
+  footer { padding:30px 24px 70px; color:var(--dim); font-size:11px; max-width:70ch; }
+</style></head>
+<body>
+<header>
+  <span class="wordmark">the archive.</span>
+  <nav class="up">
+    <a href="/">Archive</a><a href="/fitting-room">Fitting room</a><a href="/sourcing">Sourcing</a>
+  </nav>
+  <span class="up" style="color:var(--dim)">Stylist</span>
+  <span class="spacer"></span>
+  <label class="up" style="color:var(--dim)">Occasion
+    <select id="occ">
+      <option value="">any</option>
+      <option>work</option><option>dinner</option><option>day out</option>
+      <option>event / formal</option><option>travel</option><option>home / lounge</option>
+    </select>
+  </label>
+  <button id="again" class="primary">suggest again</button>
+</header>
+
+<div class="strip up" id="strip">loading…</div>
+<div class="grid" id="grid"></div>
+
+<footer>
+  Ranked by learned preference from the looks you publish — not by colour theory,
+  which measured no better than chance against your own judgement. Telling a card
+  <b>not this</b> asks which piece was wrong: an unattributed rejection can't be
+  assigned blame and would penalise the garments that were fine. Nothing here spends
+  anything; suggestions are your existing cutouts, not renders.
+</footer>
+
+<script>
+const grid = document.getElementById('grid');
+const strip = document.getElementById('strip');
+const occ = document.getElementById('occ');
+let DATA = null;
+
+const nameOf = g => (g.subcategory || g.category || g.id);
+
+function cardHTML(o, i, wild) {
+  const items = o.garments.map(g => `
+    <div class="it">${g.img ? `<img src="${g.img}" alt="" loading="lazy">` : ''}</div>`).join('');
+  const rows = o.garments.map(g =>
+    `<span>${nameOf(g)}${g.unworn ? ' · never worn' : ''}</span>`).join('');
+  const blame = o.garments.map(g =>
+    `<button data-blame="${g.id}" data-i="${i}">${nameOf(g)}</button>`).join('');
+  return `
+  <div class="card" id="card-${i}" data-wild="${wild ? 1 : 0}">
+    ${wild ? '<span class="tag up">wildcard · never worn</span>' : ''}
+    <div class="flat">
+      ${items}
+      <div class="panel">
+        <div class="items">${rows}</div>
+        <div class="meta up">${o.notes && o.notes.length ? o.notes.join(' · ') : 'no flags'}</div>
+      </div>
+    </div>
+    <div class="acts">
+      <button data-yes="${i}">wear this</button>
+      <button data-no="${i}">not this</button>
+    </div>
+    <div class="blame">
+      <div class="q up">which piece was wrong?</div>
+      <div class="opts">${blame}</div>
+    </div>
+  </div>`;
+}
+
+async function load() {
+  strip.textContent = 'loading…';
+  const r = await fetch('/api/stylist/suggest?occasion=' + encodeURIComponent(occ.value) + '&n=6');
+  DATA = await r.json();
+  if (DATA.error) { strip.textContent = DATA.error; grid.innerHTML = ''; return; }
+  const all = DATA.suggestions.slice();
+  if (DATA.wildcard) all.push(DATA.wildcard);
+  grid.innerHTML = all.map((o, i) => cardHTML(o, i, !!o.wildcard)).join('');
+  strip.textContent =
+    `${DATA.suggestions.length} suggestions · learned from ${DATA.prior_looks} published looks · `
+    + `${DATA.feedback_count} judgements recorded`;
+}
+
+async function send(i, verdict, blame) {
+  const all = DATA.suggestions.concat(DATA.wildcard ? [DATA.wildcard] : []);
+  const o = all[i];
+  await fetch('/api/stylist/feedback', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ids: o.garment_ids, verdict, blame,
+                          occasion: occ.value, wildcard: !!o.wildcard})
+  }).then(r => r.json()).then(j => {
+    strip.textContent = strip.textContent.replace(/\d+ judgements/, j.count + ' judgements');
+  });
+  const card = document.getElementById('card-' + i);
+  card.classList.remove('asking');
+  card.classList.add('gone');
+  card.querySelector('.acts').outerHTML =
+    `<div class="done up">${verdict === 'yes' ? 'saved as worn' : 'noted' + (blame ? ' · ' + blame : '')}</div>`;
+}
+
+grid.addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if (b.dataset.yes !== undefined) return send(+b.dataset.yes, 'yes', null);
+  if (b.dataset.no !== undefined) {
+    document.getElementById('card-' + b.dataset.no).classList.add('asking');
+    return;
+  }
+  if (b.dataset.blame) return send(+b.dataset.i, 'no', b.dataset.blame);
+});
+
+occ.addEventListener('change', load);
+document.getElementById('again').addEventListener('click', load);
+load();
+</script>
+</body></html>

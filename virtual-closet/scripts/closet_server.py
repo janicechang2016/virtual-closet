@@ -14,6 +14,9 @@ Serves the app UI, repo assets, and a small JSON API:
   POST /api/source/save   {picks, slug} -> write picks into garments/raw/
   GET  /api/source/staged        -> files staged in garments/raw/
   POST /api/source/discard{name} -> move a staged file to garments/raw/_discarded/
+  GET  /stylist                  the stylist UI ($0, no generation)
+  GET  /api/stylist/suggest      ?occasion=&n=  ranked outfits + one wildcard
+  POST /api/stylist/feedback     {ids, verdict, blame} -> logs/stylist_feedback.jsonl
 
 The /sourcing page is the UI over the /api/source/* routes (scan needs the
 `requests` package; everything else stays stdlib).
@@ -210,6 +213,144 @@ def source_staged():
                        "url": f"/assets/garments/raw/{p.name}"} for p in files]}
 
 
+
+# ---------------------------------------------------------------------------
+# Stylist (Track B, v1). $0: no generation, no LLM, no network.
+#
+# Ranking is learned per-garment affinity, NOT colour harmony. Measured on 24
+# outfits the model had never seen, colour scored AUC 0.491 (chance) while
+# affinity from her published looks scored 0.824. Colour rides along as a
+# tiebreak only.
+#
+# Negative feedback is used ONLY when attributed to a garment. An outfit-level
+# "no" cannot be assigned blame, and including such rejections measurably made
+# prediction worse (0.583) by penalising garments that were fine.
+# ---------------------------------------------------------------------------
+ENGINE_DIR = ROOT.parent / "server"
+SNAPSHOT = ENGINE_DIR / "scripts" / "closet_snapshot.json"
+STYLIST_LOG = ROOT / "logs" / "stylist_feedback.jsonl"
+
+
+def _engine():
+    if str(ENGINE_DIR) not in sys.path:
+        sys.path.insert(0, str(ENGINE_DIR))
+    from engine import gaps, preference  # noqa: E402
+    return gaps, preference
+
+
+def stylist_feedback():
+    """Verdicts from disk, shaped for engine.preference.
+
+    A "yes" credits every garment in the outfit. A "no" penalises only the
+    garment she blamed; an unattributed "no" is dropped rather than smeared.
+    """
+    out = []
+    if not STYLIST_LOG.exists():
+        return out
+    for line in STYLIST_LOG.read_text().splitlines():
+        if not line.strip():
+            continue
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if e.get("verdict") == "yes":
+            out.append(({"ids": e.get("ids") or []}, "yes"))
+        elif e.get("verdict") == "no" and e.get("blame"):
+            out.append(({"ids": [e["blame"]]}, "no"))
+    return out
+
+
+def _stylist_thumb(gid):
+    """Cutout for a garment, as an /assets/ URL. Falls back to the raw photo."""
+    clean = ROOT / "garments" / gid / "clean"
+    if clean.is_dir():
+        files = sorted(f.name for f in clean.iterdir() if f.is_file())
+        pick = ([f for f in files if "_dragcut" in f]
+                or [f for f in files if "_extracted" in f] or files)
+        if pick:
+            return "/assets/garments/%s/clean/%s" % (gid, pick[0])
+    raw = ROOT / "garments" / gid / "raw"
+    if raw.is_dir():
+        files = sorted(f.name for f in raw.iterdir()
+                       if f.is_file() and not f.name.startswith("."))
+        if files:
+            return "/assets/garments/%s/raw/%s" % (gid, files[0])
+    return ""
+
+
+def stylist_suggest(occasion="", n=6):
+    if not SNAPSHOT.exists():
+        return {"error": "no closet snapshot - run server/scripts/dump_closet.py"}
+    gaps, preference = _engine()
+    data = json.loads(SNAPSHOT.read_text())
+    garments, looks = data["garments"], data["outfits"]
+    by_id = {g["id"]: g for g in garments}
+
+    published = [o for o in looks if o.get("source") == "manual"]
+    if occasion:
+        matching = [o for o in published
+                    if (o.get("context") or {}).get("occasion") == occasion]
+        # Fall back to the whole history rather than to nothing: outside "day out"
+        # there are only a handful of looks per occasion, and an affinity built on
+        # one look is noise.
+        prior = matching if len(matching) >= 4 else published
+    else:
+        prior = published
+
+    aff = preference.affinity(garments, prior, stylist_feedback())
+    ranked = gaps.ranked_outfits(garments, affinity=aff)
+
+    worn = set()
+    for o in published:
+        worn.update(o.get("garment_ids") or [])
+
+    # Diversify. Pure ranking returns six variations of one favourite top,
+    # because affinity is a property of garments and the best garment wins every
+    # slot. A suggestion list has to show different clothes, not different shoes.
+    picks, used = [], {}
+    for max_repeat in (1, 2, 3):
+        for o in ranked:
+            if len(picks) >= n:
+                break
+            if any(used.get(g, 0) >= max_repeat for g in o["garment_ids"]):
+                continue
+            picks.append(o)
+            for g in o["garment_ids"]:
+                used[g] = used.get(g, 0) + 1
+        if len(picks) >= n:
+            break
+
+    # Wildcard: the best outfit built around something she has never worn.
+    # Affinity alone would never surface these - unworn garments sit at neutral
+    # and lose to her favourites forever, which makes the stylist a mirror.
+    wildcard = None
+    for o in ranked:
+        if any(g not in worn for g in o["garment_ids"]):
+            wildcard = dict(o, wildcard=True)
+            break
+
+    def decorate(o):
+        out = dict(o)
+        out["garments"] = [{
+            "id": gid,
+            "category": by_id[gid].get("category"),
+            "subcategory": by_id[gid].get("subcategory"),
+            "affinity": round(aff.get(gid, 0.5), 3),
+            "unworn": gid not in worn,
+            "img": _stylist_thumb(gid),
+        } for gid in o["garment_ids"]]
+        return out
+
+    return {
+        "occasion": occasion,
+        "prior_looks": len(prior),
+        "suggestions": [decorate(o) for o in picks],
+        "wildcard": decorate(wildcard) if wildcard else None,
+        "feedback_count": len(stylist_feedback()),
+    }
+
+
 class Handler(SimpleHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass  # keep the terminal quiet
@@ -243,6 +384,15 @@ class Handler(SimpleHTTPRequestHandler):
             return self._file(ROOT / "app" / "index.html")
         if url.path == "/sourcing":
             return self._file(ROOT / "app" / "sourcing.html")
+        if url.path == "/stylist":
+            return self._file(ROOT / "app" / "stylist.html")
+        if url.path == "/api/stylist/suggest":
+            q = parse_qs(url.query)
+            try:
+                n = max(1, min(12, int(q.get("n", ["6"])[0])))
+            except ValueError:
+                n = 6
+            return self._json(stylist_suggest(q.get("occasion", [""])[0], n))
         if url.path == "/api/source/img":
             try:
                 item = SCAN["items"][int(parse_qs(url.query).get("i", ["-1"])[0])]
@@ -287,6 +437,19 @@ class Handler(SimpleHTTPRequestHandler):
         url = urlparse(self.path)
         length = int(self.headers.get("Content-Length", 0))
         data = json.loads(self.rfile.read(length) or b"{}")
+        if url.path == "/api/stylist/feedback":
+            entry = {
+                "ts": datetime.now(timezone.utc).isoformat(),
+                "ids": data.get("ids") or [],
+                "verdict": data.get("verdict"),
+                "blame": data.get("blame") or None,
+                "occasion": data.get("occasion") or "",
+                "wildcard": bool(data.get("wildcard")),
+            }
+            STYLIST_LOG.parent.mkdir(exist_ok=True)
+            with STYLIST_LOG.open("a") as f:
+                f.write(json.dumps(entry) + "\n")
+            return self._json({"ok": True, "count": len(stylist_feedback())})
         if url.path == "/api/feedback":
             entry = {
                 "ts": datetime.now(timezone.utc).isoformat(),

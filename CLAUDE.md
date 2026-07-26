@@ -92,6 +92,21 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   `ENABLE_GENERATION=1` for live spending). Single-item try-on, multi-item outfit compose,
   feedback→corrective-edit loop, clear-to-base, look save/publish/delete
   (`/api/looks`, `/api/looks/delete`, `/api/publish`) — all working from the UI.
+- **`/stylist` — stylist UI (07-25, Track B v1, $0):** ranked outfit suggestions over
+  `server/engine`, served by `closet_server.py` from `server/scripts/closet_snapshot.json`
+  (refresh with `server/scripts/dump_closet.py`). **Ranking is learned per-garment affinity,
+  NOT colour harmony** — measured blind on 24 unseen outfits, colour scored AUC 0.491
+  (chance), affinity from her published looks 0.824. Suggestions are flat-lays of existing
+  cutouts; nothing renders, nothing spends. Six diversified picks (a garment may not repeat
+  until the pool is exhausted, or every card is one favourite top) plus one **wildcard**
+  built around a never-worn garment — affinity alone would make the stylist a mirror and
+  never surface the 23 unworn pieces. Feedback: "wear this" credits every garment; "not
+  this" asks **which piece was wrong** and penalises only that one — an unattributed
+  rejection cannot be assigned blame and measurably made prediction worse. Writes
+  `logs/stylist_feedback.jsonl`; `server/scripts/sync_stylist_feedback.py` carries it into
+  Postgres `interaction_log` (blamed garment in `reason_code`). **Local-only by design:**
+  putting `APP_SECRET` in a public page would undo the auth guardrail the hosted-Postgres
+  reversal depends on. Hidden in the static demo (`body.demo`) like Sourcing.
 - **`/sourcing` — photo-sourcing UI (07-15):** SYVE-styled third page over
   `ingest_fetch.py` (imported as a module; the only route needing `requests`).
   Paste a product URL → `/api/source/scan` ranks candidates (bytes held in
