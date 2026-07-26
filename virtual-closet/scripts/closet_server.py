@@ -371,9 +371,14 @@ def _draw_scale(meta, category):
             return 0.46
         if has("midi"):
             return 0.76
+        # Trousers are matched BEFORE the length words: "floor-skimming wide-leg
+        # trousers" is a trouser, not a column skirt, and the two hang
+        # differently in a flat-lay.
+        if has("trouser", "pant", "jean", "slack"):
+            return 0.88
         if has("maxi", "column", "floor"):
-            return 0.98
-        return 0.88                      # trousers, jeans, pants
+            return 0.86  # a floor-length skirt still must not tower over its top
+        return 0.84
     # tops
     if has("vest", "cami", "tank", "bralette"):
         return 0.52
