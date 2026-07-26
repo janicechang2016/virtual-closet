@@ -175,6 +175,7 @@ const grid = document.getElementById('grid');
 const strip = document.getElementById('strip');
 const occ = document.getElementById('occ');
 let DATA = null;
+let SHOWN = [];
 
 const nameOf = g => (g.name || g.subcategory || g.category || g.id);
 
@@ -208,14 +209,21 @@ function cardHTML(o, i, wild) {
   </div>`;
 }
 
-async function load() {
-  strip.textContent = 'loading…';
-  const r = await fetch('/api/stylist/suggest?occasion=' + encodeURIComponent(occ.value) + '&n=6');
-  DATA = await r.json();
-  if (DATA.error) { strip.textContent = DATA.error; grid.innerHTML = ''; return; }
-  const all = DATA.suggestions.slice();
-  if (DATA.wildcard) all.push(DATA.wildcard);
-  grid.innerHTML = all.map((o, i) => cardHTML(o, i, !!o.wildcard)).join('');
+// How many cards fit on one row right now. The grid is auto-fill, so this is a
+// property of the window, not a number we can hard-code: 4 columns at ~1400px,
+// 3 at ~1100px, 5 on a wide monitor.
+function columns() {
+  const t = getComputedStyle(grid).gridTemplateColumns;
+  return Math.max(1, t.split(' ').filter(Boolean).length);
+}
+
+function render() {
+  if (!DATA) return;
+  // Exactly one row: the wildcard takes the last slot, suggestions fill the rest.
+  const n = Math.max(1, columns() - (DATA.wildcard ? 1 : 0));
+  SHOWN = DATA.suggestions.slice(0, n);
+  if (DATA.wildcard) SHOWN.push(DATA.wildcard);
+  grid.innerHTML = SHOWN.map((o, i) => cardHTML(o, i, !!o.wildcard)).join('');
   const st = DATA.state || {};
   document.getElementById('state').innerHTML = [
     ['garments', st.garments], ['published looks', st.looks],
@@ -224,13 +232,28 @@ async function load() {
   ].filter(([, v]) => v !== null && v !== undefined)
    .map(([k, v]) => `<span>${k} <b>${v}</b></span>`).join('');
   strip.textContent =
-    `${DATA.suggestions.length} suggestions · learned from ${DATA.prior_looks} published looks · `
-    + `${DATA.feedback_count} judgements recorded`;
+    `${SHOWN.length - (DATA.wildcard ? 1 : 0)} suggestions + wildcard · learned from `
+    + `${DATA.prior_looks} published looks · ${DATA.feedback_count} judgements recorded`;
 }
 
+async function load() {
+  strip.textContent = 'loading…';
+  // Over-fetch a little and slice to the row width, so a window resize re-lays
+  // out without asking the server for a different set of clothes.
+  const r = await fetch('/api/stylist/suggest?occasion=' + encodeURIComponent(occ.value) + '&n=8');
+  DATA = await r.json();
+  if (DATA.error) { strip.textContent = DATA.error; grid.innerHTML = ''; return; }
+  render();
+}
+
+let resizeTimer;
+addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (DATA) render(); }, 150);
+});
+
 async function send(i, verdict, blame) {
-  const all = DATA.suggestions.concat(DATA.wildcard ? [DATA.wildcard] : []);
-  const o = all[i];
+  const o = SHOWN[i];
   await fetch('/api/stylist/feedback', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ids: o.garment_ids, verdict, blame,
@@ -271,7 +294,7 @@ function reopen(i) {
 }
 
 function allItems() {
-  return DATA.suggestions.concat(DATA.wildcard ? [DATA.wildcard] : []);
+  return SHOWN;
 }
 
 grid.addEventListener('click', e => {

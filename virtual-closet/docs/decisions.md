@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-07-26 — Suggestions fill exactly one row
+
+**Her question: why 7?** No reason — `n=6` was an arbitrary default with the wildcard added
+on top. Nothing was reasoned about it.
+
+**Fixed 5 would not have worked either.** The grid is `auto-fill`, so the column count is a
+property of the window (4 at ~1400px, 3 at ~1120px, 5 on a wide monitor) and any hard-coded
+number wraps at some width. The count now follows the columns, with the wildcard taking the
+last slot: 3 suggestions + wildcard at her width, 2 + wildcard when narrow. The client
+over-fetches 8 and slices, so a resize re-lays out without asking the server for a different
+set of clothes.
+
 ## 2026-07-26 — Flat-lay sizing is a fixed unit, not a percentage
 
 Garment sizes were percentages of the card's height, so the hero — which is taller —

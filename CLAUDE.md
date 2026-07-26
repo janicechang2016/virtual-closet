@@ -104,8 +104,11 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   (refresh with `server/scripts/dump_closet.py`). **Ranking is learned per-garment affinity,
   NOT colour harmony** — measured blind on 24 unseen outfits, colour scored AUC 0.491
   (chance), affinity from her published looks 0.824. Suggestions are flat-lays of existing
-  cutouts; nothing renders, nothing spends. Six diversified picks (a garment may not repeat
-  until the pool is exhausted, or every card is one favourite top) plus one **wildcard**
+  cutouts; nothing renders, nothing spends. Fills exactly ONE ROW — the count follows the grid's
+  column count (4 at ~1400px, 3 at ~1120px), since auto-fill makes that a property of the
+  window rather than a number to hard-code; the wildcard takes the last slot. Picks are
+  diversified (a garment may not repeat until the pool is exhausted, or every card is one
+  favourite top), plus one **wildcard**
   built around a never-worn garment — affinity alone would make the stylist a mirror and
   never surface the 23 unworn pieces. Feedback: "wear this" credits every garment; "not
   this" asks **which piece was wrong** and penalises only that one — an unattributed
