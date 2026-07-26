@@ -1,5 +1,19 @@
 # Decision log
 
+## 2026-07-26 — Flat-lay sizing is a fixed unit, not a percentage
+
+Garment sizes were percentages of the card's height, so the hero — which is taller —
+inflated everything inside it: the same tank rendered small in a grid card and enormous in
+the lead. Sizes are now a fixed `--u` (230px; 290px in the hero), with per-category
+multipliers off it, so proportion is identical everywhere and the lead steps up by a bounded
+amount. Shoes raised to 0.34u (they read too small), tops down to 0.56u. Card heights
+tightened to suit the corrected art.
+
+**Priority note (her question, agreed):** explore mode and pairwise compatibility are NOT
+priorities. Both are reasonable ideas recorded for later; chasing them now would be
+optimising a metric rather than serving the work. Revisit only if suggestions start feeling
+stale in real use.
+
 ## 2026-07-26 — Rejections are COLLECTED but not applied (measured, twice)
 
 **Question:** after 77 stylist judgements — all 42 rejections attributed to a garment —

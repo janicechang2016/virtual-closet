@@ -40,7 +40,7 @@
 
   .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); }
   .card { border-right:1px solid var(--line); border-bottom:1px solid var(--line);
-    display:flex; flex-direction:column; min-height:470px; position:relative; }
+    display:flex; flex-direction:column; min-height:392px; position:relative; }
   .card.gone { opacity:.35; }
 
   /* Hierarchy: the lead suggestion is the page's subject, the rest recede —
@@ -49,8 +49,10 @@
     .grid { grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
     /* Wider, not taller. Spanning rows let the flat area grow unbounded and
        pushed the panel and actions off the card entirely. */
-    .card.hero { grid-column:span 2; min-height:560px; }
-    .card.hero .flat { padding:34px 40px 40px; gap:26px; }
+    .card.hero { grid-column:span 2; min-height:466px; }
+    /* The lead is bigger, but by a bounded step — not by however tall the card
+       happens to grow. */
+    .card.hero .flat { padding:34px 40px 40px; gap:26px; --u:290px; }
     .card.hero .why { font-size:16px; }
     .card.hero .panel { left:22px; right:22px; bottom:18px; }
   }
@@ -71,18 +73,21 @@
   .flat .it[data-c="bottom"]     { flex:2.1; }
   .flat .it[data-c="top"]        { flex:1.8; }
   .flat .it[data-c="shoes"]      { flex:1.0; align-self:flex-end; }
-  .flat .it[data-c="dress"] img     { max-height:100%; }
-  .flat .it[data-c="outerwear"] img { max-height:92%; }
-  .flat .it[data-c="bottom"] img    { max-height:88%; }
-  .flat .it[data-c="top"] img       { max-height:62%; }
-  .flat .it[data-c="shoes"] img     { max-height:26%; }
+  /* Sizes are a fixed unit, NOT a percentage of the card. Percentages meant the
+     hero — which is taller — inflated everything inside it, so the same tank
+     rendered small in a grid card and enormous in the lead. */
+  .flat { --u:230px; }
+  .flat .it[data-c="dress"] img     { max-height:calc(var(--u) * 1.00); }
+  .flat .it[data-c="outerwear"] img { max-height:calc(var(--u) * 0.92); }
+  .flat .it[data-c="bottom"] img    { max-height:calc(var(--u) * 0.86); }
+  .flat .it[data-c="top"] img       { max-height:calc(var(--u) * 0.56); }
+  .flat .it[data-c="shoes"] img     { max-height:calc(var(--u) * 0.34); }
   /* Seven garments have no usable cutout. Rather than pretend, they are framed
      as reference photographs at a fixed size — a deliberate second register,
      the same distinction dragcut makes between silhouettes and framed cards. */
   .flat .it.framed { align-self:flex-start; }
-  .flat .it.framed img { max-height:46% !important; border:1px solid rgba(0,0,0,.22);
-    padding:0; background:#fff; }
-  .card.hero .flat .it.framed img { max-height:52% !important; }
+  .flat .it.framed img { max-height:calc(var(--u) * 0.60) !important;
+    border:1px solid rgba(0,0,0,.22); background:#fff; }
 
   /* the glass */
   .panel { position:absolute; left:14px; right:14px; bottom:14px; padding:12px 14px;

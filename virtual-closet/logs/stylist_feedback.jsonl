@@ -71,3 +71,10 @@
 {"ts": "2026-07-26T03:54:38.608307+00:00", "ids": ["17-coucou-slip-dress", "49-jil-sander-boots"], "verdict": "no", "blame": "49-jil-sander-boots", "occasion": "", "wildcard": true}
 {"ts": "2026-07-26T03:54:40.359023+00:00", "ids": ["19-coucou-white-scoop-tank", "32-personal-language-skirt", "53-keen-sandals"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
 {"ts": "2026-07-26T03:54:43.616737+00:00", "ids": ["24-issey-silver-tank", "10-coucou-black-midi-skirt", "56-mizuno-sneakers"], "verdict": "no", "blame": "56-mizuno-sneakers", "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T04:29:41.847927+00:00", "ids": ["24-issey-silver-tank", "26-liniss-dune-pants", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T04:29:42.575838+00:00", "ids": ["30-off-shoulder-top", "10-coucou-black-midi-skirt", "58-vortex-long-boots"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T04:29:47.414912+00:00", "ids": ["34-realisation-allegra-dress", "50-yello-heels"], "verdict": "no", "blame": "50-yello-heels", "occasion": "", "wildcard": true}
+{"ts": "2026-07-26T04:29:59.601824+00:00", "ids": ["12-coucou-black-scoop-tank", "32-personal-language-skirt", "50-yello-heels"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T04:30:09.631142+00:00", "ids": ["25-kotn-samira-tank", "27-liniss-pants", "49-jil-sander-boots"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T04:30:14.625356+00:00", "ids": ["31-orseund-iris-top", "15-coucou-mini-skirt", "55-asics-sneakers"], "verdict": "no", "blame": "55-asics-sneakers", "occasion": "", "wildcard": false}
+{"ts": "2026-07-26T04:30:19.309927+00:00", "ids": ["19-coucou-white-scoop-tank", "02-jeans", "53-keen-sandals"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
