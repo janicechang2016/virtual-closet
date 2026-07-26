@@ -187,9 +187,20 @@ hashing files against every branch.
     drawn in SCREEN space after the world transform, so it keeps its weight at any zoom.
   - **The field never rests** (~25px drift/3s); hover slows it to a crawl (motion 0.14) but
     never stops. Load-in mirrors the hamburger glyph resolve.
-  - **Reeded glass is a standing right-hand column, and really refracts** — the region behind
-    is snapshotted and redrawn as 21 ribs each sampling a wider slice. Possible only because
-    we own the canvas pixels. The never-worn box and detail card layer on top of it.
+  - **Reeded glass is a standing right-hand column, and really refracts** — 21 ribs each
+    sampling a wider slice and squeezing it, the magnify-and-displace behaviour of real
+    fluted glass. Possible only because we own the canvas pixels. The never-worn box and
+    detail card layer on top of it.
+  - **The glass runs as a real fragment shader (07-26)** on a second stacked canvas that
+    takes the field canvas as a texture — ported from Brik's "Refractive Glass Studio" by
+    Raquel Gómez Arango, raw WebGL rather than its React/Three.js (one quad, one shader; the
+    page stays single-file and offline-capable). It adds mouse-proximity refraction, an idle
+    orbit, and a rib-profile knob. **Chromatic aberration ships at 0**: the dithered dot
+    nodes are single-pixel high frequency, so separating channels yields rainbow speckle, not
+    edge fringing — and colour is exactly what this page's palette rule excludes. It is on a
+    slider so the call stays hers. `drawReededGlass()` remains the no-WebGL fallback.
+  - **Do not screenshot this page with `--virtual-time-budget`** — it starves the rAF load-in
+    reveal and you will capture an empty field. Drive it over CDP on a real clock.
   - Cybercore comes from processing artifacts (dither, refraction, HUD), NOT colour — both
     supplied references were monochrome. Palette unchanged.
   - Worn edges from look co-occurrence; could-pair edges from the constraint engine capped at
@@ -351,11 +362,11 @@ actually look at the PNG.
   porting the maths; the shader route would give real chromatic aberration the 2D version
   cannot. Keep an attribution comment if used.
 
-- **PHONE LAYOUT FIXED 07-26, NOT DEPLOYED.** Both public pages (archive carousel +
-  fitting room) had no media queries at all and broke at 390px — overlapping HUD panels,
-  ~39px flanking figures, a mirror squeezed to a 50px strip. Fixed on `2d-reboot` and
-  verified at a true 390px viewport. **`main` is untouched, so the live site is still
-  broken** — merging + redeploying is Janice's call.
+- **PHONE LAYOUT FIXED AND DEPLOYED 07-26.** Both public pages (archive carousel + fitting
+  room) had no media queries at all and broke at 390px — overlapping HUD panels, ~39px
+  flanking figures, a mirror squeezed to a 50px strip. Fixed and verified at a true 390px
+  viewport. The fix is on `main` and live: the build stamp at `/api/manifest` reports the
+  deployed commit, and the media queries are present in it.
 
 - **2D reboot handoff (2026-07-24):** this branch intentionally resumes from
   the approved pre-360 UI snapshot. The complete tracked 360/avatar-v4

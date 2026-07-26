@@ -1,5 +1,44 @@
 # Decision log
 
+## 2026-07-26 — Glass moves to a real shader; chromatic aberration ships OFF
+
+**Decision (user):** build the WebGL layer, from the Brik "Refractive Glass Studio" source
+(Raquel Gómez Arango) she supplied. Attribution comment kept in `galaxy.html`.
+
+**Two departures from the reference, both deliberate.** It is a React component importing
+Three.js from a CDN; this is one fullscreen quad and one shader, so it is raw WebGL — the
+page stays single-file and still works offline, which a CDN import would have ended. And its
+refraction is a plain sideways displacement (`sin(uv.x * ribs)`), where **ours magnifies** —
+each rib samples a wider slice and squeezes it, which is what a cylindrical lens actually
+does. The 2D version already had the better physics; only the substrate changed.
+
+**What the shader genuinely buys** is per-channel sampling — chromatic aberration, which
+Canvas 2D cannot do in one pass, plus a mouse-proximity falloff, an idle orbit, and a
+sine→square rib-profile knob.
+
+**And measured, chromatic aberration is wrong for this page.** The nodes are Bayer-dithered
+dot fields — single-pixel high frequency — so offsetting the channels does not fringe an
+edge the way it does on the reference's smooth photograph. It decorrelates the dots into
+saturated rainbow speckle, which puts colour into a page whose rule from earlier the same
+day is that **cybercore comes from processing artifacts and the palette stays Ink / paper /
+oxblood / amber**. Corroborating: the reference preset she saved had `chromatic_aberration: 0`
+and `rib_sharpness: 0` — the two shader-only features were already switched off in the
+version she liked.
+
+So it ships at **0**, exposed on a slider (`Refraction` / `Aberration`, beside Spread and
+Line weight) so the call is hers. Refraction 50 = the 2D version's `MAGNIFY` of 1.5, so the
+default look is unchanged.
+
+**`drawReededGlass()` stays as the fallback** and takes over whenever WebGL is unavailable,
+with the two glass sliders removing themselves so nothing sits there dead. Verified both
+paths, plus: no frame-rate cost (both pin at the rAF cap; the per-frame canvas→texture
+upload is not a bottleneck), and `prefers-reduced-motion` freezes the orbit and the grain.
+
+**Testing note worth keeping:** `--virtual-time-budget` starves this page's rAF-driven
+load-in, so headless `--screenshot` always catches it mid-resolve and the field looks empty.
+Drive it over CDP on a real clock instead (`--remote-allow-origins=*`). Serving a copy of
+`galaxy.html` from a different path also breaks it — the node images resolve relative.
+
 ## 2026-07-26 — Galaxy: cybercore via processing artifacts, not colour
 
 Two references supplied (Refractive Glass Studio; Vision Boundary Engine). **The decisive

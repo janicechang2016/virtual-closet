@@ -33,7 +33,10 @@
   header .mono { color:var(--dim); }
 
   #stage { position:fixed; inset:0; }
-  canvas { display:block; width:100%; height:100%; cursor:grab; }
+  /* two stacked canvases: the field, then the glass layer that refracts it */
+  #stage canvas { position:absolute; inset:0; display:block;
+    width:100%; height:100%; cursor:grab; }
+  #glass { pointer-events:none; }
   canvas.grabbing { cursor:grabbing; }
 
   /* controls — instrumentation, per the tokens */
@@ -102,7 +105,7 @@
   <span class="mono" id="stats"></span>
 </header>
 
-<div id="stage"><canvas id="c"></canvas></div>
+<div id="stage"><canvas id="c"></canvas><canvas id="glass"></canvas></div>
 
 <div id="legend" class="mono">
   <div><i style="border-color:rgba(245,243,239,.55)"></i> worn together</div>
@@ -115,6 +118,10 @@
     <input id="spread" type="range" min="60" max="300" value="150"></div>
   <div class="ctl mono"><label for="lines">Line weight</label>
     <input id="lines" type="range" min="0" max="100" value="60"></div>
+  <div class="ctl mono glassctl"><label for="refract">Refraction</label>
+    <input id="refract" type="range" min="0" max="100" value="50"></div>
+  <div class="ctl mono glassctl"><label for="aberr">Aberration</label>
+    <input id="aberr" type="range" min="0" max="100" value="0"></div>
   <div class="chips mono" id="chips"></div>
 </div>
 
@@ -361,7 +368,7 @@ function draw(now) {
   const target = hover || selected;
   if (target && revealOf(target, now) >= 1) drawHUD(target);
 
-  drawReededGlass();
+  if (!GLASS_GL) drawReededGlass();   // the WebGL layer draws over us instead
 }
 
 // ── reeded glass ───────────────────────────────────────────────────────────
@@ -450,6 +457,209 @@ function drawReededGlass() {
   ctx.lineTo(b.left, b.top + h - .5); ctx.stroke();
   ctx.restore();
 }
+
+// ── reeded glass, WebGL ────────────────────────────────────────────────────
+// A second stacked canvas running a real fragment shader over the field canvas
+// as a texture. Structure ported from Brik's "Refractive Glass Studio" by
+// Raquel Gómez Arango (source supplied 2026-07-26): the rib profile knob, the
+// mouse-proximity falloff, the idle orbit and the frosting hash are all hers.
+//
+// Two deliberate departures from that reference:
+//   1. No Three.js. This is one fullscreen quad and one shader; raw WebGL keeps
+//      the page single-file and working offline, which a CDN import would not.
+//   2. It displaces the sample sideways by sin(x). We MAGNIFY instead — each rib
+//      samples a WIDER slice and squeezes it into the rib — which is what a
+//      cylindrical lens actually does, and was already the 2D version's model.
+//
+// What the shader buys that Canvas 2D genuinely could not: per-channel sampling,
+// so the ribs carry real chromatic aberration where their curvature turns.
+// drawReededGlass() above stays as the fallback when WebGL is unavailable.
+const GLASS_VS = `
+attribute vec2 aPos;
+varying vec2 vUv;
+void main() {
+  // uv.y measured from the TOP, so it lines up with both the canvas texture
+  // (uploaded unflipped) and the page's own screen coordinates
+  vUv = vec2((aPos.x + 1.0) * 0.5, (1.0 - aPos.y) * 0.5);
+  gl_Position = vec4(aPos, 0.0, 1.0);
+}`;
+
+const GLASS_FS = `
+precision highp float;
+uniform sampler2D uTex;
+uniform vec2  uRes;
+uniform vec4  uRect;    // x0, y0, x1, y1 in 0..1, y from top
+uniform vec2  uMouse;   // 0..1, y from top
+uniform float uRibs, uSharp, uMagnify, uCA, uFrost, uTint, uHover, uTime;
+varying vec2 vUv;
+
+const vec3 INK   = vec3(0.055, 0.055, 0.063);
+const vec3 PAPER = vec3(0.961, 0.953, 0.937);
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+
+void main() {
+  vec2 uv = vUv;
+
+  float mask = smoothstep(uRect.x, uRect.x + 0.0015, uv.x)
+             * smoothstep(uRect.z, uRect.z - 0.0015, uv.x)
+             * step(uRect.y, uv.y) * step(uv.y, uRect.w);
+  if (mask <= 0.0) { gl_FragColor = vec4(0.0); return; }
+
+  float gw = uRect.z - uRect.x;
+  float gx = (uv.x - uRect.x) / gw;
+
+  // position across one rib, -1 at its leading edge to +1 at its trailing edge
+  float dn = fract(gx * uRibs) * 2.0 - 1.0;
+  dn = sign(dn) * pow(abs(dn), 1.0 - uSharp);   // sine -> square, the reference's knob
+
+  // refraction intensifies near the cursor (reference: hover_intensity)
+  float aspect = uRes.x / uRes.y;
+  float d = distance(uv * vec2(aspect, 1.0), uMouse * vec2(aspect, 1.0));
+  float hoverK = smoothstep(0.42, 0.0, d) * (uHover - 1.0) + 1.0;
+
+  // cylindrical lens: sample a wider slice, squeeze it into the rib
+  float disp = (gw / uRibs) * dn * 0.5 * (uMagnify - 1.0) * hoverK;
+  // fringing is strongest where the curvature turns, zero at the rib's centre
+  float ca = uCA * dn * hoverK;
+
+  vec3 col = vec3(
+    texture2D(uTex, uv + vec2(disp + ca, 0.0)).r,
+    texture2D(uTex, uv + vec2(disp,      0.0)).g,
+    texture2D(uTex, uv + vec2(disp - ca, 0.0)).b
+  );
+
+  col = mix(col, INK, uTint);
+  col += PAPER * max(0.0, -dn) * 0.075;          // bright edge where it turns
+  col = mix(col, INK, max(0.0, dn) * 0.20);      // shadow where it leaves
+  col += (hash(uv * uRes + uTime) - 0.35) * uFrost;
+
+  // specular rim: light catches the leading edge, shadow falls to the far one
+  col = mix(col, PAPER, smoothstep(0.0018, 0.0, abs(uv.x - uRect.x)) * 0.34);
+  col = mix(col, PAPER, smoothstep(0.0012, 0.0, abs(uv.x - uRect.z)) * 0.10);
+
+  gl_FragColor = vec4(col, mask);
+}`;
+
+const GLASS_GL = (() => {
+  const cg = document.getElementById('glass');
+  let gl = null;
+  try {
+    gl = cg.getContext('webgl', { alpha: true, premultipliedAlpha: false, antialias: false })
+      || cg.getContext('experimental-webgl', { alpha: true, premultipliedAlpha: false });
+  } catch (e) { /* falls back to the 2D glass */ }
+  if (!gl) return null;
+
+  function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.warn('glass shader:', gl.getShaderInfoLog(s)); return null;
+    }
+    return s;
+  }
+  const vs = compile(gl.VERTEX_SHADER, GLASS_VS), fs = compile(gl.FRAGMENT_SHADER, GLASS_FS);
+  if (!vs || !fs) return null;
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    console.warn('glass link:', gl.getProgramInfoLog(prog)); return null;
+  }
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'aPos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  // NPOT texture: clamp + linear, no mipmaps (WebGL1 requirement)
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+
+  const U = {};
+  for (const n of ['uTex','uRes','uRect','uMouse','uRibs','uSharp','uMagnify',
+                   'uCA','uFrost','uTint','uHover','uTime']) {
+    U[n] = gl.getUniformLocation(prog, n);
+  }
+
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // the cursor drives the refraction; when it has been still a moment the glass
+  // takes over and breathes on its own (reference: auto_hover), because on this
+  // page nothing is allowed to rest
+  const M = { x: 0.9, y: 0.5, moved: -1e9, auto: 1 };
+  addEventListener('pointermove', e => {
+    M.x = e.clientX / innerWidth; M.y = e.clientY / innerHeight;
+    M.moved = performance.now();
+  }, { passive: true });
+
+  // Aberration DEFAULTS OFF, and the reference's own saved preset had it at 0 too.
+  // Measured here: it is the one thing Canvas 2D could not do, but the nodes are
+  // Bayer-dithered dot fields — single-pixel high frequency — so separating the
+  // channels does not fringe an edge, it decorrelates the dots into saturated
+  // rainbow speckle. That puts colour into a page whose rule (decisions.md 07-26)
+  // is that cybercore comes from processing artifacts and the palette stays Ink/
+  // paper/oxblood/amber. The slider is there so the call is hers, not mine.
+  let magnify = 1.5, aberration = 0.0;
+
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    cg.width = Math.round(innerWidth * dpr);
+    cg.height = Math.round(innerHeight * dpr);
+    gl.viewport(0, 0, cg.width, cg.height);
+  }
+
+  function render(now) {
+    const b = glassRect();
+    if (b.width < 4 || b.height < 4) { gl.clear(gl.COLOR_BUFFER_BIT); return; }
+
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, cv);
+
+    const x0 = b.left / innerWidth, x1 = (b.left + b.width) / innerWidth;
+
+    let mx = M.x, my = M.y;
+    if (REDUCED) { mx = (x0 + x1) / 2; my = 0.5; }
+    else {
+      // ~14s orbit, slow enough to sit beside the field's own drift
+      const a = now / 1000 * 0.45;
+      const ox = (x0 + x1) / 2 + Math.cos(a) * (x1 - x0) * 0.5;
+      const oy = 0.5 + Math.sin(a * 0.7) * 0.34;
+      M.auto += (((now - M.moved > 1600) ? 1 : 0) - M.auto) * 0.03;
+      mx = mx + (ox - mx) * M.auto; my = my + (oy - my) * M.auto;
+    }
+
+    gl.uniform1i(U.uTex, 0);
+    gl.uniform2f(U.uRes, innerWidth, innerHeight);
+    gl.uniform4f(U.uRect, x0, 0, x1, 1);
+    gl.uniform2f(U.uMouse, mx, my);
+    gl.uniform1f(U.uRibs, RIBS);
+    gl.uniform1f(U.uSharp, 0.0);
+    gl.uniform1f(U.uMagnify, magnify);
+    gl.uniform1f(U.uCA, aberration);
+    gl.uniform1f(U.uFrost, FROST);
+    gl.uniform1f(U.uTint, 0.20);
+    gl.uniform1f(U.uHover, REDUCED ? 1.0 : 3.0);
+    // quantised so the frosting reads as film grain rather than 60fps static
+    gl.uniform1f(U.uTime, REDUCED ? 5 : Math.floor(now / 125));
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  resize();
+  addEventListener('resize', resize);   // its own listener: the page's resize()
+  return {                              // runs before this IIFE has evaluated
+    resize, render,
+    setMagnify: v => { magnify = v; },
+    setAberration: v => { aberration = v; }
+  };
+})();
 
 function drawHUD(n) {
   const r = radius(n) * VIEW.k + 7;
@@ -594,6 +804,7 @@ function tick(now) {
   if (settle > 0) { settle--; step(); }
   else { drift(); step(); }
   draw(now);
+  if (GLASS_GL) GLASS_GL.render(now);   // strictly after the field is complete
   requestAnimationFrame(tick);
 }
 
@@ -682,5 +893,18 @@ document.getElementById('spread').addEventListener('input', e => {
 document.getElementById('lines').addEventListener('input', e => {
   lineAlpha = +e.target.value / 60;
 });
+
+// glass instrumentation — only meaningful with the shader layer, so the rows
+// leave with it rather than sitting there dead
+if (GLASS_GL) {
+  document.getElementById('refract').addEventListener('input', e => {
+    GLASS_GL.setMagnify(1 + (+e.target.value / 100));      // 50 = the 2D version's 1.5
+  });
+  document.getElementById('aberr').addEventListener('input', e => {
+    GLASS_GL.setAberration(+e.target.value / 100 * 0.0045); // ~5px separation at full
+  });
+} else {
+  for (const el of document.querySelectorAll('.glassctl')) el.remove();
+}
 </script>
 </body></html>
