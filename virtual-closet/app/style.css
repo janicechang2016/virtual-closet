@@ -294,3 +294,37 @@ body.demo #cost-meter, body.demo .dot-cost { display: none !important; }
 .fb-undo { background: none; border: 1px solid currentColor; font: inherit;
   text-transform: uppercase; letter-spacing: .12em; font-size: 10px;
   padding: 4px 9px; cursor: pointer; }
+
+/* ── phones ────────────────────────────────────────────────────────────
+   The fitting room is a three-column desktop workspace (240px | 1fr | 344px).
+   At 390px that squeezed the mirror to a ~50px strip with the caption running
+   vertically, and clipped the racks off-screen. On a narrow screen the panels
+   stack instead, mirror first — it is the thing worth seeing.
+
+   Honest limitation: drag-to-dress is pointer-driven and does not work by
+   touch. Tapping a garment still equips it, which is the whole flow on a
+   phone. */
+@media (max-width: 760px) {
+  main {
+    display: flex;                  /* stack, do not squeeze */
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  /* Sections size to their content. The desktop layout pins the rail and racks
+     to a fixed-height column with their own scroll panes; stacked, that made the
+     outfit rail collapse to a single visible slot. */
+  main > section { flex: none; overflow: visible; min-height: 0; }
+  #outfit-panel, #closet-panel { display: block; }
+  #looks-index, #garment-grid { flex: none; max-height: none; overflow: visible; }
+  /* the mirror leads; the rail and racks follow it */
+  #stage { order: -1; border-bottom: 1px solid #000; }
+  #closet-panel { border-left: 0; border-top: 1px solid #000; }
+  #outfit-panel { border-top: 1px solid #000; }
+  /* the racks scroll the page on a phone rather than a nested pane */
+  #garment-grid { max-height: none; overflow: visible; }
+  #rack-preview { display: none; }  /* hover preview is meaningless on touch */
+  #stage-frame { max-width: 100%; }
+  #stage-img { max-height: 62vh; }
+  header { flex-wrap: wrap; gap: 6px 10px; }
+  .strip-left, .strip-right { font-size: 9px; }
+}

@@ -1,5 +1,35 @@
 # Decision log
 
+## 2026-07-26 — Phone layout fixed on the two public pages
+
+**The bug (found 2026-07-21 in a portfolio sweep, never recorded in the repo until now —
+it lived only in a memory note, which is why it sat for five days).** The live archive is
+linked from her portfolio, so this was the only open defect strangers could see.
+
+- **Archive carousel.** `#info` and `#controls` were fixed 350px panels pinned to opposite
+  corners — 724px of chrome in a 390px window, so they overlapped and clipped each other's
+  text. Slot geometry scaled a 1440px reference by `vw/REF_W`, rendering the flanking
+  figures ~39px wide: smudges, not garments. There were **no media queries at all**; the
+  page was built desktop-only.
+  Fixed: below 760px the HUD stacks full-width (caption above controls, cleared by 98px for
+  the two 40px control rows), and phones get their own slot geometry — hero at 70% of
+  viewport height, neighbours peeking in at the edges to show the procession continues,
+  ±2/±3 hidden. Verified at a true 390px viewport via CDP device emulation, not a resized
+  window: `#info`/`#controls` 10–380, `#cta` 224–367, nothing clipped. Desktop geometry is
+  untouched (regression-checked at 1440px).
+- **Fitting room.** Also public (`vercel.json` rewrites `/fitting-room`) and worse: the
+  three-column grid (240px | 1fr | 344px) squeezed the mirror to a ~50px strip with the
+  caption running vertically. Below 760px the panels stack, mirror first. Sections size to
+  content — the desktop layout pins them to a fixed-height column with nested scroll panes,
+  which collapsed the outfit rail to one visible slot when stacked.
+
+**Honest limitation, not papered over:** drag-to-dress is pointer-driven and does not work
+by touch. Tapping a garment still equips it, which is the whole flow on a phone. The rack
+hover-preview is hidden on narrow screens for the same reason.
+
+**Not deployed.** The fix is on `2d-reboot`; the live site builds from `main`, which stays
+untouched. Merging and redeploying is hers.
+
 ## 2026-07-26 — Stylist card hover reuses the index lens's chrome-silver
 
 Hovering a suggestion now applies the **same gradient the carousel's index lens uses**

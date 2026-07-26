@@ -111,6 +111,31 @@
   }
   #cta:disabled { opacity: 0.4; cursor: wait; }
 
+  /* ── phones ──────────────────────────────────────────────────────────
+     The HUD was two fixed 350px panels pinned to opposite corners: 724px of
+     chrome in a 390px window, so they overlapped and clipped each other. On a
+     narrow screen they stack full-width instead, controls under the caption. */
+  @media (max-width: 760px) {
+    #info, #controls {
+      left: 10px; right: 10px; width: auto;
+    }
+    #controls { bottom: 10px; }
+    /* clears the two 40px control rows sitting at bottom:10 */
+    #info { bottom: 98px; }
+    #info .desc { margin-top: 10px; }
+    #info-title { font-size: 11px; }
+    #info-desc { font-size: 10px; line-height: 1.4; }
+    nav { font-size: 10px; }
+    #nav-right { width: auto; }
+    #wordmark { font-size: 15px; top: 8px; }
+    #detail { padding: 16px; }
+  }
+  /* Very small phones: the caption is the first thing worth sacrificing —
+     the figure and the controls are what the page is for. */
+  @media (max-width: 400px) {
+    #info .desc { display: none; }
+  }
+
   /* hero detail state */
   #detail {
     position: fixed; inset: 0; z-index: 20;
@@ -266,6 +291,27 @@ function buildItems() {
 
 function buildSlots() {
   var vw = window.innerWidth, vh = window.innerHeight;
+
+  // Phones get their own geometry. Scaling the 1440px reference by vw/REF_W
+  // shrank the flanking figures to ~39px at 390px — legible as smudges, not
+  // garments. Here the hero carries the screen and the neighbours only peek in
+  // at the edges to show the procession continues.
+  if (vw < 760) {
+    var mH = vh * 0.70, mW = vw * 0.78;
+    var mCy = 44 + mH / 2;
+    var tH = mH * 0.34, tW = vw * 0.26;
+    SLOTS = {
+      '-3': { cx: -vw * 0.34, cy: mCy, w: tW, h: tH, opacity: 0,    z: 1 },
+      '-2': { cx: -vw * 0.12, cy: mCy, w: tW, h: tH, opacity: 0,    z: 2 },
+      '-1': { cx:  vw * 0.09, cy: mCy, w: tW, h: tH, opacity: 0.7,  z: 3 },
+       '0': { cx:  vw * 0.50, cy: mCy, w: mW, h: mH, opacity: 1,    z: 5 },
+       '1': { cx:  vw * 0.91, cy: mCy, w: tW, h: tH, opacity: 0.7,  z: 3 },
+       '2': { cx:  vw * 1.12, cy: mCy, w: tW, h: tH, opacity: 0,    z: 2 },
+       '3': { cx:  vw * 1.34, cy: mCy, w: tW, h: tH, opacity: 0,    z: 1 },
+    };
+    return;
+  }
+
   var sx = vw / REF_W, sy = vh / REF_H;
   var fullH = (835 - 40) * sy;
   var heroH = fullH * 0.85;          // 15% smaller than spec; same visual center

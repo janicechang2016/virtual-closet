@@ -276,6 +276,12 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
+- **PHONE LAYOUT FIXED 07-26, NOT DEPLOYED.** Both public pages (archive carousel +
+  fitting room) had no media queries at all and broke at 390px — overlapping HUD panels,
+  ~39px flanking figures, a mirror squeezed to a 50px strip. Fixed on `2d-reboot` and
+  verified at a true 390px viewport. **`main` is untouched, so the live site is still
+  broken** — merging + redeploying is Janice's call.
+
 - **2D reboot handoff (2026-07-24):** this branch intentionally resumes from
   the approved pre-360 UI snapshot. The complete tracked 360/avatar-v4
   exploration and its detailed context are preserved on
