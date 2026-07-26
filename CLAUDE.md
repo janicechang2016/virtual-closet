@@ -92,6 +92,13 @@ decisions in `virtual-closet/docs/decisions.md` (read it — it carries the stan
   `ENABLE_GENERATION=1` for live spending). Single-item try-on, multi-item outfit compose,
   feedback→corrective-edit loop, clear-to-base, look save/publish/delete
   (`/api/looks`, `/api/looks/delete`, `/api/publish`) — all working from the UI.
+  **Feedback is revisable (07-25):** the toast carries an `undo`, and a `log` button in the
+  bar opens a dialog of standing feedback for the current garment, each row undoable.
+  `logs/feedback.jsonl` stays APPEND-ONLY — a retraction is a tombstone naming the `ts` it
+  voids (`feedback_current()` resolves). Undo lives in the toast/dialog, never in the bar
+  itself, so the bar keeps its footprint and the centred mirror never shifts. **Undo
+  withdraws the RECORD only: a corrective render that already ran was billed and stays on
+  disk.** `GET /api/feedback/history`, `POST /api/feedback/retract {ts}`.
 - **`/stylist` — stylist UI (07-25, Track B v1, $0):** ranked outfit suggestions over
   `server/engine`, served by `closet_server.py` from `server/scripts/closet_snapshot.json`
   (refresh with `server/scripts/dump_closet.py`). **Ranking is learned per-garment affinity,

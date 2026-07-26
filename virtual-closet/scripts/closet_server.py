@@ -5,6 +5,9 @@ Serves the app UI, repo assets, and a small JSON API:
   GET  /api/manifest      garments + looks + avatar + spend
   GET  /api/prompt?g=     try-on prompt for a garment (copy-paste mode)
   POST /api/feedback      {render, button, note} -> logs/feedback.jsonl
+  POST /api/feedback/retract {ts} -> tombstone the entry (the LOG only; a paid
+                          corrective render that already ran is not undone)
+  GET  /api/feedback/history ?garment=&n= -> standing feedback, newest first
   POST /api/generate      REFUSED unless ENABLE_GENERATION=1 (credit guard)
   POST /api/looks         {title, items} -> save a draft look (free, looks.json)
   POST /api/looks/delete  {id} -> remove a look entry (render files stay on disk)
@@ -230,6 +233,40 @@ def source_staged():
 ENGINE_DIR = ROOT.parent / "server"
 SNAPSHOT = ENGINE_DIR / "scripts" / "closet_snapshot.json"
 STYLIST_LOG = ROOT / "logs" / "stylist_feedback.jsonl"
+FEEDBACK_LOG = ROOT / "logs" / "feedback.jsonl"
+
+
+def feedback_entries():
+    out = []
+    if not FEEDBACK_LOG.exists():
+        return out
+    for line in FEEDBACK_LOG.read_text().splitlines():
+        if not line.strip():
+            continue
+        try:
+            out.append(json.loads(line))
+        except ValueError:
+            continue
+    return out
+
+
+def feedback_current(garment=None, limit=None):
+    """Standing feedback, newest first, with retracted entries removed.
+
+    Append-only like the stylist log: a retraction is a tombstone naming the
+    timestamp it voids, never an edit to the original line.
+
+    NOTE: retracting only withdraws the RECORD. If the entry triggered a
+    corrective render, that render happened and was billed; nothing here can
+    unspend it, and the file stays on disk.
+    """
+    retracted = {e["retracts"] for e in feedback_entries() if e.get("retracts")}
+    rows = [e for e in feedback_entries()
+            if not e.get("retracts") and e.get("ts") not in retracted]
+    if garment:
+        rows = [e for e in rows if e.get("garment") == garment]
+    rows.sort(key=lambda e: e.get("ts") or "", reverse=True)
+    return rows[:limit] if limit else rows
 
 
 def _engine():
@@ -462,6 +499,14 @@ class Handler(SimpleHTTPRequestHandler):
             return self._file(ROOT / "app" / "sourcing.html")
         if url.path == "/stylist":
             return self._file(ROOT / "app" / "stylist.html")
+        if url.path == "/api/feedback/history":
+            q = parse_qs(url.query)
+            try:
+                n = max(1, min(50, int(q.get("n", ["12"])[0])))
+            except ValueError:
+                n = 12
+            return self._json({"history": feedback_current(
+                q.get("garment", [""])[0] or None, n)})
         if url.path == "/api/stylist/history":
             return self._json({"history": stylist_history()})
         if url.path == "/api/stylist/suggest":
@@ -538,6 +583,15 @@ class Handler(SimpleHTTPRequestHandler):
             with STYLIST_LOG.open("a") as f:
                 f.write(json.dumps(entry) + "\n")
             return self._json({"ok": True, "count": len(stylist_feedback())})
+        if url.path == "/api/feedback/retract":
+            ts = data.get("ts")
+            if not ts:
+                return self._json({"error": "no ts"}, 400)
+            entry = {"ts": datetime.now(timezone.utc).isoformat(), "retracts": ts}
+            FEEDBACK_LOG.parent.mkdir(exist_ok=True)
+            with FEEDBACK_LOG.open("a") as f:
+                f.write(json.dumps(entry) + "\n")
+            return self._json({"ok": True, "count": len(feedback_current())})
         if url.path == "/api/feedback":
             entry = {
                 "ts": datetime.now(timezone.utc).isoformat(),
@@ -546,10 +600,10 @@ class Handler(SimpleHTTPRequestHandler):
                 "button": data.get("button"),
                 "note": data.get("note", ""),
             }
-            fb = ROOT / "logs" / "feedback.jsonl"
-            with fb.open("a") as f:
+            FEEDBACK_LOG.parent.mkdir(exist_ok=True)
+            with FEEDBACK_LOG.open("a") as f:
                 f.write(json.dumps(entry) + "\n")
-            result = {"ok": True}
+            result = {"ok": True, "ts": entry["ts"]}
             # live mode: one tap = one targeted corrective edit (plan §Phase 4)
             if data.get("regenerate") and GENERATION_ENABLED and data.get("garment"):
                 try:

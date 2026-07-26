@@ -475,8 +475,12 @@ document.querySelectorAll(".fb").forEach((b) =>
       currentRender = j.render;
       $("#stage-img").src = j.render;
       $("#stage-caption").textContent = `${currentGarment.name} — corrected (${b.dataset.b})`;
+      if (j.ts) toast("correction billed — undo withdraws the note only",
+                      { label: "undo note", run: () => retractFeedback(j.ts) });
     } else {
       if (j.error) toast(j.error);
+      else if (j.ts) toast(`logged: ${b.dataset.b}`,
+                           { label: "undo", run: () => retractFeedback(j.ts) });
       else toast(`logged: ${b.dataset.b}`);
       if (live) $("#stage-caption").textContent = `${currentGarment.name}`;
     }
@@ -508,12 +512,57 @@ $("#render-outfit").addEventListener("click", async () => {
   }
 });
 
-function toast(msg) {
+function toast(msg, action) {
   const t = document.createElement("div");
   t.className = "toast";
   t.textContent = msg;
+  if (action) {
+    // Undo lives in the toast so the feedback bar keeps its footprint and the
+    // centred mirror never shifts (standing rule, 2026-07-15).
+    const b = document.createElement("button");
+    b.className = "toast-undo";
+    b.textContent = action.label;
+    b.addEventListener("click", () => { action.run(); t.remove(); });
+    t.appendChild(b);
+    setTimeout(() => t.remove(), 6000);
+  } else {
+    setTimeout(() => t.remove(), 2200);
+  }
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2200);
 }
+
+async function retractFeedback(ts) {
+  await fetch("/api/feedback/retract", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ts }),
+  });
+  toast("feedback withdrawn");
+  if ($("#fb-modal").open) renderFeedbackLog();
+}
+
+async function renderFeedbackLog() {
+  const g = currentGarment?.id;
+  const { history } = await (await fetch(
+    `/api/feedback/history?n=20${g ? `&garment=${encodeURIComponent(g)}` : ""}`)).json();
+  $("#fb-list").innerHTML = history.length
+    ? history.map((h) => `
+        <div class="fb-row">
+          <span class="fb-when">${(h.ts || "").slice(0, 16).replace("T", " ")}</span>
+          <span class="fb-what">${h.button}${h.garment ? ` · ${h.garment}` : ""}</span>
+          <span class="fb-note-txt">${(h.note || "").slice(0, 80)}</span>
+          <button class="fb-undo" data-ts="${h.ts}">undo</button>
+        </div>`).join("")
+    : `<p class="fb-note">nothing logged${g ? " for this garment" : ""} yet.</p>`;
+}
+
+$("#fb-log")?.addEventListener("click", () => {
+  renderFeedbackLog();
+  $("#fb-modal").showModal();
+});
+$("#fb-close")?.addEventListener("click", () => $("#fb-modal").close());
+$("#fb-list")?.addEventListener("click", (e) => {
+  const b = e.target.closest(".fb-undo");
+  if (b) retractFeedback(b.dataset.ts);
+});
 
 boot();

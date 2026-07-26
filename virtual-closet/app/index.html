@@ -47,6 +47,7 @@
       <button class="fb" data-b="face drifted">face drifted</button>
       <button class="fb" data-b="artifact">artifact</button>
       <button class="fb" data-b="pattern wrong">pattern wrong</button>
+      <button id="fb-log" class="fb fb-ghost" title="review and undo past feedback">log</button>
     </div>
   </section>
 
@@ -57,6 +58,14 @@
     <div id="rack-preview"><img id="rack-preview-img" alt=""></div>
   </section>
 </main>
+
+<dialog id="fb-modal">
+  <h3>Feedback log</h3>
+  <p class="fb-note">Undo withdraws the record only. A corrective render that already
+  ran was billed and stays on disk — that cannot be undone.</p>
+  <div id="fb-list"></div>
+  <menu><button id="fb-close">close</button></menu>
+</dialog>
 
 <dialog id="prompt-modal">
   <h3>Try-on prompt (copy mode)</h3>

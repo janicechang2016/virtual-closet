@@ -1,5 +1,24 @@
 # Decision log
 
+## 2026-07-25 — Feedback is revisable everywhere (stylist + fitting room)
+
+**Decision (user):** a judgement should never be final by accident. Applied first to the
+stylist, then to the fitting room's feedback bar on her request.
+
+**Pattern, both logs:** append-only. Re-judging appends a new verdict; undo appends a
+tombstone (`retracted` for stylist outfits, `{"retracts": ts}` for feedback). A resolver
+(`stylist_current()`, `feedback_current()`) takes newest-wins and only the surviving verdict
+reaches the model. Changing your mind must not erase what you first thought, and a
+retraction is itself a fact worth keeping.
+
+**Fitting room specifics:**
+- Undo lives in the **toast** and a **dialog**, never in the bar itself — the bar keeps its
+  footprint so the centred mirror never shifts (standing rule, 07-15). The hidden bar
+  already holds layout, so shown/hidden parity is structural.
+- **Undo withdraws the record only.** A corrective render that already ran was billed and
+  the file stays on disk; the UI says so plainly rather than implying the spend is reversed.
+- `body.demo` already hides the whole bar, so the static Vercel export is unaffected.
+
 ## 2026-07-25 — `/stylist` v1 shipped (Track B), local-only, $0
 
 **Decision (user):** first UI is the stylist, run **local-only**. Shipping it publicly would

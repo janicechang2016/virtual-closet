@@ -271,3 +271,26 @@ body.demo #feedback-bar { visibility: hidden !important; }
    spendable from the export anyway, so a frozen $/cap only invites questions
    (Janice 07-20). Local keeps it. */
 body.demo #cost-meter, body.demo .dot-cost { display: none !important; }
+
+/* Feedback log — undo lives in the toast and a dialog so the bar keeps its
+   footprint and the centred mirror never shifts (standing rule 2026-07-15). */
+.fb-ghost { opacity: .55; }
+.fb-ghost:hover { opacity: 1; }
+.toast-undo {
+  margin-left: 12px; background: none; border: 1px solid currentColor;
+  color: inherit; font: inherit; text-transform: uppercase;
+  letter-spacing: .12em; font-size: 10px; padding: 3px 8px; cursor: pointer;
+}
+#fb-modal { max-width: 640px; }
+#fb-modal h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase;
+  letter-spacing: .14em; }
+.fb-note { color: #8a8a8a; font-size: 11px; margin: 0 0 14px; }
+.fb-row { display: flex; align-items: baseline; gap: 12px; padding: 8px 0;
+  border-bottom: 1px solid rgba(0,0,0,.12); font-size: 12px; }
+.fb-row:last-child { border-bottom: 0; }
+.fb-when { color: #8a8a8a; font-size: 10px; white-space: nowrap; }
+.fb-what { white-space: nowrap; }
+.fb-note-txt { color: #8a8a8a; flex: 1; }
+.fb-undo { background: none; border: 1px solid currentColor; font: inherit;
+  text-transform: uppercase; letter-spacing: .12em; font-size: 10px;
+  padding: 4px 9px; cursor: pointer; }
