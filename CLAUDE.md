@@ -161,7 +161,10 @@ from — **do not merge**.
   never worn / idle value / judgements). **The text panel is a FIXED 104px** — it is
   bottom-anchored, so a longer item list used to push it upward and cards in a row ended up
   with visibly different text blocks. The black rationale holds 13px (it is the sentence
-  worth reading); only the grey block auto-fits, stepping down to as low as 6.5px. The 7 garments with no usable cutout are FRAMED as
+  worth reading); only the grey block auto-fits, stepping down to as low as 6.5px.
+  **Hover = the index lens's chrome-silver wash** (identical gradient to carousel `.gcell`),
+  so it is obvious which card an action applies to; suppressed on already-judged cards. Side
+  effect: the glass panel finally has a tinted backdrop to work against on hover. The 7 garments with no usable cutout are FRAMED as
   reference photos — generating silhouettes for them was tried and reverted as worse than
   the photo. Queued, not priority: vertical body-stacked outfits, wildcard as a full-width
   interruption.

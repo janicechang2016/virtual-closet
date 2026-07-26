@@ -1,5 +1,14 @@
 # Decision log
 
+## 2026-07-26 — Stylist card hover reuses the index lens's chrome-silver
+
+Hovering a suggestion now applies the **same gradient the carousel's index lens uses**
+(`.gcell:hover`), so it is unambiguous which card a verdict will land on. Reused rather than
+reinvented: the black invert was rejected there in 07-19 as too heavy at grid density, and
+behind a glass panel it would be heavier still. Suppressed on cards already ruled on — they
+are not inviting input. Incidental benefit: the glass panel finally has a tinted backdrop to
+refract, which is the one thing the white void never gave it.
+
 ## 2026-07-26 — Suggestions fill exactly one row
 
 **Her question: why 7?** No reason — `n=6` was an arbitrary default with the wildcard added

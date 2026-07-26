@@ -42,6 +42,13 @@
   .card { border-right:1px solid var(--line); border-bottom:1px solid var(--line);
     display:flex; flex-direction:column; min-height:392px; position:relative; }
   .card.gone { opacity:.35; }
+  /* Chrome-silver hover, the same wash the index lens uses (carousel .gcell) —
+     it makes plain which card an action will apply to. Identical gradient on
+     purpose: the full black invert was rejected there as too heavy at grid
+     density, and it would be heavier still behind a glass panel. */
+  .card:hover { background:linear-gradient(180deg,#f6f7f9,#e9ebef 55%,#dee1e6); }
+  /* A card already ruled on is not inviting input. */
+  .card.gone:hover { background:none; }
 
   /* Uniform containers, deliberately. A lead card spanning two columns with a
      larger unit was tried (the archive's hero-and-remainder language) and
