@@ -12,6 +12,23 @@ carries the standing rules). Plans: `virtual-closet-execution-plan.md` (v1),
 **DEPLOY SOURCE: `main`** (Vercel → Settings → Git → Production Branch, switched 07-26).
 Pushing to `main` deploys the public archive; verify at virtual-closet-seven.vercel.app.
 
+**All five pages deploy as of 07-26** — archive, fitting room, stylist, insights, galaxy.
+Adding a page to the deploy takes FOUR things, and missing any one of them is a 404:
+1. a rewrite in root `vercel.json` (`/stylist` → `/app/stylist.html`);
+2. the file in `export_static.py`'s `APP_FILES`;
+3. a static payload for every route it fetches, plus a rewrite for that too
+   (`/api/galaxy` → `/api/galaxy.json`);
+4. `asset_urls()` walking that payload, or every image in it 404s.
+`server/scripts/closet_snapshot.json` is **deliberately tracked** — the Vercel build has no
+Postgres and no `.app_secret`, so without it in the repo none of these payloads can be
+generated. Refresh with `dump_closet.py` and commit. `/sourcing` stays out on purpose: its
+scan/save routes need the live local server.
+**The stylist ships as a ranked POOL, not as fixed cards.** Ranking is deterministic, so it
+is precomputed per occasion at build time; the shuffle, the diversification pass and the
+wildcard draw run in the browser, so the deployed stylist genuinely re-rolls. `engine/` was
+NOT rewritten in JS. The page detects the payload by its `pool` flag and sets `body.demo`,
+which hides the verdict controls and the decisions drawer — there is nowhere to write to.
+
 Historical trap, recorded so it is not re-learned: Vercel deployed from a separate
 **`production`** branch until 07-26, which sat **38 commits behind**. Work pushed to `main`
 was correct and simply invisible — the giveaway was hashing the deployed

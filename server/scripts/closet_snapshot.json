@@ -1,0 +1,3615 @@
+{
+ "garments": [
+  {
+   "id": "01-plain-tee",
+   "category": "top",
+   "subcategory": "short-sleeve",
+   "colors": [
+    {
+     "lab": [
+      14.89,
+      1.2,
+      -1.82
+     ],
+     "rgb": [
+      38,
+      37,
+      40
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "slinky matte jersey (cupro/modal feel), soft drape",
+   "fit": "fitted through waist, draped asymmetric bodice, cap sleeves",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Peachy Den",
+   "purchase": {
+    "date": "2026-07",
+    "source": "Peachy Den",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "02-jeans",
+   "category": "bottom",
+   "subcategory": "trousers",
+   "colors": [
+    {
+     "lab": [
+      7.15,
+      2.28,
+      -1.12
+     ],
+     "rgb": [
+      20,
+      16,
+      18
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "lightweight suiting (wool/poly blend feel), fluid drape",
+   "fit": "low-to-mid rise, relaxed wide straight leg, full length, pooling slightly at the floor",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "In This Era",
+   "purchase": {
+    "date": "2026-01",
+    "source": "In This Era",
+    "price_usd": 98.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "03-patterned-dress",
+   "category": "dress",
+   "subcategory": "midi dress",
+   "colors": [
+    {
+     "lab": [
+      8.66,
+      2.69,
+      -5.38
+     ],
+     "rgb": [
+      21,
+      21,
+      30
+     ],
+     "name": "black",
+     "coverage": 0.5611
+    },
+    {
+     "lab": [
+      14.33,
+      24.91,
+      9.4
+     ],
+     "rgb": [
+      69,
+      17,
+      24
+     ],
+     "name": "oxblood",
+     "coverage": 0.1861
+    },
+    {
+     "lab": [
+      23.18,
+      36.58,
+      18.78
+     ],
+     "rgb": [
+      106,
+      23,
+      29
+     ],
+     "name": "burgundy",
+     "coverage": 0.1531
+    },
+    {
+     "lab": [
+      19.71,
+      7.09,
+      -30.87
+     ],
+     "rgb": [
+      14,
+      47,
+      93
+     ],
+     "name": "navy",
+     "coverage": 0.093
+    }
+   ],
+   "pattern": "large abstract organic print - red brushstroke shapes on black upper body, glowing blue and red blooms concentrated at the lower half",
+   "formality": 4,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "crinkle plisse / micro-pleated polyester, vertical wavy pleat texture throughout, slight sheerness",
+   "fit": "sleeveless, high mock neck, column silhouette skimming the body, midi length, side slits at hem",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Nin Studio",
+   "purchase": {
+    "date": "2026-05",
+    "source": "Nin Studio",
+    "price_usd": 250.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "04-structured-blazer",
+   "category": "outerwear",
+   "subcategory": "blazer",
+   "colors": [
+    {
+     "lab": [
+      7.74,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      23,
+      23,
+      23
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "matte suiting wool, structured with soft shoulder padding",
+   "fit": "slightly oversized boxy tailored fit, straight through the body, hits at the hip",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Musinsa Standard",
+   "purchase": {
+    "date": "2023-10",
+    "source": "Musinsa Standard",
+    "price_usd": 80.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "05-hardest-item",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      34.38,
+      -0.67,
+      -4.94
+     ],
+     "rgb": [
+      72,
+      78,
+      84
+     ],
+     "name": "charcoal",
+     "coverage": 0.8911
+    },
+    {
+     "lab": [
+      45.5,
+      3.58,
+      -3.76
+     ],
+     "rgb": [
+      111,
+      106,
+      114
+     ],
+     "name": "grey",
+     "coverage": 0.0638
+    },
+    {
+     "lab": [
+      19.03,
+      -5.77,
+      -5.52
+     ],
+     "rgb": [
+      31,
+      49,
+      54
+     ],
+     "name": "black",
+     "coverage": 0.0452
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "slinky viscose jersey, heavy fluid drape, subtle matte sheen",
+   "fit": "scoop neck with thin straps, fitted bodice, draped sarong-style ruched panel wrapping the hips, bias-flowing skirt to the ankle",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Woodrose Deli",
+   "purchase": {
+    "date": "2026-03",
+    "source": "Woodrose Deli",
+    "price_usd": 75.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "06-aritzia-slouch-coat",
+   "category": "outerwear",
+   "subcategory": "coat",
+   "colors": [
+    {
+     "lab": [
+      11.34,
+      0.51,
+      -1.36
+     ],
+     "rgb": [
+      30,
+      30,
+      32
+     ],
+     "name": "black",
+     "coverage": 0.9998
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "heavy brushed wool-blend, softly structured",
+   "fit": "oversized, slouchy, mid-calf",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Aritzia",
+   "purchase": {
+    "date": "2025-10",
+    "source": "Aritzia",
+    "price_usd": 250.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "07-aritzia-suit-vest",
+   "category": "top",
+   "subcategory": "vest",
+   "colors": [
+    {
+     "lab": [
+      16.43,
+      -0.65,
+      -0.97
+     ],
+     "rgb": [
+      39,
+      41,
+      42
+     ],
+     "name": "black",
+     "coverage": 0.9864
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "suiting twill",
+   "fit": "fitted, slightly cropped",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Aritzia",
+   "purchase": {
+    "date": "2018-10",
+    "source": "Aritzia",
+    "price_usd": 98.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "08-bunnyhill-grey-top",
+   "category": "top",
+   "subcategory": "long-sleeve",
+   "colors": [
+    {
+     "lab": [
+      71.71,
+      1.27,
+      -1.28
+     ],
+     "rgb": [
+      177,
+      175,
+      178
+     ],
+     "name": "light grey",
+     "coverage": 0.5804
+    },
+    {
+     "lab": [
+      53.01,
+      2.65,
+      0.95
+     ],
+     "rgb": [
+      132,
+      125,
+      125
+     ],
+     "name": "grey",
+     "coverage": 0.3086
+    },
+    {
+     "lab": [
+      12.57,
+      1.68,
+      -1.69
+     ],
+     "rgb": [
+      34,
+      32,
+      35
+     ],
+     "name": "black",
+     "coverage": 0.0606
+    },
+    {
+     "lab": [
+      81.11,
+      3.19,
+      6.76
+     ],
+     "rgb": [
+      213,
+      199,
+      189
+     ],
+     "name": "oatmeal",
+     "coverage": 0.0503
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 3,
+   "season_tags": [
+    "spring",
+    "fall"
+   ],
+   "fabric": "stretch jersey",
+   "fit": "fitted",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Bunnyhill Concept",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Bunnyhill Concept",
+    "price_usd": 15.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "09-bunnyhill-white-top",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      84.61,
+      0.16,
+      0.61
+     ],
+     "rgb": [
+      212,
+      211,
+      210
+     ],
+     "name": "silver",
+     "coverage": 0.8793
+    },
+    {
+     "lab": [
+      59.68,
+      2.45,
+      5.06
+     ],
+     "rgb": [
+      152,
+      142,
+      135
+     ],
+     "name": "grey",
+     "coverage": 0.1207
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "fluid satin-back jersey",
+   "fit": "draped, asymmetric",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Bunnyhill Concept",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Bunnyhill Concept",
+    "price_usd": 15.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "10-coucou-black-midi-skirt",
+   "category": "bottom",
+   "subcategory": "skirt",
+   "colors": [
+    {
+     "lab": [
+      6.58,
+      1.36,
+      -0.97
+     ],
+     "rgb": [
+      22,
+      20,
+      22
+     ],
+     "name": "black",
+     "coverage": 0.9931
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "pointelle rib cotton",
+   "fit": "low-waist, fluid A-line midi",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2021-03",
+    "source": "Cou Cou Intimates",
+    "price_usd": 68.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "11-coucou-black-muse-tank",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      14.68,
+      0.38,
+      -0.83
+     ],
+     "rgb": [
+      34,
+      34,
+      35
+     ],
+     "name": "black",
+     "coverage": 0.9898
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "rib cotton",
+   "fit": "fitted, sleeveless",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2026-05",
+    "source": "Cou Cou Intimates",
+    "price_usd": 58.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "12-coucou-black-scoop-tank",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      15.99,
+      0.45,
+      -0.92
+     ],
+     "rgb": [
+      35,
+      35,
+      36
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "pointelle rib cotton",
+   "fit": "fitted",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2021-06",
+    "source": "Cou Cou Intimates",
+    "price_usd": 58.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "13-coucou-long-sleeve-top",
+   "category": "top",
+   "subcategory": "long-sleeve",
+   "colors": [
+    {
+     "lab": [
+      3.12,
+      0.51,
+      -5.56
+     ],
+     "rgb": [
+      4,
+      8,
+      17
+     ],
+     "name": "black",
+     "coverage": 0.9608
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "rib cotton",
+   "fit": "fitted",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2025-03",
+    "source": "Cou Cou Intimates",
+    "price_usd": 68.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "14-coucou-midi-black-dress",
+   "category": "dress",
+   "subcategory": "slip dress",
+   "colors": [
+    {
+     "lab": [
+      12.15,
+      3.13,
+      -4.01
+     ],
+     "rgb": [
+      30,
+      28,
+      34
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "rib knit cotton",
+   "fit": "slim, midi",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2024-03",
+    "source": "Cou Cou Intimates",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "15-coucou-mini-skirt",
+   "category": "bottom",
+   "subcategory": "skirt",
+   "colors": [
+    {
+     "lab": [
+      18.89,
+      2.34,
+      -3.53
+     ],
+     "rgb": [
+      47,
+      45,
+      51
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "pointelle rib cotton",
+   "fit": "low-rise micro-mini",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2024-03",
+    "source": "Cou Cou Intimates",
+    "price_usd": 58.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "16-coucou-red-scoop-tank",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      36.29,
+      52.43,
+      29.94
+     ],
+     "rgb": [
+      159,
+      28,
+      35
+     ],
+     "name": "red",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "pointelle rib cotton",
+   "fit": "fitted",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2025-03",
+    "source": "Cou Cou Intimates",
+    "price_usd": 58.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "17-coucou-slip-dress",
+   "category": "dress",
+   "subcategory": "slip dress",
+   "colors": [
+    {
+     "lab": [
+      89.15,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      220,
+      220,
+      220
+     ],
+     "name": "off-white",
+     "coverage": 0.9966
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "pointelle rib cotton",
+   "fit": "slim midi",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2026-05",
+    "source": "Cou Cou Intimates",
+    "price_usd": 128.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "18-coucou-white-midi-skirt",
+   "category": "bottom",
+   "subcategory": "skirt",
+   "colors": [
+    {
+     "lab": [
+      93.73,
+      0.92,
+      -1.43
+     ],
+     "rgb": [
+      234,
+      233,
+      237
+     ],
+     "name": "white",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "pointelle rib cotton",
+   "fit": "low-waist fluid midi",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2024-06",
+    "source": "Cou Cou Intimates",
+    "price_usd": 68.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "19-coucou-white-scoop-tank",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      92.7,
+      0.97,
+      -2.03
+     ],
+     "rgb": [
+      231,
+      231,
+      235
+     ],
+     "name": "white",
+     "coverage": 0.9922
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "pointelle rib cotton",
+   "fit": "fitted",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Cou Cou Intimates",
+   "purchase": {
+    "date": "2025-04",
+    "source": "Cou Cou Intimates",
+    "price_usd": 58.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "20-entire-studios-eternal-hoodie",
+   "category": "outerwear",
+   "subcategory": "hoodie",
+   "colors": [
+    {
+     "lab": [
+      15.09,
+      -0.48,
+      1.33
+     ],
+     "rgb": [
+      38,
+      38,
+      36
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 1,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "heavy garment-dyed fleece",
+   "fit": "cropped, boxy, oversized",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "L",
+   "brand": "Entire Studios",
+   "purchase": {
+    "date": "2025-06",
+    "source": "Entire Studios",
+    "price_usd": 50.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "21-frankies-maxi-dress",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      5.06,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      17,
+      17,
+      17
+     ],
+     "name": "black",
+     "coverage": 0.9952
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "smocked jersey bodice, tiered semi-sheer skirt",
+   "fit": "fitted bodice, flared tiers",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Frankies Bikinis",
+   "purchase": {
+    "date": "2023-02",
+    "source": "Frankies Bikinis",
+    "price_usd": 128.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "23-issey-black-tank",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      19.34,
+      -0.2,
+      -0.79
+     ],
+     "rgb": [
+      46,
+      47,
+      48
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "knife-pleated polyester (Pleats Please)",
+   "fit": "straight column",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "3",
+   "brand": "Issey Miyake Pleats Please",
+   "purchase": {
+    "date": "2024-10",
+    "source": "Issey Miyake Pleats Please",
+    "price_usd": 150.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "24-issey-silver-tank",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      84.17,
+      -0.18,
+      0.49
+     ],
+     "rgb": [
+      210,
+      210,
+      209
+     ],
+     "name": "silver",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "knife-pleated polyester (Pleats Please)",
+   "fit": "straight column",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "3",
+   "brand": "Issey Miyake Pleats Please",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Issey Miyake Pleats Please",
+    "price_usd": 150.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "25-kotn-samira-tank",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      79.52,
+      -0.39,
+      3.25
+     ],
+     "rgb": [
+      199,
+      197,
+      191
+     ],
+     "name": "light grey",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "soft draped jersey",
+   "fit": "fitted",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Kotn",
+   "purchase": {
+    "date": "2026-06",
+    "source": "Kotn",
+    "price_usd": 58.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "26-liniss-dune-pants",
+   "category": "bottom",
+   "subcategory": "trousers",
+   "colors": [
+    {
+     "lab": [
+      62.29,
+      0.21,
+      6.58
+     ],
+     "rgb": [
+      156,
+      150,
+      139
+     ],
+     "name": "greige",
+     "coverage": 0.8247
+    },
+    {
+     "lab": [
+      46.49,
+      1.15,
+      8.54
+     ],
+     "rgb": [
+      118,
+      109,
+      96
+     ],
+     "name": "grey",
+     "coverage": 0.1753
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "fluid heavy crepe",
+   "fit": "dramatic draped harem, tapered ankle",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "M",
+   "brand": "Liniss",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Liniss",
+    "price_usd": 30.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "27-liniss-pants",
+   "category": "bottom",
+   "subcategory": "trousers",
+   "colors": [
+    {
+     "lab": [
+      4.24,
+      -0.33,
+      -0.12
+     ],
+     "rgb": [
+      14,
+      15,
+      15
+     ],
+     "name": "black",
+     "coverage": 0.9394
+    },
+    {
+     "lab": [
+      79.55,
+      0.18,
+      -0.5
+     ],
+     "rgb": [
+      197,
+      197,
+      198
+     ],
+     "name": "silver",
+     "coverage": 0.0606
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "stretch suiting",
+   "fit": "low-rise flare",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "M",
+   "brand": "Liniss",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Liniss",
+    "price_usd": 30.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "28-neil-vernon-long-sleeve-top",
+   "category": "top",
+   "subcategory": "blouse",
+   "colors": [
+    {
+     "lab": [
+      90.48,
+      -1.07,
+      1.72
+     ],
+     "rgb": [
+      224,
+      226,
+      222
+     ],
+     "name": "off-white",
+     "coverage": 0.9968
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "crisp cotton poplin",
+   "fit": "blouson body, gathered into waistband",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Neil Vernon",
+   "purchase": {
+    "date": "2025-03",
+    "source": "Neil Vernon",
+    "price_usd": 128.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "29-nin-pleated-top",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      11.34,
+      -1.73,
+      -2.14
+     ],
+     "rgb": [
+      26,
+      31,
+      33
+     ],
+     "name": "black",
+     "coverage": 0.8592
+    },
+    {
+     "lab": [
+      62.11,
+      0.73,
+      10.31
+     ],
+     "rgb": [
+      159,
+      149,
+      132
+     ],
+     "name": "greige",
+     "coverage": 0.1408
+    }
+   ],
+   "pattern": "abstract feather/ikat print in black, cream, rust",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "sheer micro-pleated georgette",
+   "fit": "halter, high neck, fitted",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Studio Nin",
+   "purchase": {
+    "date": "2026-05",
+    "source": "Nin Studio",
+    "price_usd": 128.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "30-off-shoulder-top",
+   "category": "top",
+   "subcategory": "blouse",
+   "colors": [
+    {
+     "lab": [
+      12.19,
+      0.22,
+      0.22
+     ],
+     "rgb": [
+      29,
+      28,
+      28
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "sheer crinkle chiffon",
+   "fit": "relaxed, dropped shoulder",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Find Me Now",
+   "purchase": {
+    "date": "2026-01",
+    "source": "Find Me Now",
+    "price_usd": 75.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "31-orseund-iris-top",
+   "category": "top",
+   "subcategory": "sweater",
+   "colors": [
+    {
+     "lab": [
+      77.75,
+      6.21,
+      20.83
+     ],
+     "rgb": [
+      218,
+      187,
+      154
+     ],
+     "name": "beige",
+     "coverage": 0.7768
+    },
+    {
+     "lab": [
+      89.07,
+      2.06,
+      11.91
+     ],
+     "rgb": [
+      236,
+      221,
+      201
+     ],
+     "name": "oatmeal light",
+     "coverage": 0.1952
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 4,
+   "season_tags": [
+    "fall",
+    "winter"
+   ],
+   "fabric": "fine soft knit",
+   "fit": "fitted, long sleeve",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "L",
+   "brand": "Orseund Iris",
+   "purchase": {
+    "date": "2025-09",
+    "source": "Orseund Iris",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "32-personal-language-skirt",
+   "category": "bottom",
+   "subcategory": "skirt",
+   "colors": [
+    {
+     "lab": [
+      38.61,
+      1.41,
+      2.45
+     ],
+     "rgb": [
+      95,
+      90,
+      87
+     ],
+     "name": "charcoal",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "fluid viscose with a soft sheen",
+   "fit": "straight column, floor length",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Personal Language",
+   "purchase": {
+    "date": "2026-06",
+    "source": "Personal Language",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "33-realisation-alba-dress",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      15.2,
+      1.96,
+      3.69
+     ],
+     "rgb": [
+      43,
+      37,
+      33
+     ],
+     "name": "black",
+     "coverage": 0.6033
+    },
+    {
+     "lab": [
+      23.58,
+      27.19,
+      6.47
+     ],
+     "rgb": [
+      94,
+      36,
+      47
+     ],
+     "name": "burgundy",
+     "coverage": 0.2036
+    },
+    {
+     "lab": [
+      12.25,
+      15.37,
+      4.79
+     ],
+     "rgb": [
+      53,
+      23,
+      26
+     ],
+     "name": "chocolate",
+     "coverage": 0.1931
+    }
+   ],
+   "pattern": "small red ditsy floral on black",
+   "formality": 4,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "silk crepe",
+   "fit": "bias-cut slim midi",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "R\u00e9alisation Par",
+   "purchase": {
+    "date": "2021-02",
+    "source": "R\u00e9alisation Par",
+    "price_usd": 158.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "34-realisation-allegra-dress",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      86.03,
+      -3.99,
+      27.41
+     ],
+     "rgb": [
+      227,
+      215,
+      163
+     ],
+     "name": "butter",
+     "coverage": 0.9518
+    },
+    {
+     "lab": [
+      62.2,
+      25.18,
+      30.81
+     ],
+     "rgb": [
+      207,
+      132,
+      97
+     ],
+     "name": "coral",
+     "coverage": 0.0482
+    }
+   ],
+   "pattern": "scattered small pink/red flowers on butter yellow",
+   "formality": 4,
+   "warmth": 3,
+   "season_tags": [
+    "spring",
+    "fall"
+   ],
+   "fabric": "silk",
+   "fit": "bias-cut, fishtail flare to the ankle",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "R\u00e9alisation Par",
+   "purchase": {
+    "date": "2022-04",
+    "source": "R\u00e9alisation Par",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "35-realisation-delphine-dress",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      15.6,
+      -0.24,
+      0.66
+     ],
+     "rgb": [
+      39,
+      39,
+      38
+     ],
+     "name": "black",
+     "coverage": 0.8687
+    },
+    {
+     "lab": [
+      88.6,
+      0.31,
+      2.32
+     ],
+     "rgb": [
+      225,
+      222,
+      218
+     ],
+     "name": "off-white",
+     "coverage": 0.1313
+    }
+   ],
+   "pattern": "white polka dots (~1cm) on black",
+   "formality": 4,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "silk crepe",
+   "fit": "bias-cut midi, surplice bodice",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "R\u00e9alisation Par",
+   "purchase": {
+    "date": "2025-05",
+    "source": "R\u00e9alisation Par",
+    "price_usd": 200.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "36-realisation-liv-dress",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      9.88,
+      5.93,
+      3.75
+     ],
+     "rgb": [
+      35,
+      21,
+      19
+     ],
+     "name": "black",
+     "coverage": 0.5354
+    },
+    {
+     "lab": [
+      15.13,
+      16.75,
+      3.94
+     ],
+     "rgb": [
+      61,
+      28,
+      33
+     ],
+     "name": "oxblood",
+     "coverage": 0.332
+    },
+    {
+     "lab": [
+      9.17,
+      12.91,
+      4.12
+     ],
+     "rgb": [
+      43,
+      18,
+      20
+     ],
+     "name": "chocolate",
+     "coverage": 0.1326
+    }
+   ],
+   "pattern": "small dark red rosebud floral on black",
+   "formality": 4,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "silk",
+   "fit": "fitted V-neck midi",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "R\u00e9alisation Par",
+   "purchase": {
+    "date": "2022-06",
+    "source": "R\u00e9alisation Par",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "37-realisation-gia-dress",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      47.16,
+      59.17,
+      36.93
+     ],
+     "rgb": [
+      205,
+      52,
+      52
+     ],
+     "name": "scarlet",
+     "coverage": 0.526
+    },
+    {
+     "lab": [
+      35.02,
+      53.14,
+      32.97
+     ],
+     "rgb": [
+      159,
+      24,
+      31
+     ],
+     "name": "red",
+     "coverage": 0.474
+    }
+   ],
+   "pattern": "large tonal red floral/animal print",
+   "formality": 4,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "silk",
+   "fit": "fitted, bell sleeves, maxi",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "R\u00e9alisation Par",
+   "purchase": {
+    "date": "2024-04",
+    "source": "R\u00e9alisation Par",
+    "price_usd": 250.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "38-realisation-iggy-dress",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      11.98,
+      5.0,
+      3.0
+     ],
+     "rgb": [
+      34,
+      23,
+      21
+     ],
+     "name": "black",
+     "coverage": 0.831
+    },
+    {
+     "lab": [
+      75.79,
+      2.9,
+      35.6
+     ],
+     "rgb": [
+      214,
+      183,
+      121
+     ],
+     "name": "mustard",
+     "coverage": 0.169
+    }
+   ],
+   "pattern": "scattered gold/ochre dots on brown",
+   "formality": 4,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "silk",
+   "fit": "bias-cut slim midi",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "R\u00e9alisation Par",
+   "purchase": {
+    "date": "2022-06",
+    "source": "R\u00e9alisation Par",
+    "price_usd": 200.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "39-realisation-ivy-dress",
+   "category": "dress",
+   "subcategory": "maxi dress",
+   "colors": [
+    {
+     "lab": [
+      78.33,
+      7.91,
+      13.06
+     ],
+     "rgb": [
+      218,
+      188,
+      170
+     ],
+     "name": "beige",
+     "coverage": 0.77
+    },
+    {
+     "lab": [
+      67.95,
+      17.07,
+      12.74
+     ],
+     "rgb": [
+      203,
+      153,
+      143
+     ],
+     "name": "dusty pink",
+     "coverage": 0.1828
+    },
+    {
+     "lab": [
+      55.05,
+      26.19,
+      10.38
+     ],
+     "rgb": [
+      180,
+      114,
+      115
+     ],
+     "name": "rose",
+     "coverage": 0.0473
+    }
+   ],
+   "pattern": "soft pink roses on blush",
+   "formality": 4,
+   "warmth": 3,
+   "season_tags": [
+    "spring",
+    "fall"
+   ],
+   "fabric": "silk chiffon",
+   "fit": "bias-cut maxi",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "R\u00e9alisation Par",
+   "purchase": {
+    "date": "2023-01",
+    "source": "R\u00e9alisation Par",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "40-realisation-sheer-top",
+   "category": "top",
+   "subcategory": "blouse",
+   "colors": [
+    {
+     "lab": [
+      31.12,
+      0.19,
+      2.09
+     ],
+     "rgb": [
+      75,
+      73,
+      70
+     ],
+     "name": "charcoal",
+     "coverage": 0.5049
+    },
+    {
+     "lab": [
+      9.37,
+      0.48,
+      0.17
+     ],
+     "rgb": [
+      27,
+      26,
+      26
+     ],
+     "name": "black",
+     "coverage": 0.4951
+    }
+   ],
+   "pattern": "flocked velvet florals on sheer mesh",
+   "formality": 3,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "sheer mesh with velvet flocking",
+   "fit": "fitted, long sleeve",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "R\u00e9alisation Par",
+   "purchase": {
+    "date": "2021-03",
+    "source": "R\u00e9alisation Par",
+    "price_usd": 128.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "41-sagittarius-top",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      6.32,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      20,
+      20,
+      20
+     ],
+     "name": "black",
+     "coverage": 0.7684
+    },
+    {
+     "lab": [
+      99.99,
+      -0.06,
+      0.04
+     ],
+     "rgb": [
+      254,
+      254,
+      254
+     ],
+     "name": "white",
+     "coverage": 0.2216
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "slinky matte jersey",
+   "fit": "draped, open back",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Sagittarius A+",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Sagittarius A+",
+    "price_usd": 15.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "42-sagittarius-trousers",
+   "category": "bottom",
+   "subcategory": "trousers",
+   "colors": [
+    {
+     "lab": [
+      11.26,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      30,
+      30,
+      30
+     ],
+     "name": "black",
+     "coverage": 0.9952
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "structured cotton blend",
+   "fit": "exaggerated barrel leg, full length, gathered at the ankle",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Sagittarius A+",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Sagittarius A+",
+    "price_usd": 20.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "43-subtle-mermaid-top",
+   "category": "top",
+   "subcategory": "tank",
+   "colors": [
+    {
+     "lab": [
+      100.0,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      255,
+      255,
+      255
+     ],
+     "name": "white",
+     "coverage": 0.5757
+    },
+    {
+     "lab": [
+      92.0,
+      1.16,
+      4.24
+     ],
+     "rgb": [
+      238,
+      231,
+      224
+     ],
+     "name": "off-white",
+     "coverage": 0.4178
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "frayed raw silk gauze, semi-sheer",
+   "fit": "asymmetric one-shoulder",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "M",
+   "brand": "Subtle Le Nguyen",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Subtle Le Nguyen",
+    "price_usd": 50.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "44-subtle-mermaid-skirt",
+   "category": "bottom",
+   "subcategory": "skirt",
+   "colors": [
+    {
+     "lab": [
+      96.66,
+      0.49,
+      0.71
+     ],
+     "rgb": [
+      247,
+      245,
+      244
+     ],
+     "name": "white",
+     "coverage": 0.8265
+    },
+    {
+     "lab": [
+      85.4,
+      1.83,
+      4.87
+     ],
+     "rgb": [
+      220,
+      211,
+      204
+     ],
+     "name": "oatmeal light",
+     "coverage": 0.1735
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "frayed raw silk gauze, semi-sheer",
+   "fit": "column maxi",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Subtle Le Nguyen",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Subtle Le Nguyen",
+    "price_usd": 60.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "45-sundae-gorum-shirt",
+   "category": "top",
+   "subcategory": "long-sleeve",
+   "colors": [
+    {
+     "lab": [
+      87.56,
+      -2.03,
+      -4.58
+     ],
+     "rgb": [
+      211,
+      221,
+      228
+     ],
+     "name": "pale blue",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "crisp cotton",
+   "fit": "boxy",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Sundae School",
+   "purchase": {
+    "date": "2026-07",
+    "source": "Sundae School",
+    "price_usd": 128.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "46-the-idiot-jacket",
+   "category": "outerwear",
+   "subcategory": "jacket",
+   "colors": [
+    {
+     "lab": [
+      69.26,
+      -5.33,
+      0.49
+     ],
+     "rgb": [
+      159,
+      172,
+      168
+     ],
+     "name": "greige",
+     "coverage": 0.6327
+    },
+    {
+     "lab": [
+      37.76,
+      -3.04,
+      6.09
+     ],
+     "rgb": [
+      88,
+      90,
+      79
+     ],
+     "name": "charcoal",
+     "coverage": 0.2598
+    },
+    {
+     "lab": [
+      41.82,
+      -0.24,
+      13.85
+     ],
+     "rgb": [
+      107,
+      98,
+      76
+     ],
+     "name": "olive",
+     "coverage": 0.0556
+    },
+    {
+     "lab": [
+      12.42,
+      0.05,
+      6.83
+     ],
+     "rgb": [
+      36,
+      32,
+      23
+     ],
+     "name": "black",
+     "coverage": 0.052
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 2,
+   "season_tags": [
+    "spring",
+    "summer",
+    "fall"
+   ],
+   "fabric": "matte technical cotton",
+   "fit": "cropped blouson, balloon sleeves",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "The Idiot",
+   "purchase": {
+    "date": "2026-04",
+    "source": "The Idiot",
+    "price_usd": 30.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "47-woodrose-deli-skirt",
+   "category": "bottom",
+   "subcategory": "skirt",
+   "colors": [
+    {
+     "lab": [
+      61.33,
+      1.7,
+      17.71
+     ],
+     "rgb": [
+      163,
+      146,
+      117
+     ],
+     "name": "tan",
+     "coverage": 0.4616
+    },
+    {
+     "lab": [
+      20.67,
+      0.44,
+      5.1
+     ],
+     "rgb": [
+      53,
+      49,
+      42
+     ],
+     "name": "black",
+     "coverage": 0.3732
+    },
+    {
+     "lab": [
+      92.0,
+      -0.19,
+      1.57
+     ],
+     "rgb": [
+      233,
+      232,
+      229
+     ],
+     "name": "off-white",
+     "coverage": 0.0856
+    },
+    {
+     "lab": [
+      40.9,
+      1.24,
+      13.8
+     ],
+     "rgb": [
+      107,
+      95,
+      74
+     ],
+     "name": "brown",
+     "coverage": 0.0556
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 4,
+   "season_tags": [
+    "fall",
+    "winter"
+   ],
+   "fabric": "brushed wool knit",
+   "fit": "handkerchief midi, knotted at the waist",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "XS",
+   "brand": "Woodrose Deli",
+   "purchase": {
+    "date": "2026-01",
+    "source": "Woodrose Deli",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "48-woodrose-deli-sweater",
+   "category": "top",
+   "subcategory": "sweater",
+   "colors": [
+    {
+     "lab": [
+      61.52,
+      1.07,
+      15.14
+     ],
+     "rgb": [
+      161,
+      147,
+      122
+     ],
+     "name": "greige",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 4,
+   "season_tags": [
+    "fall",
+    "winter"
+   ],
+   "fabric": "brushed wool knit",
+   "fit": "slouchy, off-shoulder",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "S",
+   "brand": "Woodrose Deli",
+   "purchase": {
+    "date": "2026-01",
+    "source": "Woodrose Deli",
+    "price_usd": 98.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "49-jil-sander-boots",
+   "category": "shoes",
+   "subcategory": "boot",
+   "colors": [
+    {
+     "lab": [
+      23.73,
+      1.58,
+      -1.55
+     ],
+     "rgb": [
+      57,
+      55,
+      58
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "smooth calf leather",
+   "fit": "knee-high, flat",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "EU 38",
+   "brand": "Jil Sander",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Jil Sander",
+    "price_usd": 330.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "50-yello-heels",
+   "category": "shoes",
+   "subcategory": "heel",
+   "colors": [
+    {
+     "lab": [
+      23.85,
+      -0.38,
+      -1.54
+     ],
+     "rgb": [
+      55,
+      57,
+      59
+     ],
+     "name": "black",
+     "coverage": 0.9536
+    },
+    {
+     "lab": [
+      53.87,
+      -0.34,
+      -1.34
+     ],
+     "rgb": [
+      127,
+      129,
+      131
+     ],
+     "name": "grey",
+     "coverage": 0.0464
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "cracked patent leather",
+   "fit": "pointed mule, cone kitten heel",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7",
+   "brand": "Yello",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Yello",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "51-weejuns-loafers",
+   "category": "shoes",
+   "subcategory": "loafer",
+   "colors": [
+    {
+     "lab": [
+      12.47,
+      1.23,
+      -1.86
+     ],
+     "rgb": [
+      33,
+      32,
+      35
+     ],
+     "name": "black",
+     "coverage": 0.905
+    },
+    {
+     "lab": [
+      69.7,
+      0.8,
+      -3.2
+     ],
+     "rgb": [
+      169,
+      170,
+      176
+     ],
+     "name": "light grey",
+     "coverage": 0.0619
+    },
+    {
+     "lab": [
+      27.81,
+      4.52,
+      5.78
+     ],
+     "rgb": [
+      76,
+      63,
+      57
+     ],
+     "name": "chocolate",
+     "coverage": 0.0332
+    }
+   ],
+   "pattern": "solid",
+   "formality": 3,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "polished leather",
+   "fit": "classic loafer",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7",
+   "brand": "G.H. Bass",
+   "purchase": {
+    "date": "2022-01",
+    "source": "G.H. Bass",
+    "price_usd": 150.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "52-camper-flats",
+   "category": "shoes",
+   "subcategory": "flat",
+   "colors": [
+    {
+     "lab": [
+      4.79,
+      0.56,
+      -0.4
+     ],
+     "rgb": [
+      17,
+      16,
+      17
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "soft leather",
+   "fit": "slip-on flat",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7",
+   "brand": "Camper",
+   "purchase": {
+    "date": "2025-05",
+    "source": "Camper",
+    "price_usd": 98.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "53-keen-sandals",
+   "category": "shoes",
+   "subcategory": "sandal",
+   "colors": [
+    {
+     "lab": [
+      20.63,
+      -0.63,
+      -0.94
+     ],
+     "rgb": [
+      48,
+      50,
+      51
+     ],
+     "name": "black",
+     "coverage": 0.938
+    },
+    {
+     "lab": [
+      93.75,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      237,
+      237,
+      237
+     ],
+     "name": "off-white",
+     "coverage": 0.062
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "webbing and rubber",
+   "fit": "thong sandal",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7",
+   "brand": "Keen",
+   "purchase": {
+    "date": "2026-05",
+    "source": "Keen",
+    "price_usd": 60.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "54-salomon-sneakers",
+   "category": "shoes",
+   "subcategory": "sneaker",
+   "colors": [
+    {
+     "lab": [
+      14.11,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      35,
+      35,
+      35
+     ],
+     "name": "black",
+     "coverage": 0.9578
+    },
+    {
+     "lab": [
+      57.82,
+      -0.77,
+      4.54
+     ],
+     "rgb": [
+      141,
+      139,
+      131
+     ],
+     "name": "grey",
+     "coverage": 0.0423
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "technical mesh",
+   "fit": "low trail runner",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7",
+   "brand": "Salomon",
+   "purchase": {
+    "date": "2021-01",
+    "source": "Salomon",
+    "price_usd": 200.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "55-asics-sneakers",
+   "category": "shoes",
+   "subcategory": "sneaker",
+   "colors": [
+    {
+     "lab": [
+      12.6,
+      -0.71,
+      0.51
+     ],
+     "rgb": [
+      32,
+      33,
+      32
+     ],
+     "name": "black",
+     "coverage": 0.9309
+    },
+    {
+     "lab": [
+      76.17,
+      -0.35,
+      -0.12
+     ],
+     "rgb": [
+      187,
+      188,
+      188
+     ],
+     "name": "light grey",
+     "coverage": 0.0692
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "mesh and synthetic overlays",
+   "fit": "low runner",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7",
+   "brand": "ASICS",
+   "purchase": {
+    "date": "2026-01",
+    "source": "ASICS",
+    "price_usd": 115.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "56-mizuno-sneakers",
+   "category": "shoes",
+   "subcategory": "sneaker",
+   "colors": [
+    {
+     "lab": [
+      8.76,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      25,
+      25,
+      25
+     ],
+     "name": "black",
+     "coverage": 0.9396
+    },
+    {
+     "lab": [
+      60.14,
+      -0.19,
+      0.53
+     ],
+     "rgb": [
+      145,
+      145,
+      144
+     ],
+     "name": "grey",
+     "coverage": 0.0604
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "smooth leather",
+   "fit": "low runner",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7.5",
+   "brand": "Mizuno",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Mizuno",
+    "price_usd": 200.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "57-puma-ssg-sneakers",
+   "category": "shoes",
+   "subcategory": "sneaker",
+   "colors": [
+    {
+     "lab": [
+      9.77,
+      0.0,
+      0.0
+     ],
+     "rgb": [
+      27,
+      27,
+      27
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 2,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "nubuck with molded rubber overlay",
+   "fit": "low profile",
+   "volume": "relaxed",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7",
+   "brand": "Puma",
+   "purchase": {
+    "date": "2026-01",
+    "source": "Puma",
+    "price_usd": 150.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "58-vortex-long-boots",
+   "category": "shoes",
+   "subcategory": "boot",
+   "colors": [
+    {
+     "lab": [
+      14.0,
+      -0.91,
+      -0.32
+     ],
+     "rgb": [
+      34,
+      36,
+      36
+     ],
+     "name": "black",
+     "coverage": 1.0
+    }
+   ],
+   "pattern": "solid",
+   "formality": 4,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "quilted padded leather",
+   "fit": "knee-high, pointed, kitten heel",
+   "volume": "fitted",
+   "asset_tier": "render_ready",
+   "size_owned": "US 7",
+   "brand": "Yello",
+   "purchase": {
+    "date": "2026-04",
+    "source": "Yello",
+    "price_usd": 228.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  },
+  {
+   "id": "59-el-hoodie",
+   "category": "outerwear",
+   "subcategory": "hoodie",
+   "colors": [
+    {
+     "lab": [
+      9.67,
+      2.31,
+      -1.95
+     ],
+     "rgb": [
+      28,
+      25,
+      29
+     ],
+     "name": "black",
+     "coverage": 0.9113
+    },
+    {
+     "lab": [
+      65.55,
+      -2.67,
+      10.17
+     ],
+     "rgb": [
+      162,
+      160,
+      141
+     ],
+     "name": "greige",
+     "coverage": 0.0887
+    }
+   ],
+   "pattern": "hand-painted spotted band wrapping the chest and upper sleeves",
+   "formality": 1,
+   "warmth": 1,
+   "season_tags": [
+    "summer"
+   ],
+   "fabric": "heavyweight cotton fleece",
+   "fit": "boxy, slightly cropped",
+   "volume": "oversized",
+   "asset_tier": "render_ready",
+   "size_owned": "M",
+   "brand": "Eckhaus Latta",
+   "purchase": {
+    "date": "2026-07",
+    "source": "Eckhaus Latta",
+    "price_usd": 100.0
+   },
+   "wear_count": 0,
+   "last_worn": null
+  }
+ ],
+ "outfits": [
+  {
+   "id": "468e3d8f-ac9a-4c15-a1c5-f504b256f4ab",
+   "garment_ids": [
+    "07-aritzia-suit-vest",
+    "47-woodrose-deli-skirt",
+    "52-camper-flats"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:07-aritzia-suit-vest+47-woodrose-deli-skirt+52-camper-flats"
+  },
+  {
+   "id": "ecf2028f-4906-46b6-97b8-e1b16a644dc2",
+   "garment_ids": [
+    "07-aritzia-suit-vest",
+    "47-woodrose-deli-skirt",
+    "53-keen-sandals"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:07-aritzia-suit-vest+47-woodrose-deli-skirt+53-keen-sandals"
+  },
+  {
+   "id": "2eab0eca-85fd-48c0-8437-d2a72c0f18f9",
+   "garment_ids": [
+    "09-bunnyhill-white-top",
+    "32-personal-language-skirt",
+    "57-puma-ssg-sneakers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:09-bunnyhill-white-top+32-personal-language-skirt+57-puma-ssg-sneakers"
+  },
+  {
+   "id": "f5e51925-e17c-42cf-8369-0eb2ea9cac8a",
+   "garment_ids": [
+    "09-bunnyhill-white-top",
+    "32-personal-language-skirt",
+    "58-vortex-long-boots"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:09-bunnyhill-white-top+32-personal-language-skirt+58-vortex-long-boots"
+  },
+  {
+   "id": "aa2ad3bd-9ef9-4bec-a8f9-28620952aeaf",
+   "garment_ids": [
+    "09-bunnyhill-white-top",
+    "44-subtle-mermaid-skirt",
+    "55-asics-sneakers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:09-bunnyhill-white-top+44-subtle-mermaid-skirt+55-asics-sneakers"
+  },
+  {
+   "id": "1ef95166-1628-4851-b4aa-2a0ee4c8299c",
+   "garment_ids": [
+    "11-coucou-black-muse-tank",
+    "10-coucou-black-midi-skirt",
+    "56-mizuno-sneakers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:11-coucou-black-muse-tank+10-coucou-black-midi-skirt+56-mizuno-sneakers"
+  },
+  {
+   "id": "0e3d9282-2117-4b61-b091-0589cf0b71d6",
+   "garment_ids": [
+    "11-coucou-black-muse-tank",
+    "44-subtle-mermaid-skirt",
+    "51-weejuns-loafers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:11-coucou-black-muse-tank+44-subtle-mermaid-skirt+51-weejuns-loafers"
+  },
+  {
+   "id": "07aa52ca-9ed6-47ba-9df4-394ec7fde75a",
+   "garment_ids": [
+    "13-coucou-long-sleeve-top",
+    "18-coucou-white-midi-skirt",
+    "53-keen-sandals"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:13-coucou-long-sleeve-top+18-coucou-white-midi-skirt+53-keen-sandals"
+  },
+  {
+   "id": "62aabe30-7dcd-404e-a93e-969b72e07ce0",
+   "garment_ids": [
+    "17-coucou-slip-dress",
+    "50-yello-heels"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:17-coucou-slip-dress+50-yello-heels"
+  },
+  {
+   "id": "b6dd92a1-2579-4bea-a50f-4c0aeb37c719",
+   "garment_ids": [
+    "19-coucou-white-scoop-tank",
+    "10-coucou-black-midi-skirt",
+    "50-yello-heels"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:19-coucou-white-scoop-tank+10-coucou-black-midi-skirt+50-yello-heels"
+  },
+  {
+   "id": "4000906a-82c8-4a12-a33f-9311f0df22c4",
+   "garment_ids": [
+    "19-coucou-white-scoop-tank",
+    "32-personal-language-skirt",
+    "58-vortex-long-boots"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:19-coucou-white-scoop-tank+32-personal-language-skirt+58-vortex-long-boots"
+  },
+  {
+   "id": "48f06a50-213a-402c-b9c3-b7ec462b3e67",
+   "garment_ids": [
+    "23-issey-black-tank",
+    "42-sagittarius-trousers",
+    "51-weejuns-loafers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:23-issey-black-tank+42-sagittarius-trousers+51-weejuns-loafers"
+  },
+  {
+   "id": "e5e749b0-349a-477c-b679-223ef9f72aaf",
+   "garment_ids": [
+    "25-kotn-samira-tank",
+    "02-jeans",
+    "54-salomon-sneakers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:25-kotn-samira-tank+02-jeans+54-salomon-sneakers"
+  },
+  {
+   "id": "15d90463-3bfa-4288-81b8-9cf3f22b6069",
+   "garment_ids": [
+    "25-kotn-samira-tank",
+    "18-coucou-white-midi-skirt",
+    "54-salomon-sneakers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:25-kotn-samira-tank+18-coucou-white-midi-skirt+54-salomon-sneakers"
+  },
+  {
+   "id": "84017d59-2cd4-4952-aec3-d2b6caaf47c7",
+   "garment_ids": [
+    "29-nin-pleated-top",
+    "27-liniss-pants",
+    "54-salomon-sneakers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:29-nin-pleated-top+27-liniss-pants+54-salomon-sneakers"
+  },
+  {
+   "id": "ca2aeba8-01ab-4943-a715-761805faf91c",
+   "garment_ids": [
+    "30-off-shoulder-top",
+    "10-coucou-black-midi-skirt",
+    "49-jil-sander-boots"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:30-off-shoulder-top+10-coucou-black-midi-skirt+49-jil-sander-boots"
+  },
+  {
+   "id": "54814b70-fc72-4ec0-b7b6-9601b383f730",
+   "garment_ids": [
+    "30-off-shoulder-top",
+    "18-coucou-white-midi-skirt",
+    "58-vortex-long-boots"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:30-off-shoulder-top+18-coucou-white-midi-skirt+58-vortex-long-boots"
+  },
+  {
+   "id": "7972d40c-7f9f-4be6-bd63-570135b64b57",
+   "garment_ids": [
+    "31-orseund-iris-top",
+    "18-coucou-white-midi-skirt",
+    "58-vortex-long-boots"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:31-orseund-iris-top+18-coucou-white-midi-skirt+58-vortex-long-boots"
+  },
+  {
+   "id": "41192b7f-0e91-45ce-bb00-98b7ad7cd47f",
+   "garment_ids": [
+    "31-orseund-iris-top",
+    "32-personal-language-skirt",
+    "58-vortex-long-boots"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:31-orseund-iris-top+32-personal-language-skirt+58-vortex-long-boots"
+  },
+  {
+   "id": "adacfec3-9feb-420b-b741-038e478719f0",
+   "garment_ids": [
+    "37-realisation-gia-dress",
+    "51-weejuns-loafers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:37-realisation-gia-dress+51-weejuns-loafers"
+  },
+  {
+   "id": "446c1766-0786-4637-b450-b335200fd7ac",
+   "garment_ids": [
+    "41-sagittarius-top",
+    "18-coucou-white-midi-skirt",
+    "58-vortex-long-boots"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:41-sagittarius-top+18-coucou-white-midi-skirt+58-vortex-long-boots"
+  },
+  {
+   "id": "3ae7c6bf-a8f4-410c-9e03-4538f9680c15",
+   "garment_ids": [
+    "43-subtle-mermaid-top",
+    "44-subtle-mermaid-skirt",
+    "52-camper-flats"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:43-subtle-mermaid-top+44-subtle-mermaid-skirt+52-camper-flats"
+  },
+  {
+   "id": "130e5bd5-7a2e-48b1-af41-6f0959153c1b",
+   "garment_ids": [
+    "45-sundae-gorum-shirt",
+    "27-liniss-pants",
+    "54-salomon-sneakers"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:45-sundae-gorum-shirt+27-liniss-pants+54-salomon-sneakers"
+  },
+  {
+   "id": "d5065804-490e-4d87-9aa8-a82e8ed9989e",
+   "garment_ids": [
+    "48-woodrose-deli-sweater",
+    "47-woodrose-deli-skirt",
+    "52-camper-flats"
+   ],
+   "source": "stylist",
+   "context": {
+    "batch": "blind-calibration-2026-07-25"
+   },
+   "render_cache_key": "engine:48-woodrose-deli-sweater+47-woodrose-deli-skirt+52-camper-flats"
+  },
+  {
+   "id": "f95d4a16-bb0c-4413-8218-4b3e4197b48f",
+   "garment_ids": [
+    "01-plain-tee",
+    "02-jeans",
+    "50-yello-heels"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "34turn",
+    "time": "day",
+    "title": "look 004",
+    "cutout": "outfit_01+02+50_34turn_1_cut.png",
+    "render": "outfit_01+02+50_34turn_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-005",
+    "occasion": "work"
+   },
+   "render_cache_key": "look-005"
+  },
+  {
+   "id": "690def2e-aee7-4219-b7f6-f77686f20e6a",
+   "garment_ids": [
+    "03-patterned-dress",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "front",
+    "time": "either",
+    "title": "look 001",
+    "cutout": "outfit_03+52_1_cut.png",
+    "render": "outfit_03+52_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-006",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-006"
+  },
+  {
+   "id": "97eb09d9-ec9a-4779-b59c-9a31973c5775",
+   "garment_ids": [
+    "11-coucou-black-muse-tank",
+    "10-coucou-black-midi-skirt",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "hand-on-hip",
+    "time": "day",
+    "title": "look 010",
+    "cutout": "outfit_10+11+52_hand-on-hip_1_cut.png",
+    "render": "outfit_10+11+52_hand-on-hip_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-007",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-007"
+  },
+  {
+   "id": "869b5324-0673-4f12-b2b7-dfe40fbfa47b",
+   "garment_ids": [
+    "23-issey-black-tank",
+    "02-jeans",
+    "50-yello-heels"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "front",
+    "time": "either",
+    "title": "look 005",
+    "cutout": "outfit_02+23+50_1_cut.png",
+    "render": "outfit_02+23+50_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-008",
+    "occasion": "work"
+   },
+   "render_cache_key": "look-008"
+  },
+  {
+   "id": "3eaf5272-a747-4f33-8a0f-ecbfdf5fd482",
+   "garment_ids": [
+    "24-issey-silver-tank",
+    "32-personal-language-skirt",
+    "53-keen-sandals"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "front",
+    "time": "either",
+    "title": "look 007",
+    "cutout": "outfit_24+32+53_1_cut.png",
+    "render": "outfit_24+32+53_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-009",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-009"
+  },
+  {
+   "id": "721cfcdb-8c9d-4809-bdd8-3db48e3d8b2d",
+   "garment_ids": [
+    "29-nin-pleated-top",
+    "15-coucou-mini-skirt",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "front",
+    "time": "either",
+    "title": "look 008",
+    "cutout": "outfit_15+29+52_1_cut.png",
+    "render": "outfit_15+29+52_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-010",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-010"
+  },
+  {
+   "id": "cf7d726f-ffb0-4734-a756-86c3bd42f025",
+   "garment_ids": [
+    "08-bunnyhill-grey-top",
+    "26-liniss-dune-pants",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "front",
+    "time": "day",
+    "title": "look 009",
+    "cutout": "outfit_08+26+52_1_cut.png",
+    "render": "outfit_08+26+52_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-011",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-011"
+  },
+  {
+   "id": "e55cb255-679d-45a6-9fb8-62bb58941b59",
+   "garment_ids": [
+    "25-kotn-samira-tank",
+    "32-personal-language-skirt",
+    "53-keen-sandals"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "34turn",
+    "time": "either",
+    "title": "look 011",
+    "cutout": "outfit_25+32+53_34turn_1_cut.png",
+    "render": "outfit_25+32+53_34turn_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-012",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-012"
+  },
+  {
+   "id": "ee0d62f2-a0a8-490d-bc3e-9d9ac1093534",
+   "garment_ids": [
+    "30-off-shoulder-top",
+    "27-liniss-pants",
+    "50-yello-heels"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "contrapposto",
+    "time": "either",
+    "title": "look 003",
+    "cutout": "outfit_27+30+50_contrapposto_1_cut.png",
+    "render": "outfit_27+30+50_contrapposto_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-013",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-013"
+  },
+  {
+   "id": "f25505f6-2c65-4d0e-aea2-9292548a50f2",
+   "garment_ids": [
+    "48-woodrose-deli-sweater",
+    "47-woodrose-deli-skirt",
+    "49-jil-sander-boots"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "hand-on-hip",
+    "time": "day",
+    "title": "look 002",
+    "cutout": "outfit_47+48+49_hand-on-hip_1_cut.png",
+    "render": "outfit_47+48+49_hand-on-hip_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-014",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-014"
+  },
+  {
+   "id": "b683360f-a007-4e15-9197-3fa11dede330",
+   "garment_ids": [
+    "05-hardest-item",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "34turn",
+    "time": "either",
+    "title": "look 012",
+    "cutout": "outfit_05+52_34turn_1_cut.png",
+    "render": "outfit_05+52_34turn_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-016",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-016"
+  },
+  {
+   "id": "bd781074-ac4d-4305-b216-814a18ac3572",
+   "garment_ids": [
+    "35-realisation-delphine-dress",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "34turn",
+    "time": "either",
+    "title": "look 006",
+    "cutout": "outfit_35+52_34turn_1_cut.png",
+    "render": "outfit_35+52_34turn_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-017",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-017"
+  },
+  {
+   "id": "07194da1-788c-4f11-b11d-26ebb883ebf4",
+   "garment_ids": [
+    "37-realisation-gia-dress",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "contrapposto",
+    "time": "evening",
+    "title": "look 013",
+    "cutout": "outfit_37+52_contrapposto_1_cut.png",
+    "render": "outfit_37+52_contrapposto_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-018",
+    "occasion": "dinner"
+   },
+   "render_cache_key": "look-018"
+  },
+  {
+   "id": "0477a468-2020-4e9c-86e3-8f89008cfebd",
+   "garment_ids": [
+    "38-realisation-iggy-dress",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "hand-on-hip",
+    "time": "either",
+    "title": "look 014",
+    "cutout": "outfit_38+52_hand-on-hip_1_cut.png",
+    "render": "outfit_38+52_hand-on-hip_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-019",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-019"
+  },
+  {
+   "id": "f19b2e06-6b40-4c8d-b26e-62bf9597d735",
+   "garment_ids": [
+    "46-the-idiot-jacket",
+    "25-kotn-samira-tank",
+    "02-jeans",
+    "57-puma-ssg-sneakers"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "34turn",
+    "time": "day",
+    "title": "look 015",
+    "cutout": "outfit_02+25+46+57_34turn_1_cut.png",
+    "render": "outfit_02+25+46+57_34turn_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-020",
+    "occasion": "day out"
+   },
+   "render_cache_key": "look-020"
+  },
+  {
+   "id": "60d07c30-f2cf-420e-bf4c-71754aacd3eb",
+   "garment_ids": [
+    "06-aritzia-slouch-coat",
+    "02-jeans",
+    "07-aritzia-suit-vest",
+    "55-asics-sneakers"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "front",
+    "time": "either",
+    "title": "look 016",
+    "cutout": "outfit_02+06+07+55_1_cut.png",
+    "render": "outfit_02+06+07+55_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-021",
+    "occasion": "work"
+   },
+   "render_cache_key": "look-021"
+  },
+  {
+   "id": "79141fe6-f445-405a-9a3c-e000fb9bb662",
+   "garment_ids": [
+    "09-bunnyhill-white-top",
+    "44-subtle-mermaid-skirt",
+    "52-camper-flats"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "front",
+    "time": "evening",
+    "title": "look 017",
+    "cutout": "outfit_09+44+52_1_cut.png",
+    "render": "outfit_09+44+52_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-022",
+    "occasion": "event / formal"
+   },
+   "render_cache_key": "look-022"
+  },
+  {
+   "id": "55f7e7ad-5263-466f-923b-55dc24709bc5",
+   "garment_ids": [
+    "59-el-hoodie",
+    "42-sagittarius-trousers",
+    "56-mizuno-sneakers"
+   ],
+   "source": "manual",
+   "context": {
+    "pose": "contrapposto",
+    "time": "either",
+    "title": "look 018",
+    "cutout": "outfit_42+56+59_contrapposto_hood-up_1_cut.png",
+    "render": "outfit_42+56+59_contrapposto_hood-up_1.png",
+    "created": "2026-07-19",
+    "look_id": "look-023",
+    "occasion": "home / lounge"
+   },
+   "render_cache_key": "look-023"
+  }
+ ]
+}

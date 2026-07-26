@@ -127,6 +127,14 @@
   .done .lab { flex:1; padding:14px; color:var(--dim); }
   .done button { border:0; border-left:1px solid var(--line); padding:14px 14px; }
 
+  /* Static demo: the verdict controls and the decisions drawer go, because
+     there is nowhere to write a verdict to. Same rule the archive follows for
+     SAVE LOOK / RENDER OUTFIT. Browsing, filtering by occasion and re-rolling
+     all still work — those are reads. */
+  body.demo .acts, body.demo #hist, body.demo .localonly { display: none; }
+  .demoonly { display: none; }
+  body.demo .demoonly { display: inline; }
+
   /* decisions drawer — every judgement stays revisable */
   .drawer { display:none; border-bottom:1px solid var(--line); }
   .drawer.open { display:block; }
@@ -168,14 +176,18 @@
 
 <footer>
   Ranked by learned preference from the looks you publish — not by colour theory,
-  which measured no better than chance against your own judgement. Telling a card
+  which measured no better than chance against your own judgement.
+  <span class="localonly">Telling a card
   <b>not this</b> asks which piece was wrong: an unattributed rejection can't be
-  assigned blame and would penalise the garments that were fine. Nothing here spends
+  assigned blame and would penalise the garments that were fine.</span> Nothing here spends
   anything; suggestions are your existing cutouts, not renders.
-  <br><br>Every judgement is revisable — <b>undo</b> or <b>change</b> on the card, or
+  <span class="demoonly">This deployed copy is read-only: verdicts are recorded against the
+  local server, so here the cards only suggest — <b>suggest again</b> re-rolls them, and the
+  occasion filter re-ranks against the looks published for that occasion.</span>
+  <span class="localonly"><br><br>Every judgement is revisable — <b>undo</b> or <b>change</b> on the card, or
   <b>decisions</b> in the header to revisit anything you have ruled on. Changing your mind
   appends rather than rewrites: the log keeps what you first thought, and only your current
-  verdict is fed to the model. An undone outfit becomes eligible to be suggested again.
+  verdict is fed to the model. An undone outfit becomes eligible to be suggested again.</span>
 </footer>
 
 <script>
@@ -249,9 +261,111 @@ function render() {
   if (DATA.wildcard) SHOWN.push(DATA.wildcard);
   grid.innerHTML = SHOWN.map((o, i) => cardHTML(o, i, !!o.wildcard)).join('');
   fitGrey();
-  strip.textContent =
-    `${SHOWN.length - (DATA.wildcard ? 1 : 0)} suggestions + wildcard · learned from `
-    + `${DATA.prior_looks} published looks · ${DATA.feedback_count} judgements recorded`;
+  const lead = `${SHOWN.length - (DATA.wildcard ? 1 : 0)} suggestions + wildcard · `
+    + `learned from ${DATA.prior_looks} published looks`;
+  // In the demo nothing is recorded, so claiming a judgement count would be a
+  // lie; say what the page IS instead.
+  strip.textContent = POOL ? lead + ' · read-only demo, use suggest again to re-roll'
+                           : lead + ` · ${DATA.feedback_count} judgements recorded`;
+}
+
+// ---- static demo: the same selection, run here -------------------------------
+// The export ships a precomputed ranked POOL instead of one set of cards, because
+// ranking is deterministic — the same closet and the same evidence always give
+// the same order — while the parts that must differ per visit do not need the
+// engine at all. So the shuffle, the diversification and the wildcard draw run
+// below and the deployed stylist still re-rolls, rather than being a screenshot.
+// Recognised by the payload's own shape; nothing here changes the local path.
+let POOL = null;
+
+function poolSuggest(occasion, n) {
+  const O = POOL.occasions[occasion] || POOL.occasions[''];
+  const G = POOL.garments, aff = O.affinity;
+  const worn = new Set(G.filter(g => !g.unworn).map(g => g.id));
+
+  // Sample from a high-scoring band rather than the strict top: the head of the
+  // list is not meaningfully better than the rest of that band, and showing
+  // different clothes is worth more than a third decimal of score.
+  const poolSize = Math.max(n * 6, Math.floor(O.total * 0.15));
+  const head = O.ranked.slice(0, poolSize);
+  for (let i = head.length - 1; i > 0; i--) {          // Fisher-Yates
+    const j = Math.floor(Math.random() * (i + 1));
+    [head[i], head[j]] = [head[j], head[i]];
+  }
+  const ranked = head.concat(O.ranked.slice(poolSize));
+
+  // Diversify: pure ranking returns six variations of one favourite top,
+  // because affinity is a property of garments and the best garment wins
+  // every slot.
+  const picks = [], used = {};
+  for (const cap of [1, 2, 3]) {
+    for (const o of ranked) {
+      if (picks.length >= n) break;
+      if (o[0].some(i => (used[i] || 0) >= cap)) continue;
+      picks.push(o);
+      o[0].forEach(i => { used[i] = (used[i] || 0) + 1; });
+    }
+    if (picks.length >= n) break;
+  }
+
+  // Wildcard: the best outfit built around something she has never worn.
+  // Affinity alone leaves the unworn at neutral, losing to her favourites
+  // forever, which would make the stylist a mirror.
+  let wildcard = null;
+  const byGarment = new Map();
+  for (const o of ranked.slice(0, poolSize * 3)) {
+    for (const i of o[0]) if (G[i].unworn) {
+      if (!byGarment.has(i)) byGarment.set(i, []);
+      byGarment.get(i).push(o);
+    }
+  }
+  if (byGarment.size) {
+    const keys = [...byGarment.keys()];
+    const target = keys[Math.floor(Math.random() * keys.length)];
+    const set = byGarment.get(target);
+    wildcard = set[Math.floor(Math.random() * set.length)];
+  }
+
+  const nm = i => G[i].name;
+  const PRETTY = { 'oversized on oversized': 'volume on volume',
+                   'warmth spread': 'mixed warmth',
+                   'formality spread': 'mixed formality' };
+
+  function decorate(o, wild) {
+    const idx = o[0], notes = o[1] || [];
+    const unworn = idx.filter(i => G[i].unworn);
+    let lead;
+    if (wild && unworn.length) lead = 'first outing for the ' + nm(unworn[0]);
+    else if (unworn.length)    lead = 'puts the ' + nm(unworn[0]) + ' to work';
+    else {
+      const anchor = idx.reduce((a, b) => (aff[b] > aff[a] ? b : a));
+      lead = aff[anchor] > 0.6 ? 'built around your ' + nm(anchor)
+                               : 'a combination you have not tried';
+    }
+    if (occasion) lead += ' · for ' + occasion;
+
+    const caution = notes.slice(0, 2).map(t => {
+      const w = t.split(' ');
+      return PRETTY[(w[0] + ' ' + w.slice(1, -1).join(' ')).trim()] || PRETTY[t] || t;
+    }).join('; ');
+
+    return {
+      garment_ids: idx.map(i => G[i].id),
+      why: lead, caution, wildcard: !!wild,
+      garments: idx.map(i => ({
+        id: G[i].id, name: G[i].name, category: G[i].category,
+        subcategory: G[i].subcategory, affinity: aff[i],
+        unworn: G[i].unworn, img: G[i].img, framed: G[i].framed, scale: G[i].scale
+      }))
+    };
+  }
+
+  return {
+    occasion, prior_looks: O.prior_looks,
+    suggestions: picks.map(o => decorate(o, false)),
+    wildcard: wildcard ? decorate(wildcard, true) : null,
+    feedback_count: 0, state: POOL.state
+  };
 }
 
 async function load() {
@@ -259,7 +373,16 @@ async function load() {
   // Over-fetch a little and slice to the row width, so a window resize re-lays
   // out without asking the server for a different set of clothes.
   const r = await fetch('/api/stylist/suggest?occasion=' + encodeURIComponent(occ.value) + '&n=8');
-  DATA = await r.json();
+  const payload = await r.json();
+  if (payload.pool) {
+    POOL = payload;
+    // read-only: there is nowhere to write a verdict to, so the controls that
+    // record one go, exactly as the archive hides SAVE LOOK
+    document.body.classList.add('demo');
+    DATA = poolSuggest(occ.value, 8);
+  } else {
+    DATA = payload;
+  }
   if (DATA.error) { strip.textContent = DATA.error; grid.innerHTML = ''; return; }
   render();
 }
@@ -335,6 +458,13 @@ grid.addEventListener('click', e => {
 const drawer = document.getElementById('drawer');
 
 async function loadHistory() {
+  // the demo has no log behind it — the #decisions deep-link still resolves,
+  // it just has nothing to show rather than 404ing
+  if (POOL) {
+    drawer.innerHTML = '<div class="hrow up" style="color:var(--dim)">'
+      + 'read-only demo — judgements are recorded on the local server</div>';
+    return;
+  }
   const {history} = await fetch('/api/stylist/history').then(r => r.json());
   if (!history.length) {
     drawer.innerHTML = '<div class="hrow up" style="color:var(--dim)">no decisions yet</div>';

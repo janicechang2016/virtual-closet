@@ -20,9 +20,10 @@
   var ROUTES = [
     { href: '/',             label: 'Archive' },
     { href: '/fitting-room', label: 'Fitting room' },
-    { href: '/stylist',      label: 'Stylist',  local: true },
-    { href: '/insights',     label: 'Insights', local: true },
-    { href: '/galaxy',       label: 'Galaxy',   local: true },
+    { href: '/stylist',      label: 'Stylist'  },
+    { href: '/insights',     label: 'Insights' },
+    { href: '/galaxy',       label: 'Galaxy'   },
+    // sourcing alone stays local — its scan/save routes need the live server
     { href: '/sourcing',     label: 'Sourcing', local: true }
   ];
 

@@ -14,5 +14,8 @@ scripts/attr_grid.html
 scripts/occasion_form.html
 scripts/purchase_form.html
 scripts/color_review.html
-scripts/closet_snapshot.json
+# closet_snapshot.json is deliberately TRACKED (07-26): the Vercel build reads it
+# to generate the /insights, /galaxy and /stylist payloads, and that build has no
+# Postgres and no .app_secret. Untracked, the deploy simply cannot produce them.
+# Refresh with server/scripts/dump_closet.py and commit the result.
 scripts/ranking_review.html
