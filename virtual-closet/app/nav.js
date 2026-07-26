@@ -22,6 +22,7 @@
     { href: '/fitting-room', label: 'Fitting room' },
     { href: '/stylist',      label: 'Stylist',  local: true },
     { href: '/insights',     label: 'Insights', local: true },
+    { href: '/galaxy',       label: 'Galaxy',   local: true },
     { href: '/sourcing',     label: 'Sourcing', local: true }
   ];
 

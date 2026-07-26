@@ -176,6 +176,15 @@ hashing files against every branch.
   reference photos — generating silhouettes for them was tried and reverted as worse than
   the photo. Queued, not priority: vertical body-stacked outfits, wildcard as a full-width
   interruption.
+- **`/galaxy` — Track E constellation (07-26, $0, PROTOTYPE):** canvas force graph on the
+  tokens' Ink ground. **Nodes are thumbnails on white plates, NOT tinted by garment colour** —
+  60% of this closet is below L*25 and would vanish on Ink, and the palette insight that
+  encoding buys is already better served by `/insights`. Colour does state only: oxblood ring
+  = never worn, amber = selected; size = wear count. Worn edges from look co-occurrence,
+  could-pair edges from the constraint engine capped at 3/node (uncapped is ~520 edges — the
+  hairball the plan warns about). `/api/galaxy` serves it; no new tables. The detail panel is
+  the site's one genuine home for glassmorphism, since it finally has a dark field.
+  NOT built: time scrubber (wear_log empty), LLM cluster labels (paid).
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear

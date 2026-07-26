@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>the archive — galaxy</title>
+<style>
+  /* The Analytics Wall / Second Brain, per the design tokens: topological map on
+     near-black, Ink ground, thumbnail nodes, thin translucent-white edges,
+     controls in uppercase mono. Amber = selected, Oxblood = orphan/redundancy.
+
+     Nodes are NOT tinted by garment colour. 60% of this closet is near-black
+     (median L* 16.2, 35 of 58 below L*25), so colour-as-identity would be
+     invisible here AND the palette insight it buys is already delivered better
+     by /insights. Identity comes from the thumbnail; each sits on a white plate
+     so a black garment reads on a black field. */
+  :root {
+    --ink:#0E0E10; --charcoal:#1C1D20; --graphite:#3A3D42;
+    --oxblood:#6F2B2B; --amber:#CC8A3A; --paper:#F5F3EF; --dim:#8b8d92;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; background:var(--ink); color:var(--paper);
+    font:13px/1.45 Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased;
+    overflow:hidden; }
+  .mono { font-family:'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;
+    text-transform:uppercase; letter-spacing:.16em; font-size:10px; }
+
+  header { position:fixed; top:0; left:0; right:0; z-index:20; padding:16px 22px;
+    display:flex; align-items:baseline; gap:20px; flex-wrap:wrap;
+    background:linear-gradient(180deg, rgba(14,14,16,.95), rgba(14,14,16,0)); }
+  .wordmark { font-style:italic; font-size:17px; color:var(--paper);
+    text-decoration:none; }
+  .spacer { flex:1; }
+  header .mono { color:var(--dim); }
+
+  #stage { position:fixed; inset:0; }
+  canvas { display:block; width:100%; height:100%; cursor:grab; }
+  canvas.grabbing { cursor:grabbing; }
+
+  /* controls — instrumentation, per the tokens */
+  #controls { position:fixed; left:22px; bottom:22px; z-index:20; display:flex;
+    flex-direction:column; gap:12px; }
+  .ctl { display:flex; align-items:center; gap:10px; color:var(--dim); }
+  .ctl input[type=range] { width:120px; accent-color:var(--amber); }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; max-width:340px; }
+  .chip { border:1px solid var(--graphite); color:var(--dim); background:none;
+    padding:5px 10px; cursor:pointer; font:inherit; }
+  .chip.on { border-color:var(--paper); color:var(--paper); }
+
+  /* the glass panel — this is the one surface on the site with a dark field
+     behind it, which is the whole reason glassmorphism was re-homed here */
+  #detail { position:fixed; top:64px; right:22px; width:290px; z-index:25;
+    background:rgba(28,29,32,.55); backdrop-filter:blur(18px) saturate(1.3);
+    -webkit-backdrop-filter:blur(18px) saturate(1.3);
+    border:1px solid rgba(245,243,239,.16); padding:16px; display:none; }
+  #detail.open { display:block; }
+  #detail .fig { height:150px; display:flex; align-items:center; justify-content:center;
+    background:var(--paper); margin-bottom:12px; }
+  #detail .fig img { max-height:92%; max-width:92%; object-fit:contain; }
+  #detail h3 { margin:0 0 4px; font-size:14px; font-weight:normal; }
+  #detail .meta { color:var(--dim); }
+  #detail .stats { display:flex; gap:14px; margin:12px 0; }
+  #detail .stats div span { display:block; color:var(--dim); }
+  #detail .acts { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+  #detail .acts a { border:1px solid rgba(245,243,239,.3); color:var(--paper);
+    text-decoration:none; padding:8px 10px; text-align:center; }
+  #detail .acts a:hover { background:rgba(245,243,239,.12); }
+  #detail .close { position:absolute; top:10px; right:12px; cursor:pointer;
+    color:var(--dim); background:none; border:0; font:inherit; }
+
+  /* plain panel beside the graph — the plan's own anti-pattern guard: the graph
+     explores, the panel answers */
+  #panel { position:fixed; right:22px; bottom:22px; z-index:20; width:290px;
+    border:1px solid var(--graphite); background:rgba(14,14,16,.72);
+    padding:14px 16px; }
+  #panel h4 { margin:0 0 10px; font-weight:normal; color:var(--dim); }
+  #panel .orow { display:flex; justify-content:space-between; gap:10px;
+    padding:4px 0; cursor:pointer; }
+  #panel .orow:hover { color:var(--amber); }
+  #panel .orow span:last-child { color:var(--dim); }
+  #legend { position:fixed; left:22px; top:64px; z-index:20; color:var(--dim);
+    display:flex; flex-direction:column; gap:7px; }
+  #legend div { display:flex; align-items:center; gap:8px; }
+  #legend i { width:22px; height:0; border-top:1px solid; display:block; }
+  #hint { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+    color:var(--dim); z-index:20; }
+  @media (max-width:860px) { #panel, #legend { display:none; } }
+</style></head>
+<body>
+<header>
+  <a class="wordmark" href="/">the archive.</a>
+  <span class="mono">Galaxy</span>
+  <span class="spacer"></span>
+  <span class="mono" id="stats"></span>
+</header>
+
+<div id="stage"><canvas id="c"></canvas></div>
+
+<div id="legend" class="mono">
+  <div><i style="border-color:rgba(245,243,239,.55)"></i> worn together</div>
+  <div><i style="border-color:rgba(245,243,239,.16);border-top-style:dashed"></i> could pair</div>
+  <div><i style="border-color:var(--oxblood);border-top-width:3px"></i> never worn</div>
+</div>
+
+<div id="controls">
+  <div class="ctl mono"><label for="spread">Spread</label>
+    <input id="spread" type="range" min="60" max="300" value="150"></div>
+  <div class="ctl mono"><label for="lines">Line weight</label>
+    <input id="lines" type="range" min="0" max="100" value="60"></div>
+  <div class="chips mono" id="chips"></div>
+</div>
+
+<div id="panel" class="mono">
+  <h4>Never worn — click to locate</h4>
+  <div id="orphans"></div>
+</div>
+
+<div id="detail">
+  <button class="close mono" id="dclose">close</button>
+  <div class="fig"><img id="dimg" alt=""></div>
+  <h3 id="dname"></h3>
+  <div class="meta mono" id="dmeta"></div>
+  <div class="stats mono" id="dstats"></div>
+  <div class="acts mono" id="dacts"></div>
+</div>
+
+<div id="hint" class="mono">drag to pan · scroll to zoom · click a garment</div>
+
+<script src="/app/nav.js"></script>
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+let NODES = [], EDGES = [], IMG = {}, VIEW = {x:0, y:0, k:1};
+let hover = null, selected = null, filter = null;
+let spread = 150, lineAlpha = 0.6;
+
+const OX = '#6F2B2B', AMBER = '#CC8A3A', PAPER = '#F5F3EF';
+
+function resize() {
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener('resize', resize); resize();
+
+function radius(n) {
+  // size encodes wear count (plan E.2); floor keeps a never-worn garment findable
+  return 13 + Math.min(n.wears, 6) * 3.0;
+}
+
+fetch('/api/galaxy').then(r => r.json()).then(d => {
+  if (d.error) { document.getElementById('stats').textContent = d.error; return; }
+  NODES = d.nodes.map((n, i) => {
+    const a = (i / d.nodes.length) * Math.PI * 2;
+    return Object.assign({}, n, {
+      x: innerWidth/2 + Math.cos(a) * 220 + (Math.random()-.5)*40,
+      y: innerHeight/2 + Math.sin(a) * 220 + (Math.random()-.5)*40,
+      vx: 0, vy: 0
+    });
+  });
+  const byId = Object.fromEntries(NODES.map(n => [n.id, n]));
+  EDGES = d.edges.map(e => ({...e, s: byId[e.a], t: byId[e.b]})).filter(e => e.s && e.t);
+
+  document.getElementById('stats').textContent =
+    `${d.stats.garments} garments · ${d.stats.worn_edges} worn links · `
+    + `${d.stats.potential_edges} possible · ${d.stats.orphans} never worn`;
+
+  // category filter chips
+  const cats = [...new Set(NODES.map(n => n.category))].filter(Boolean).sort();
+  const chips = document.getElementById('chips');
+  cats.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.textContent = c;
+    b.onclick = () => { filter = (filter === c ? null : c);
+      [...chips.children].forEach(x => x.classList.toggle('on', x.textContent === filter)); };
+    chips.appendChild(b);
+  });
+
+  // plain panel: the orphans, listed — the graph explores, this answers
+  const orphans = NODES.filter(n => n.orphan)
+    .sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, 8);
+  const host = document.getElementById('orphans');
+  orphans.forEach(n => {
+    const row = document.createElement('div'); row.className = 'orow';
+    const a = document.createElement('span'); a.textContent = n.name;
+    const b = document.createElement('span');
+    b.textContent = n.price ? '$' + Math.round(n.price) : '';
+    row.append(a, b);
+    row.onclick = () => { select(n); centreOn(n); };
+    host.appendChild(row);
+  });
+
+  NODES.forEach(n => { if (n.img) { const im = new Image(); im.src = n.img; IMG[n.id] = im; } });
+  requestAnimationFrame(tick);
+});
+
+// ── force layout: 58 nodes, so plain O(n^2) is fine (plan E.3) ──────────────
+function step() {
+  const cx = innerWidth / 2, cy = innerHeight / 2;
+  for (const n of NODES) { n.vx *= 0.86; n.vy *= 0.86; }
+  for (let i = 0; i < NODES.length; i++) {
+    const a = NODES[i];
+    a.vx += (cx - a.x) * 0.0016; a.vy += (cy - a.y) * 0.0016;   // gravity
+    for (let j = i + 1; j < NODES.length; j++) {
+      const b = NODES[j];
+      let dx = b.x - a.x, dy = b.y - a.y;
+      let d2 = dx*dx + dy*dy || 1; const d = Math.sqrt(d2);
+      const min = radius(a) + radius(b) + 26;   // plates must not touch
+      const rep = (spread * spread) / d2;
+      let f = rep * 0.9;
+      if (d < min) f += (min - d) * 3.2;                        // hard separation
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      a.vx -= fx * 0.02; a.vy -= fy * 0.02;
+      b.vx += fx * 0.02; b.vy += fy * 0.02;
+    }
+  }
+  for (const e of EDGES) {
+    const dx = e.t.x - e.s.x, dy = e.t.y - e.s.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const rest = e.kind === 'worn' ? 150 : 240;
+    const k = e.kind === 'worn' ? 0.0075 : 0.0022;
+    const f = (d - rest) * k;
+    const fx = (dx / d) * f, fy = (dy / d) * f;
+    e.s.vx += fx; e.s.vy += fy; e.t.vx -= fx; e.t.vy -= fy;
+  }
+  for (const n of NODES) { n.x += n.vx; n.y += n.vy; }
+}
+
+function neighbours(n) {
+  if (!n) return null;
+  const s = new Set([n.id]);
+  for (const e of EDGES) {
+    if (e.a === n.id) s.add(e.b);
+    if (e.b === n.id) s.add(e.a);
+  }
+  return s;
+}
+
+function draw() {
+  ctx.save();
+  ctx.fillStyle = '#0E0E10';
+  ctx.fillRect(0, 0, innerWidth, innerHeight);
+  ctx.translate(VIEW.x, VIEW.y); ctx.scale(VIEW.k, VIEW.k);
+
+  const focus = neighbours(selected || hover);
+  const dimmed = id => (focus && !focus.has(id)) || (filter && byCat(id) !== filter);
+
+  // edges, additive so overlaps bloom rather than muddy (plan E.3)
+  ctx.globalCompositeOperation = 'lighter';
+  for (const e of EDGES) {
+    const off = dimmed(e.a) || dimmed(e.b);
+    const worn = e.kind === 'worn';
+    ctx.beginPath();
+    ctx.setLineDash(worn ? [] : [3, 5]);
+    ctx.lineWidth = worn ? Math.min(1 + e.weight * 0.5, 3) : 1;
+    ctx.strokeStyle = worn
+      ? `rgba(245,243,239,${(off ? 0.06 : 0.5) * lineAlpha})`
+      : `rgba(245,243,239,${(off ? 0.02 : 0.14) * lineAlpha})`;
+    ctx.moveTo(e.s.x, e.s.y); ctx.lineTo(e.t.x, e.t.y);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.globalCompositeOperation = 'source-over';
+
+  for (const n of NODES) {
+    const r = radius(n), off = dimmed(n.id);
+    ctx.globalAlpha = off ? 0.22 : 1;
+
+    // white plate: a near-black garment must still read on a near-black field
+    ctx.fillStyle = PAPER;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(n.x - r, n.y - r, r*2, r*2, 3);
+    else ctx.rect(n.x - r, n.y - r, r*2, r*2);
+    ctx.fill();
+
+    const im = IMG[n.id];
+    if (im && im.complete && im.naturalWidth) {
+      const pad = 3, box = r*2 - pad*2;
+      const s = Math.min(box / im.naturalWidth, box / im.naturalHeight);
+      const w = im.naturalWidth * s, h = im.naturalHeight * s;
+      ctx.drawImage(im, n.x - w/2, n.y - h/2, w, h);
+    }
+    if (n.orphan) {                       // reserved alert token, never colour alone
+      ctx.strokeStyle = OX; ctx.lineWidth = 2.5;
+      ctx.strokeRect(n.x - r - 1.5, n.y - r - 1.5, r*2 + 3, r*2 + 3);
+    }
+    if (selected && selected.id === n.id) {
+      ctx.strokeStyle = AMBER; ctx.lineWidth = 2;
+      ctx.strokeRect(n.x - r - 4, n.y - r - 4, r*2 + 8, r*2 + 8);
+    }
+    ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+}
+
+const byCat = id => (NODES.find(n => n.id === id) || {}).category;
+
+let settle = 900;
+function tick() {
+  if (settle > 0) { step(); settle--; }
+  else if (hover || selected) { step(); }
+  draw();
+  requestAnimationFrame(tick);
+}
+
+// ── interaction ────────────────────────────────────────────────────────────
+function toWorld(px, py) {
+  return { x: (px - VIEW.x) / VIEW.k, y: (py - VIEW.y) / VIEW.k };
+}
+function hit(px, py) {
+  const p = toWorld(px, py);
+  for (let i = NODES.length - 1; i >= 0; i--) {
+    const n = NODES[i], r = radius(n);
+    if (Math.abs(p.x - n.x) <= r && Math.abs(p.y - n.y) <= r) return n;
+  }
+  return null;
+}
+let dragging = false, last = null;
+cv.addEventListener('pointerdown', e => {
+  dragging = true; last = {x: e.clientX, y: e.clientY}; cv.classList.add('grabbing');
+});
+addEventListener('pointerup', e => {
+  cv.classList.remove('grabbing');
+  if (dragging && last && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 4) {
+    const n = hit(e.clientX, e.clientY);
+    n ? select(n) : deselect();
+  }
+  dragging = false;
+});
+cv.addEventListener('pointermove', e => {
+  if (dragging && last) {
+    VIEW.x += e.clientX - last.x; VIEW.y += e.clientY - last.y;
+    last = {x: e.clientX, y: e.clientY};
+    settle = Math.max(settle, 1);
+  } else {
+    hover = hit(e.clientX, e.clientY);
+    settle = Math.max(settle, 1);
+  }
+});
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const f = e.deltaY < 0 ? 1.08 : 1/1.08;
+  const p = toWorld(e.clientX, e.clientY);
+  VIEW.k = Math.max(0.35, Math.min(3, VIEW.k * f));
+  VIEW.x = e.clientX - p.x * VIEW.k; VIEW.y = e.clientY - p.y * VIEW.k;
+}, {passive:false});
+
+function centreOn(n) {
+  VIEW.k = 1.15;
+  VIEW.x = innerWidth/2 - n.x * VIEW.k;
+  VIEW.y = innerHeight/2 - n.y * VIEW.k;
+}
+
+function select(n) {
+  selected = n;
+  const d = document.getElementById('detail');
+  document.getElementById('dimg').src = n.img || '';
+  document.getElementById('dname').textContent = n.name;
+  document.getElementById('dmeta').textContent =
+    [n.subcategory || n.category, n.price ? '$' + Math.round(n.price) : null]
+      .filter(Boolean).join(' · ');
+  const st = document.getElementById('dstats'); st.innerHTML = '';
+  [['worn', n.wears], ['links', n.worn_links],
+   ['status', n.orphan ? 'never worn' : 'in rotation']].forEach(([k, v]) => {
+    const el = document.createElement('div');
+    const a = document.createElement('span'); a.textContent = k;
+    const b = document.createTextNode(String(v));
+    el.append(a, b); st.appendChild(el);
+  });
+  // E.5: every node click leads to an action
+  const acts = document.getElementById('dacts'); acts.innerHTML = '';
+  [['Style it in the fitting room', '/fitting-room'],
+   ['Ask the stylist', '/stylist'],
+   ['See it in insights', '/insights']].forEach(([label, href]) => {
+    const a = document.createElement('a'); a.href = href; a.textContent = label;
+    acts.appendChild(a);
+  });
+  d.classList.add('open');
+  settle = Math.max(settle, 60);
+}
+function deselect() { selected = null; document.getElementById('detail').classList.remove('open'); }
+document.getElementById('dclose').onclick = deselect;
+addEventListener('keydown', e => { if (e.key === 'Escape') deselect(); });
+
+document.getElementById('spread').addEventListener('input', e => {
+  spread = +e.target.value; settle = Math.max(settle, 120);
+});
+document.getElementById('lines').addEventListener('input', e => {
+  lineAlpha = +e.target.value / 60;
+});
+</script>
+</body></html>

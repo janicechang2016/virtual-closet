@@ -1,5 +1,35 @@
 # Decision log
 
+## 2026-07-26 — Track E `/galaxy` prototype; node colour freed from garment colour
+
+**Her question dissolved the blocker.** Plan E.2 encodes node colour as the actual garment
+colour, justified as "reveals real palette; exposes repeat-buying". Measured against this
+closet that encoding is close to worthless: **median dominant lightness is L\*16.2 and 35 of
+58 garments sit below L\*25**, so on the tokens' Ink ground most nodes would be invisible —
+and the palette insight it buys is one sentence ("this wardrobe is 60% black") which
+`/insights` already delivers better, per garment and sortable.
+
+**So colour was freed and identity moved to the thumbnail** — which is what the design tokens
+described in the first place ("force-directed graph of **thumbnail nodes**"). Each node is a
+white plate carrying the garment cutout, so a near-black garment reads on a near-black field.
+Colour now does state work only: **oxblood ring = never worn** (the reserved alert token),
+**amber = selected**, per tokens. Size still encodes wear count.
+
+**This unlocked the dark ground**, which in turn finally gives glassmorphism the dark field
+it needs — the detail panel is the first surface on the site where frosted glass earns its
+place after two re-homings.
+
+**Built ($0):** force layout on canvas (58 nodes, plain O(n²) — plan E.3 says performance is
+not a concern), worn edges from published-look co-occurrence, could-pair edges from the
+constraint engine capped at 3 per node (unfiltered it is ~520 edges and becomes the hairball
+E.5 warns about), hover/selection neighbourhood focus with the rest dimmed, orphans ringed,
+and a plain never-worn panel beside the graph — the plan's own guard: **the graph explores,
+the panel answers, and every node click leads to an action.**
+
+**Deliberately not built:** the 12-month time scrubber (E.4) because `wear_log` is empty and
+it would animate nothing, and LLM cluster labels because that is a paid call needing
+approval.
+
 ## 2026-07-26 — The mirror is a constant box; `production` branch deleted
 
 **Mirror.** Dropping a garment visibly resized the frame. Cause: `#stage-img` was only
