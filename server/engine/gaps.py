@@ -13,7 +13,18 @@ ORPHAN_PARTICIPATION = 2
 
 
 def _cat(garments, name):
-    return [g for g in garments if g.get("category") == name]
+    """Garments that can fill this slot.
+
+    `category` is the garment's primary identity; `alt_categories` (migration
+    0005) lists additional slots it may fill. 59-el-hoodie is outerwear she wears
+    AS THE TOP: 3 of her first 15 logged wears were bottom + shoes + hoodie — a
+    shape `hard_violations` already permits ("outerwear worn on its own IS the
+    top layer") but that this enumerator never generated, so the stylist could
+    never suggest one of her most-worn garments.
+    """
+    return [g for g in garments
+            if g.get("category") == name
+            or name in (g.get("alt_categories") or ())]
 
 
 def enumerate_outfits(garments, with_outerwear=False):
@@ -36,6 +47,9 @@ def enumerate_outfits(garments, with_outerwear=False):
             if constraints.is_valid(combo):
                 out.append(combo)
             for ow in outers:
+                # a dual-role garment cannot be its own outer layer
+                if any(x["id"] == ow["id"] for x in combo):
+                    continue
                 combo2 = base + [sh, ow]
                 if constraints.is_valid(combo2):
                     out.append(combo2)

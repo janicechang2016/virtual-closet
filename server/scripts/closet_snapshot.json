@@ -40,7 +40,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "02-jeans",
@@ -80,7 +81,8 @@
     "price_usd": 98.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "03-patterned-dress",
@@ -164,7 +166,8 @@
     "price_usd": 250.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "04-structured-blazer",
@@ -204,7 +207,8 @@
     "price_usd": 80.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "05-hardest-item",
@@ -274,7 +278,8 @@
     "price_usd": 75.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "06-aritzia-slouch-coat",
@@ -314,7 +319,8 @@
     "price_usd": 250.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "07-aritzia-suit-vest",
@@ -354,7 +360,8 @@
     "price_usd": 98.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "08-bunnyhill-grey-top",
@@ -437,7 +444,8 @@
     "price_usd": 15.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "09-bunnyhill-white-top",
@@ -493,7 +501,8 @@
     "price_usd": 15.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "10-coucou-black-midi-skirt",
@@ -535,7 +544,8 @@
     "price_usd": 68.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "11-coucou-black-muse-tank",
@@ -577,7 +587,8 @@
     "price_usd": 58.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "12-coucou-black-scoop-tank",
@@ -619,7 +630,8 @@
     "price_usd": 58.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "13-coucou-long-sleeve-top",
@@ -661,7 +673,8 @@
     "price_usd": 68.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "14-coucou-midi-black-dress",
@@ -703,7 +716,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "15-coucou-mini-skirt",
@@ -745,7 +759,8 @@
     "price_usd": 58.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "16-coucou-red-scoop-tank",
@@ -787,7 +802,8 @@
     "price_usd": 58.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "17-coucou-slip-dress",
@@ -827,7 +843,8 @@
     "price_usd": 128.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "18-coucou-white-midi-skirt",
@@ -867,7 +884,8 @@
     "price_usd": 68.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "19-coucou-white-scoop-tank",
@@ -907,7 +925,8 @@
     "price_usd": 58.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "20-entire-studios-eternal-hoodie",
@@ -947,7 +966,8 @@
     "price_usd": 50.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "21-frankies-maxi-dress",
@@ -987,7 +1007,8 @@
     "price_usd": 128.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "23-issey-black-tank",
@@ -1027,7 +1048,8 @@
     "price_usd": 150.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "24-issey-silver-tank",
@@ -1067,7 +1089,8 @@
     "price_usd": 150.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "25-kotn-samira-tank",
@@ -1107,7 +1130,8 @@
     "price_usd": 58.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "26-liniss-dune-pants",
@@ -1163,7 +1187,8 @@
     "price_usd": 30.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "27-liniss-pants",
@@ -1217,7 +1242,8 @@
     "price_usd": 30.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "28-neil-vernon-long-sleeve-top",
@@ -1259,7 +1285,8 @@
     "price_usd": 128.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "29-nin-pleated-top",
@@ -1313,7 +1340,8 @@
     "price_usd": 128.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "30-off-shoulder-top",
@@ -1353,7 +1381,8 @@
     "price_usd": 75.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "31-orseund-iris-top",
@@ -1408,7 +1437,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "32-personal-language-skirt",
@@ -1450,7 +1480,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "33-realisation-alba-dress",
@@ -1520,7 +1551,8 @@
     "price_usd": 158.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "34-realisation-allegra-dress",
@@ -1575,7 +1607,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "35-realisation-delphine-dress",
@@ -1631,7 +1664,8 @@
     "price_usd": 200.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "36-realisation-liv-dress",
@@ -1701,7 +1735,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "37-realisation-gia-dress",
@@ -1757,7 +1792,8 @@
     "price_usd": 250.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "38-realisation-iggy-dress",
@@ -1813,7 +1849,8 @@
     "price_usd": 200.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "39-realisation-ivy-dress",
@@ -1882,7 +1919,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "40-realisation-sheer-top",
@@ -1936,7 +1974,8 @@
     "price_usd": 128.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "41-sagittarius-top",
@@ -1990,7 +2029,8 @@
     "price_usd": 15.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "42-sagittarius-trousers",
@@ -2030,7 +2070,8 @@
     "price_usd": 20.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "43-subtle-mermaid-top",
@@ -2084,7 +2125,8 @@
     "price_usd": 50.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "44-subtle-mermaid-skirt",
@@ -2138,7 +2180,8 @@
     "price_usd": 60.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "45-sundae-gorum-shirt",
@@ -2180,7 +2223,8 @@
     "price_usd": 128.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "46-the-idiot-jacket",
@@ -2264,7 +2308,8 @@
     "price_usd": 30.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "47-woodrose-deli-skirt",
@@ -2347,7 +2392,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "48-woodrose-deli-sweater",
@@ -2388,7 +2434,8 @@
     "price_usd": 98.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "49-jil-sander-boots",
@@ -2428,7 +2475,8 @@
     "price_usd": 330.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "50-yello-heels",
@@ -2482,7 +2530,8 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "51-weejuns-loafers",
@@ -2550,7 +2599,8 @@
     "price_usd": 150.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "52-camper-flats",
@@ -2590,7 +2640,8 @@
     "price_usd": 98.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "53-keen-sandals",
@@ -2644,7 +2695,8 @@
     "price_usd": 60.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "54-salomon-sneakers",
@@ -2698,7 +2750,8 @@
     "price_usd": 200.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "55-asics-sneakers",
@@ -2752,7 +2805,8 @@
     "price_usd": 115.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "56-mizuno-sneakers",
@@ -2806,7 +2860,8 @@
     "price_usd": 200.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "57-puma-ssg-sneakers",
@@ -2846,7 +2901,8 @@
     "price_usd": 150.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "58-vortex-long-boots",
@@ -2886,7 +2942,8 @@
     "price_usd": 228.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": null
   },
   {
    "id": "59-el-hoodie",
@@ -2940,7 +2997,10 @@
     "price_usd": 100.0
    },
    "wear_count": 0,
-   "last_worn": null
+   "last_worn": null,
+   "alt_categories": [
+    "top"
+   ]
   }
  ],
  "outfits": [

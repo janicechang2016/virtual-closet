@@ -105,14 +105,84 @@ and $925 stop being an accusation the data could not support.
 **THE FINDING from the first 15 wears (07-27): what she WEARS and what she PUBLISHES do
 not overlap.** All 15 wears created 15 NEW outfits — not one matched a published look —
 and 18 of the 35 garments used by the 18 published looks have never actually been worn.
-27 of 58 garments have been worn; 13 appear in neither record. The stylist's affinity model
-(AUC 0.824) is trained entirely on the published looks, so it may be learning an
-aspirational/photographic corpus rather than behaviour. **This makes the open decision —
-whether `source='worn'` outfits feed affinity — answerable by MEASUREMENT, which is why the
-schema keeps them distinguishable: hold the wear log out and test whether
-affinity-trained-on-published-looks predicts what she actually wore**, exactly as the blind
-24-outfit calibration produced colour 0.491 vs affinity 0.824. $0, pure computation. NOT YET
-RUN. Caveat: 15 wears is thin — directional, not conclusive, and it sharpens with every log.
+27 of 58 garments have been worn; 13 appear in neither record.
+
+**HER CALL 07-27, a standing change of target: `/stylist` should suggest outfits SHE WOULD
+WEAR, not outfits she would publish.** Everything below is measured against that target.
+The v2 pivot to a utility app is the reason; treat wear-prediction as the objective from
+here, and published looks as merely the training data that happened to exist first.
+
+**MEASURED 07-27 — held-out test, the 15 wears as a test set the model never saw.** Same
+AUC function as the blind 24-outfit calibration (`analyse_stylist_feedback.auc`) so the
+numbers are comparable. Sanity check first: published looks vs the whole space scores 0.939
+in-sample, so the pipeline is sound. Then, against the held-out wears:
+
+| model | vs whole valid space | vs in-rotation outfits only |
+|---|---|---|
+| learned affinity (published looks) | **0.660** [0.554, 0.758] | **0.555** [0.440, 0.676] |
+| colour + constraints | **0.360** [0.249, 0.482] | 0.385 [0.266, 0.504] |
+
+- **Affinity scores 0.824 on her stated verdicts but 0.660 on her actual behaviour, and
+  0.555 — a CI spanning chance — once garment rotation is controlled for.** The second
+  column restricts negatives to outfits built only from garments she has worn or published,
+  which removes the shortcut of scoring dead stock low. Removing the shortcut removes most
+  of the signal: **the model is largely detecting WHICH GARMENTS ARE IN ROTATION, not which
+  combinations she will put on.**
+- **Colour is now measured BELOW chance (0.360, CI excludes 0.5)** — not merely
+  uninformative but inverted against real wears. A stronger version of the 0.491 result.
+- **Nothing currently predicts her wears well.** Under the new target that is the headline:
+  the best available model is 0.660, and 0.555 once the rotation shortcut is removed.
+
+**MEASURED 07-27 — the open decision is now ANSWERED, and the answer is NO.** Leave-one-out
+over the 15 wears, per-fold AUC (each fold has its own model, so pooling scores across folds
+would be invalid — for each held-out positive, take the fraction of negatives it beats under
+its own fold's model):
+
+| training set | vs whole space | vs in-rotation |
+|---|---|---|
+| published looks only (today) | 0.660 | 0.555 |
+| published + the other 14 wears | 0.540 (**−0.120**) | 0.383 (**−0.172**) |
+| the other 14 wears only | 0.622 (−0.038) | 0.549 (−0.006) |
+
+**Feeding `source='worn'` outfits into affinity makes prediction WORSE, consistently across
+both negative pools. Do not do it.** `NEGATIVE_WEIGHT = 0.0` has a sibling: wears stay out
+of `affinity()` too. The reason is the same failure as rejections — **a per-garment scalar
+cannot hold context. Wear FREQUENCY is not preference:** she wears jeans and yello-heels
+constantly because they are defaults, not favourites, and adding wear counts just ranks by
+frequency. In the in-rotation column the boosted garments appear in the negatives too, so
+lifting them lifts negatives as much as positives and the score falls below chance.
+CAVEAT, stated because 15 is thin: the CIs are wide and overlap A's estimate. The DIRECTION
+is consistent across all four cells; the magnitude is not established. Revisit at ~50 wears.
+- **What this does NOT say:** that wear data is useless. It says this MODEL SHAPE cannot use
+  it. Predicting wear plausibly needs pairwise/compatibility (already the designated home
+  for the blame data), or context (occasion/season/weather — a Tuesday is a context, and
+  `outfit.context` already exists), or frequency-NORMALISED affinity that down-weights
+  repeats. Those are the candidates; none is built.
+- Repro: `scratchpad/heldout_wear_test.py`, `scratchpad/loo_wear_test.py` (session 07-27).
+
+**THE ENGINE CANNOT SUGGEST 4 OF HER 15 REAL OUTFITS — and it is not a constraints
+failure.** All four return `is_valid: True` with zero hard violations. Three are the same
+shape: `bottom + shoes + 59-el-hoodie`. **`59-el-hoodie` is categorised `outerwear` but she
+wears it AS THE TOP**, and `gaps.enumerate_outfits()` defaults to `with_outerwear=False`, so
+an outfit whose top layer is a hoodie has no `top` and is never enumerated. It is one of her
+most-worn garments (3 wears) and the stylist can never offer it. **Her call 07-27: the
+hoodie should count as BOTH a top and outerwear.** Note `garment.category` is a
+`text NOT NULL` column read in ~55 places across ~20 files, so making it a list is a large
+refactor. **FIXED 07-27 the contained way: migration 0005 adds an ADDITIVE
+`alt_categories text[]`, and ONLY `gaps._cat()` reads it** — `category` stays `outerwear`,
+so /insights grouping, the /wear grid, tryon, dragcut and every other consumer are
+untouched. Semantics: `category` is the primary identity, `alt_categories` are additional
+slots the garment may fill. `constraints.py` needed NO change — `hard_violations` already
+permitted outerwear-as-top (the rule that her own look-023 once failed); the gap was purely
+that the enumerator never GENERATED the shape. `enumerate_outfits` also gained a guard so a
+dual-role garment cannot be its own outer layer when `with_outerwear=True`.
+**Result: worn outfits inside the engine's space 11/15 -> 14/15, space 2220 -> 2320.**
+Held-out AUC essentially unchanged (0.660 -> 0.652 / 0.555 -> 0.548) — as expected, since
+this was a COVERAGE fix, not a ranking one. Set `alt_categories` in BOTH stores
+(migration + `garments/<id>/meta.json`), per the both-stores-or-neither rule.
+The one wear still outside is 4-item (`02-jeans + 04-structured-blazer +
+07-aritzia-suit-vest + 54-salomon-sneakers`) and needs `with_outerwear=True`, which is a
+deliberate space-size choice — not yet revisited.
 
 ## Track A — ingestion (2026-07-27), $0 half done
 

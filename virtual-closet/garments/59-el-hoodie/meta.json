@@ -2,6 +2,9 @@
   "id": "59-el-hoodie",
   "name": "painted band hoodie",
   "category": "outerwear",
+  "alt_categories": [
+    "top"
+  ],
   "subcategory": "hoodie",
   "color": "washed black with green/ecru painted band",
   "pattern": "hand-painted spotted band wrapping the chest and upper sleeves",

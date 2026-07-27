@@ -21,7 +21,7 @@ SELECT json_build_object(
   'garments', (SELECT coalesce(json_agg(row_to_json(g)), '[]'::json) FROM (
       SELECT id, category, subcategory, colors, pattern, formality, warmth,
              season_tags, fabric, fit, volume, asset_tier, size_owned, brand,
-             purchase, wear_count, last_worn
+             purchase, wear_count, last_worn, alt_categories
       FROM garment ORDER BY id) g),
   'outfits', (SELECT coalesce(json_agg(row_to_json(o)), '[]'::json) FROM (
       SELECT id, garment_ids, source, context, render_cache_key
