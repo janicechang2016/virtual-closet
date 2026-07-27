@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>galaxy title — options</title>
+<style>
+  /* Same ground, same faces, same tokens as /galaxy, so what is being judged is
+     the type and nothing else. No webfonts anywhere on this site — the choices
+     are Helvetica, the mono stack, and what we can do to them with processing. */
+  :root { --ink:#0E0E10; --graphite:#3A3D42; --oxblood:#6F2B2B;
+          --amber:#CC8A3A; --paper:#F5F3EF; --dim:#8b8d92; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:var(--paper);
+    font:13px/1.45 Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  .mono { font-family:'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;
+    text-transform:uppercase; letter-spacing:.16em; font-size:10px; }
+  .wordmark { font-style:italic; font-size:17px; color:var(--paper); text-decoration:none; }
+
+  .opt { border-bottom:1px solid #202126; }
+  .bar { padding:16px 22px; display:flex; align-items:center; gap:20px;
+    min-height:60px; }
+  .cap { padding:0 22px 18px; color:var(--dim); max-width:760px; }
+  .cap b { color:var(--paper); font-weight:normal; }
+  .num { font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace; font-size:10px;
+    letter-spacing:.16em; color:var(--graphite); padding:14px 22px 0; }
+  canvas { display:block; }
+
+  /* 1 — baseline */
+  .t1 { color:var(--dim); }
+
+  /* 2 — instrument: the HUD's own bracket, promoted to a title */
+  .t2 { position:relative; padding:7px 14px; color:var(--paper);
+        font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+        text-transform:uppercase; letter-spacing:.34em; font-size:12px; }
+  .t2::before, .t2::after { content:''; position:absolute; width:7px; height:7px;
+        border:1px solid rgba(245,243,239,.55); }
+  .t2::before { left:0; top:0; border-right:0; border-bottom:0; }
+  .t2::after  { right:0; bottom:0; border-left:0; border-top:0; }
+
+  /* 4 — resolve: the nav's glyph-resolve, held at title scale */
+  .t4 { font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace; font-style:italic;
+        text-transform:uppercase; letter-spacing:.30em; font-size:19px;
+        color:var(--paper); }
+  .t4 .g { color:var(--graphite); }
+
+  /* 6 — the page names itself in the brand's own voice */
+  .t6 { font-style:italic; font-size:26px; letter-spacing:-.01em; color:var(--paper); }
+  .t6 .dot { color:var(--dim); }
+  .mark { font-style:italic; font-size:13px; color:var(--dim); text-decoration:none; }
+</style></head>
+<body>
+
+<div class="opt">
+  <div class="num">01 · baseline — what is there now</div>
+  <div class="bar"><a class="wordmark">the archive.</a><span class="mono t1">Galaxy</span></div>
+  <div class="cap">A 10px dim label. It sits at the same weight as the stats readout on the
+    right, so the page is <b>labelled</b> rather than titled — which is the thing your note
+    was reacting to.</div>
+</div>
+
+<div class="opt">
+  <div class="num">02 · instrument</div>
+  <div class="bar"><a class="wordmark">the archive.</a><span class="t2">Galaxy</span></div>
+  <div class="cap">Borrows the corner-ticked bracket from the page's own detection HUD, so the
+    title reads as <b>an instrument label on a machine</b>. Strongest link to what already
+    makes this page cybercore, and costs no new vocabulary.</div>
+</div>
+
+<div class="opt">
+  <div class="num">03 · dithered</div>
+  <div class="bar"><a class="wordmark">the archive.</a><canvas id="c3"></canvas></div>
+  <div class="cap">The title built from the <b>same Bayer dot field as the nodes</b> — the page
+    made of one material throughout. Most conceptually exact; also the least legible at small
+    sizes, so it needs the scale shown here.</div>
+</div>
+
+<div class="opt">
+  <div class="num">04 · resolving</div>
+  <div class="bar"><a class="wordmark">the archive.</a>
+    <span class="t4">G<span class="g">}4TR</span>X<span class="g">Z</span></span></div>
+  <div class="cap">Caught mid-resolve, the way the nav labels and the ASCII entrance already
+    behave — it would settle to <b>GALAXY</b> on load. Reuses a motion language the site owns,
+    but it is a one-second event: for the other 99% of the visit it is just wide mono.</div>
+</div>
+
+<div class="opt">
+  <div class="num">05 · reeded</div>
+  <div class="bar"><a class="wordmark">the archive.</a><canvas id="c5"></canvas></div>
+  <div class="cap">The title seen <b>through the glass column</b> — the same magnify-and-displace
+    the ribs do. Ties the header to the page's most distinctive surface. Risk: it reads as a
+    rendering fault rather than as glass unless the ribs stay coarse.</div>
+</div>
+
+<div class="opt">
+  <div class="num">06 · own voice</div>
+  <div class="bar"><a class="mark">the archive.</a>
+    <span class="t6">galaxy<span class="dot">.</span></span></div>
+  <div class="cap">Drops the mono label and lets the page name itself in <b>the wordmark's own
+    italic</b>, at title scale, with the wordmark receding to a mark. The only option that
+    changes the header's hierarchy rather than its texture — and the only one that would want
+    doing on every page, not just this one.</div>
+</div>
+
+<script>
+const BAYER8 = [
+  [0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],
+  [12,44,4,36,14,46,6,38],[60,28,52,20,62,30,54,22],
+  [3,35,11,43,1,33,9,41],[51,19,59,27,49,17,57,25],
+  [15,47,7,39,13,45,5,37],[63,31,55,23,61,29,53,21]
+].map(r => r.map(v => (v + 0.5) / 64));
+
+const FACE = "'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace";
+
+/** Draw WORD to an offscreen canvas at cell resolution. */
+function textCells(word, cell, font) {
+  const m = document.createElement('canvas').getContext('2d');
+  m.font = font;
+  const w = Math.ceil(m.measureText(word).width) + 8;
+  const h = 30;
+  const src = document.createElement('canvas');
+  src.width = Math.ceil(w / cell); src.height = Math.ceil(h / cell);
+  const sx = src.getContext('2d', { willReadFrequently: true });
+  sx.scale(1 / cell, 1 / cell);
+  sx.font = font; sx.fillStyle = '#fff'; sx.textBaseline = 'middle';
+  sx.fillText(word, 4, h / 2);
+  return { src, sx, cols: src.width, rows: src.height };
+}
+
+// 03 — dithered title, the node treatment applied to type
+(function () {
+  const PIXEL = 3, cell = 3;
+  const font = '600 26px ' + FACE;
+  const { sx, cols, rows } = textCells('GALAXY', cell, font);
+  const data = sx.getImageData(0, 0, cols, rows).data;
+  const c = document.getElementById('c3');
+  c.width = cols * PIXEL; c.height = rows * PIXEL;
+  const x = c.getContext('2d');
+  x.fillStyle = '#F5F3EF';
+  for (let y = 0; y < rows; y++) {
+    for (let i = 0; i < cols; i++) {
+      const a = data[(y * cols + i) * 4 + 3] / 255;
+      if (a < 0.35) continue;
+      // coverage floored the same way the nodes are, so the word keeps weight
+      if (0.30 + 0.70 * a > BAYER8[y & 7][i & 7]) x.fillRect(i * PIXEL, y * PIXEL, PIXEL, PIXEL);
+    }
+  }
+})();
+
+// 05 — the title behind the reeded glass
+(function () {
+  const font = '500 24px ' + FACE;
+  const m = document.createElement('canvas').getContext('2d');
+  m.font = font;
+  const W = Math.ceil(m.measureText('GALAXY').width) + 16, H = 34;
+  const flat = document.createElement('canvas');
+  flat.width = W; flat.height = H;
+  const f = flat.getContext('2d');
+  f.font = font; f.fillStyle = '#F5F3EF'; f.textBaseline = 'middle';
+  f.letterSpacing = '6px';
+  f.fillText('GALAXY', 6, H / 2);
+
+  const c = document.getElementById('c5');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  const RIBS = 11, MAG = 2.1, ribW = W / RIBS;
+  for (let i = 0; i < RIBS; i++) {
+    const centre = (i + 0.5) * ribW, srcW = ribW * MAG;
+    x.drawImage(flat, Math.max(0, centre - srcW / 2), 0, srcW, H,
+                i * ribW, 0, ribW + 0.5, H);
+    const g = x.createLinearGradient(i * ribW, 0, (i + 1) * ribW, 0);
+    g.addColorStop(0, 'rgba(245,243,239,.10)');
+    g.addColorStop(0.5, 'rgba(245,243,239,0)');
+    g.addColorStop(1, 'rgba(10,10,12,.34)');
+    x.fillStyle = g; x.fillRect(i * ribW, 0, ribW, H);
+  }
+})();
+</script>
+</body></html>
