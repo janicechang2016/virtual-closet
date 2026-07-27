@@ -23,7 +23,7 @@ import closet_server
 # sourcing.html stays out: its scan/save routes need the live local server
 APP_FILES = ["carousel.html", "index.html", "app.js", "nav.js", "style.css",
              "entrance-bg.jpg", "stylist.html", "insights.html", "galaxy.html",
-             "unlock.js"]
+             "unlock.js", "wear.html"]
 
 # How deep a ranked pool the browser gets. The live stylist shuffles the top
 # max(n*6, 15% of ranked) ~= 333 and scans 3x that for a wildcard, so 1200
@@ -193,10 +193,19 @@ def main():
     # byte-identical payloads to the live ones, so those pages need no static
     # branch at all; /stylist gets a ranked pool instead of one set of cards,
     # which its own loader recognises by the `pool` flag.
+    pool = stylist_pool()      # computed once; both payloads below read from it
     payloads = {
         "api/insights.json": closet_server.insights_data(),
         "api/galaxy.json": closet_server.galaxy_data(),
-        "api/stylist/suggest.json": stylist_pool(),
+        "api/stylist/suggest.json": pool,
+        # /wear needs only the cutouts and their names. The pool already carries a
+        # garment table, but it is 163 KB of ranked outfits alongside — far too
+        # much to make a phone download before it can log getting dressed.
+        "api/garments.json": {"garments": [
+            {"id": g["id"], "name": g["name"], "img": g["img"],
+             "category": g["category"]}
+            for g in pool["garments"]
+        ]},
     }
     for rel, payload in payloads.items():
         dst = out / rel

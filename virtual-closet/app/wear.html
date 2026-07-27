@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>the archive — wear</title>
+<style>
+  /* SYVE: white void, 1px black hairlines, uppercase Helvetica, italic wordmark.
+     PHONE FIRST, unlike every other page here — a wear is logged at the end of a
+     day, away from the laptop, which is the entire reason this page talks to the
+     hosted API instead of the local server. The desktop layout is the media
+     query, not the default. */
+  :root { --line:#000; --bg:#fff; --dim:#8a8a8a; --alert:#6F2B2B; --rule:#e6e6e6; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; background:var(--bg); color:#000;
+    font:13px/1.45 Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  .up { text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+  button, input, select { font:inherit; }
+
+  header { position:sticky; top:0; z-index:20; background:var(--bg);
+    border-bottom:1px solid var(--line); padding:14px 16px;
+    display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .wordmark { font-style:italic; font-size:17px; color:inherit; text-decoration:none; }
+  .spacer { flex:1; }
+  header .up { color:var(--dim); }
+
+  .bar { padding:10px 16px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap; color:var(--dim); }
+  .bar input[type=date] { border:1px solid var(--line); background:none;
+    padding:7px 9px; font-size:12px; }
+
+  /* the grid: big enough to hit with a thumb */
+  #grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr));
+    border-top:1px solid var(--rule); }
+  .g { border-right:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    padding:10px 6px 8px; cursor:pointer; background:none; text-align:center;
+    display:flex; flex-direction:column; gap:6px; align-items:center;
+    min-height:132px; position:relative; }
+  .g img { height:74px; max-width:100%; object-fit:contain; display:block;
+    transition:transform .12s ease; }
+  .g .n { font-size:9px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--dim); line-height:1.25; }
+  /* Selection must be unmissable at arm's length, but it cannot touch the
+     garment: filling the cell and inverting the image was tried and turns the
+     on-model photos into negatives. So the CELL is marked and the clothes are
+     left alone — a heavy inset rule plus the name strip going solid. */
+  .g.on { box-shadow:inset 0 0 0 2px #000; }
+  .g.on .n { background:#000; color:#fff; padding:3px 4px; margin:0 -6px -8px;
+    padding-bottom:8px; }
+  .g.on img { transform:scale(1.04); }
+  .g .tick { position:absolute; top:5px; right:7px; font-size:11px; color:#000;
+    display:none; }
+  .g.on .tick { display:block; }
+
+  /* the commit bar — thumb reach, above the home indicator */
+  #submitbar { position:sticky; bottom:0; z-index:20; background:var(--bg);
+    border-top:1px solid var(--line); padding:12px 16px;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; gap:12px; }
+  #count { flex:1; color:var(--dim); }
+  #log { background:#000; color:#fff; border:0; padding:14px 22px; cursor:pointer;
+    text-transform:uppercase; letter-spacing:.14em; font-size:11px; }
+  #log:disabled { opacity:.3; cursor:default; }
+  #clear { background:none; border:1px solid var(--line); padding:13px 14px;
+    cursor:pointer; text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+
+  #toast { position:fixed; left:16px; right:16px; bottom:78px; z-index:30;
+    background:#111; color:#fff; padding:12px 14px; display:none;
+    align-items:center; gap:12px; }
+  #toast.show { display:flex; }
+  #toast button { margin-left:auto; background:none; border:1px solid #555;
+    color:#fff; padding:7px 10px; cursor:pointer;
+    text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+
+  section.recent { border-top:1px solid var(--line); padding:16px; }
+  section.recent h2 { margin:0 0 12px; font-size:10px; font-weight:normal;
+    text-transform:uppercase; letter-spacing:.14em; color:var(--dim); }
+  .w { border-top:1px solid var(--rule); padding:10px 0; display:flex;
+    gap:12px; align-items:baseline; }
+  .w .d { width:78px; flex:none; color:var(--dim); font-variant-numeric:tabular-nums; }
+  .w .items { flex:1; text-transform:uppercase; letter-spacing:.08em; font-size:10px; }
+  .w button { background:none; border:0; color:var(--dim); cursor:pointer;
+    text-decoration:underline; font-size:10px; text-transform:uppercase;
+    letter-spacing:.14em; }
+
+  /* token gate */
+  #gate { padding:22px 16px; max-width:520px; }
+  #gate p { color:var(--dim); margin:0 0 14px; }
+  #gate input { width:100%; border:1px solid var(--line); padding:12px;
+    margin-bottom:10px; }
+  #gate button { background:#000; color:#fff; border:0; padding:13px 20px;
+    cursor:pointer; text-transform:uppercase; letter-spacing:.14em; font-size:11px; }
+  .err { color:var(--alert); }
+  #note { padding:16px; color:var(--dim); font-size:11px; border-top:1px solid var(--rule); }
+</style></head>
+<body>
+
+<header data-nav-mount>
+  <a class="wordmark" href="/">the archive.</a>
+  <span class="up">Wear</span>
+  <span class="spacer"></span>
+  <span class="up" id="status"></span>
+</header>
+
+<!-- token gate: shown until a bearer token is stored on this device -->
+<div id="gate" hidden>
+  <p>This page writes to the closet's database, so it needs the access token once
+     per device. It is stored in this browser only and never leaves it except as an
+     <code>Authorization</code> header to the API.</p>
+  <input id="token" type="password" placeholder="access token" autocomplete="off"
+         spellcheck="false">
+  <button id="save">connect</button>
+  <span id="gateerr" class="err"></span>
+</div>
+
+<main id="app" hidden>
+  <div class="bar">
+    <label class="up" for="day">Worn on</label>
+    <input id="day" type="date">
+    <span class="spacer"></span>
+    <button id="forget" style="background:none;border:0;color:var(--dim);
+      cursor:pointer" class="up">forget token</button>
+  </div>
+
+  <div id="grid"></div>
+
+  <div id="submitbar">
+    <span id="count" class="up">nothing selected</span>
+    <button id="clear" class="up" hidden>clear</button>
+    <button id="log" class="up" disabled>log wear</button>
+  </div>
+
+  <section class="recent">
+    <h2>Recently logged</h2>
+    <div id="recent"></div>
+  </section>
+
+  <div id="note">
+    Every wear recorded here becomes an outfit in the archive, which is what lets it
+    teach the stylist rather than only move a counter. Tapping the same pieces you
+    have published counts against that look instead of creating a duplicate.
+  </div>
+</main>
+
+<div id="toast"><span id="toasttext"></span><button id="undo">undo</button></div>
+
+<script src="/app/nav.js"></script>
+<script>
+const API = 'https://virtual-closet-api-production.up.railway.app';
+const KEY = 'archive.wear.token';
+
+const $ = s => document.querySelector(s);
+let GARMENTS = [], SEL = new Set(), LAST = null;
+
+function token() { return localStorage.getItem(KEY) || ''; }
+
+async function api(path, opts = {}) {
+  const r = await fetch(API + path, Object.assign({}, opts, {
+    headers: Object.assign({ 'Authorization': 'Bearer ' + token(),
+                             'Content-Type': 'application/json' }, opts.headers || {})
+  }));
+  if (r.status === 401) { gate('that token was rejected'); throw new Error('unauthorised'); }
+  if (!r.ok) {
+    let detail = r.status;
+    try { detail = (await r.json()).detail || detail; } catch (e) {}
+    throw new Error(detail);
+  }
+  return r.json();
+}
+
+function gate(msg) {
+  $('#gate').hidden = false; $('#app').hidden = true;
+  $('#gateerr').textContent = msg || '';
+  if (msg) localStorage.removeItem(KEY);
+}
+
+// ── the grid ─────────────────────────────────────────────────────────────────
+const ORDER = { top: 0, bottom: 1, dress: 2, outerwear: 3, shoes: 4 };
+
+function drawGrid() {
+  // grouped by category so getting dressed reads top-down, the order you put
+  // clothes on rather than the order the database returns them
+  const sorted = GARMENTS.slice().sort((a, b) =>
+    (ORDER[a.category] ?? 9) - (ORDER[b.category] ?? 9) || a.name.localeCompare(b.name));
+  $('#grid').innerHTML = sorted.map(g => `
+    <button class="g${SEL.has(g.id) ? ' on' : ''}" data-id="${g.id}">
+      <span class="tick">✓</span>
+      ${g.img ? `<img src="${g.img}" alt="" loading="lazy">` : '<span style="height:74px"></span>'}
+      <span class="n">${g.name}</span>
+    </button>`).join('');
+}
+
+function refreshCount() {
+  const n = SEL.size;
+  $('#count').textContent = n ? `${n} selected` : 'nothing selected';
+  $('#log').disabled = !n;
+  $('#clear').hidden = !n;
+}
+
+$('#grid').addEventListener('click', e => {
+  const b = e.target.closest('.g'); if (!b) return;
+  const id = b.dataset.id;
+  SEL.has(id) ? SEL.delete(id) : SEL.add(id);
+  b.classList.toggle('on', SEL.has(id));
+  refreshCount();
+});
+
+$('#clear').addEventListener('click', () => {
+  SEL.clear(); drawGrid(); refreshCount();
+});
+
+// ── logging ──────────────────────────────────────────────────────────────────
+$('#log').addEventListener('click', async () => {
+  $('#log').disabled = true;
+  try {
+    const res = await api('/wear', { method: 'POST', body: JSON.stringify({
+      garment_ids: [...SEL], worn_on: $('#day').value || undefined }) });
+    LAST = res.wear_id;
+    SEL.clear(); drawGrid(); refreshCount();
+    toast(res.outfit_created ? 'logged — a new outfit for the archive'
+                             : `logged — worn ${res.times_worn}×`);
+    loadRecent();
+  } catch (e) {
+    toast('could not log: ' + e.message, false);
+  }
+  refreshCount();
+});
+
+let toastTimer;
+function toast(msg, undoable = true) {
+  $('#toasttext').textContent = msg;
+  $('#undo').hidden = !undoable;
+  $('#toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('#toast').classList.remove('show'), 6000);
+}
+
+$('#undo').addEventListener('click', async () => {
+  if (!LAST) return;
+  try { await api('/wear/' + LAST, { method: 'DELETE' }); LAST = null;
+        $('#toast').classList.remove('show'); loadRecent(); }
+  catch (e) { toast('could not undo: ' + e.message, false); }
+});
+
+// ── recent ───────────────────────────────────────────────────────────────────
+const nameOf = id => (GARMENTS.find(g => g.id === id) || {}).name || id;
+
+async function loadRecent() {
+  let data;
+  try { data = await api('/wear?limit=20'); } catch (e) { return; }
+  const host = $('#recent');
+  if (!data.wears.length) {
+    host.innerHTML = '<div class="w" style="color:var(--dim)">'
+      + 'nothing logged yet — this is the first wear record the closet has ever had</div>';
+    $('#status').textContent = '';
+    return;
+  }
+  $('#status').textContent = data.wears.length + ' recent';
+  host.innerHTML = data.wears.map(w => `
+    <div class="w">
+      <span class="d up">${w.worn_on.slice(5)}</span>
+      <span class="items">${w.garment_ids.map(nameOf).join(' · ')}</span>
+      <button data-del="${w.wear_id}">undo</button>
+    </div>`).join('');
+}
+
+$('#recent').addEventListener('click', async e => {
+  const id = e.target.dataset && e.target.dataset.del; if (!id) return;
+  try { await api('/wear/' + id, { method: 'DELETE' }); loadRecent(); }
+  catch (err) { toast('could not undo: ' + err.message, false); }
+});
+
+// ── boot ─────────────────────────────────────────────────────────────────────
+$('#save').addEventListener('click', () => {
+  const v = $('#token').value.trim();
+  if (!v) return;
+  localStorage.setItem(KEY, v);
+  boot();
+});
+$('#token').addEventListener('keydown', e => { if (e.key === 'Enter') $('#save').click(); });
+$('#forget').addEventListener('click', () => { localStorage.removeItem(KEY); gate(''); });
+
+async function boot() {
+  if (!token()) return gate('');
+  $('#gate').hidden = true; $('#app').hidden = false;
+  $('#day').value = new Date().toISOString().slice(0, 10);
+  $('#day').max = $('#day').value;          // a wear cannot be logged in the future
+  if (!GARMENTS.length) {
+    GARMENTS = (await fetch('/api/garments').then(r => r.json())).garments;
+  }
+  drawGrid(); refreshCount();
+  loadRecent();
+}
+boot();
+</script>
+</body></html>

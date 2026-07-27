@@ -877,6 +877,17 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(insights_data())
         if url.path == "/galaxy":
             return self._file(ROOT / "app" / "galaxy.html")
+        if url.path == "/wear":
+            return self._file(ROOT / "app" / "wear.html")
+        if url.path == "/api/garments":
+            # the small payload /wear needs: cutouts and names, nothing else
+            if not SNAPSHOT.exists():
+                return self._json({"error": "no closet snapshot"}, 503)
+            names = _garment_names()
+            return self._json({"garments": [
+                {"id": g["id"], "name": names.get(g["id"], g["id"]),
+                 "img": _stylist_thumb(g["id"])[0], "category": g.get("category")}
+                for g in json.loads(SNAPSHOT.read_text())["garments"]]})
         if url.path == "/api/galaxy":
             return self._json(galaxy_data())
         if url.path == "/api/feedback/history":

@@ -9,9 +9,11 @@
     { "source": "/stylist", "destination": "/app/stylist.html" },
     { "source": "/insights", "destination": "/app/insights.html" },
     { "source": "/galaxy", "destination": "/app/galaxy.html" },
+    { "source": "/wear", "destination": "/app/wear.html" },
     { "source": "/api/manifest", "destination": "/api/manifest.json" },
     { "source": "/api/insights", "destination": "/api/insights.json" },
     { "source": "/api/galaxy", "destination": "/api/galaxy.json" },
+    { "source": "/api/garments", "destination": "/api/garments.json" },
     { "source": "/api/stylist/suggest", "destination": "/api/stylist/suggest.json" }
   ]
 }
