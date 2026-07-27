@@ -371,14 +371,20 @@ actually look at the PNG.
 - **GALAXY TITLE FONT (her note 07-26):** explore changing the type for the `/galaxy` page
   title. Currently the shared italic wordmark + uppercase mono label; the page's cybercore
   direction may want something else for the title specifically. Not started.
-- **STYLIST "INDEX/CATALOG" TREATMENT (her note 07-26):** a small design change for
-  `/stylist` drawn from the *Stills 2026 Design Trend Report* §2.6 INDEX/CATALOG. The
-  reference is a numbered slot grid — `[01]`…`[30]` printed as a sparse lattice on a flat
-  ground, with cutout objects sitting in only some of the slots, the empty numbers left
-  visible as structure, plus a large editorial pull-quote. The idea for the stylist: treat
-  suggestions as an indexed catalogue rather than cards — numbered positions carrying the
-  garments, the numbering itself doing the compositional work. Screenshot supplied 07-26.
-  Not started; discuss before building.
+- **STYLIST "INDEX/CATALOG" NUMBERING — EXPLORED AND DROPPED 07-26 (her call).** From the
+  *Stills 2026 Design Trend Report* §2.6. Scoped down in discussion to numbering only, with
+  the layout untouched, then four treatments were previewed against real cards: slot number
+  on the card, catalogue numbers in the item list, keyed numbers under each garment, and
+  slot+catalogue. **Her verdict: none of them; topic closed.** Do not rebuild without a new
+  ask. Two findings worth keeping if it ever returns:
+  - **A keyed plate cannot be done without moving things.** `.flat .it` cells are full
+    height, so a number placed under a garment either lands behind the fixed 104px panel or
+    forces the flat-lay to reflow (`flex-direction:column` shifts the whole composition).
+    "Numbering only, no layout change" and "keyed numbers" are mutually exclusive here.
+  - **A card slot number means nothing on this page.** Suggestions re-roll on every "suggest
+    again", so `[01]` labels a position that is not stable — catalogue styling without
+    catalogue substance. Only the garment ids (`01`…`58`, already a real catalogue) carry
+    meaning, which is the one variant that had any argument behind it.
 - **REFERENCE GLASS CODE — DONE 07-26.** Ported to a WebGL layer; see the `/galaxy` notes
   above and decisions.md. Aberration ships at 0 by measurement, not by omission.
 - **GALAXY GROUND / BACKGROUND IMAGE (her note 07-26, TABLED — discuss):** the glass effect
