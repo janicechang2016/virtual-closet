@@ -24,6 +24,16 @@ class Config:
     APP_SECRET: str = _require("APP_SECRET")
     BUDGET_CAP_USD: float = float(os.getenv("BUDGET_CAP_USD", "45"))
 
+    # Browser origins allowed to call this API. Explicit allowlist, never "*" —
+    # the bearer token travels in a header and a wildcard would hand it to any
+    # page. Comma-separated in Railway Variables to add another.
+    CORS_ORIGINS: list = [
+        o.strip() for o in os.getenv(
+            "CORS_ORIGINS",
+            "https://virtual-closet-seven.vercel.app,http://localhost:8765",
+        ).split(",") if o.strip()
+    ]
+
     # Paid APIs — optional at startup (unused during the foundation phase).
     FAL_KEY: Optional[str] = os.getenv("FAL_KEY")
     ANTHROPIC_API_KEY: Optional[str] = os.getenv("ANTHROPIC_API_KEY")
