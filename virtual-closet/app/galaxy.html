@@ -129,7 +129,7 @@
 
 <div id="controls">
   <div class="ctl mono"><label for="spread">Spread</label>
-    <input id="spread" type="range" min="60" max="300" value="150"></div>
+    <input id="spread" type="range" min="60" max="300" value="165"></div>
   <div class="ctl mono"><label for="lines">Line weight</label>
     <input id="lines" type="range" min="0" max="100" value="60"></div>
   <div class="chips mono" id="chips"></div>
@@ -157,7 +157,13 @@
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 let NODES = [], EDGES = [], IMG = {}, VIEW = {x:0, y:0, k:1};
 let hover = null, selected = null, filter = null;
-let spread = 150, lineAlpha = 0.6;
+// 165 = 55% of the slider's scale. The settled cloud is a force balance
+// (gravity 0.0016 in, repulsion spread^2/d^2 out), so extent is not linear in
+// this: measured at 1440x900 it moves the cloud from 39.7% to 41.8% of the
+// width and 67.1% to 70.5% of the height. Height runs ~1.6x the width figure
+// because a roughly circular cloud sits in a 16:10 frame — which is why the
+// useful ceiling is well under what the slider allows.
+let spread = 165, lineAlpha = 0.6;
 
 const OX = '#6F2B2B', AMBER = '#CC8A3A', PAPER = '#F5F3EF';
 
