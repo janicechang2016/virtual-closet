@@ -74,9 +74,14 @@ def stylist_pool(limit=POOL_DEPTH):
     PRIOR = ("manual",)
     published = [o for o in looks if o.get("source") in PRIOR]
 
-    worn = set()
-    for o in published:
-        worn.update(o.get("garment_ids") or [])
+    # What TRAINS affinity and what counts as WORN are different questions;
+    # conflating them was a regression the moment PRIOR narrowed to published-only.
+    # Affinity is published-only because that is what measured best, but a garment
+    # is WORN if it appears in a published look OR in the wear log — the same rule
+    # /insights reports, reused here so the two pages cannot drift. The wildcard
+    # depends on it: surfacing a "never-worn" piece she has actually been wearing
+    # is noise, and 10 of the 23 became worn the moment the log was read.
+    worn = {gid for gid, n in closet_server._wear_counts(data).items() if n}
 
     names = closet_server._garment_names()
     # same disambiguation the live route does: three garments are called

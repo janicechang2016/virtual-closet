@@ -154,6 +154,13 @@ frequency. In the in-rotation column the boosted garments appear in the negative
 lifting them lifts negatives as much as positives and the score falls below chance.
 CAVEAT, stated because 15 is thin: the CIs are wide and overlap A's estimate. The DIRECTION
 is consistent across all four cells; the magnitude is not established. Revisit at ~50 wears.
+- **TRAP, hit and fixed the same day: `PRIOR` is what TRAINS affinity — it is NOT what counts
+  as WORN.** Both stylist paths derived their worn set from `published`, so narrowing `PRIOR`
+  to `("manual",)` silently pushed the wildcard's never-worn set back to 23 and the stylist's
+  idle figure to $2,381, disagreeing with /insights' 13 / $1,456. Caught on the deployed
+  payload. Both paths now take the worn set from `_wear_counts()` — the same function
+  /insights uses — so they cannot drift again. The wildcard depends on this: surfacing a
+  "never-worn" piece she has actually been wearing is noise.
 - **What this does NOT say:** that wear data is useless. It says this MODEL SHAPE cannot use
   it. Predicting wear plausibly needs pairwise/compatibility (already the designated home
   for the blame data), or context (occasion/season/weather — a Tuesday is a context, and
