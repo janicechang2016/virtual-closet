@@ -63,6 +63,40 @@ hashing files against every branch.
 - Deferred, recorded, NOT priorities (her call): explore mode, pairwise compatibility,
   vertical body-stacked outfit cards, wildcard as a full-width interruption.
 
+## Phase 3 — wear logging (2026-07-27), LIVE
+
+**`/wear`** — the first page designed phone-first, because a wear is logged at the end of a
+day away from the laptop. That is the whole reason it talks to the hosted API instead of
+`closet_server.py`, and the first time Railway does anything the site actually needs.
+
+- **The API has real endpoints now:** `POST /wear`, `GET /wear`, `DELETE /wear/{id}`, all
+  behind `require_auth`, plus `CORSMiddleware` on an explicit origin allowlist — never `"*"`,
+  because the bearer token rides in a header.
+- **The token is entered once per device into `localStorage`.** No secret ships in the page.
+- **`wear_log` references `outfit_id` and nothing else**, so an ad-hoc combination becomes an
+  outfit row first (migration 0004 widened `outfit.source` to include `'worn'`). That is why
+  wear logging compounds: every wear grows the corpus the stylist learns from. Matching is on
+  the SORTED garment set and prefers a published look, so wearing something you published
+  counts against that look rather than forking a twin.
+- **Undo removes the outfit it created.** Leaving it was the first behaviour and was wrong —
+  these outfits are destined to feed the stylist, so an orphan is a mis-tap that goes on
+  teaching the model. Scoped to `source='worn'` with no wears left; published looks and
+  stylist suggestions are never touched.
+- Verified end to end against production, then production restored to `wear_log=0`,
+  `manual=18`, `stylist=24`, 0 orphans.
+
+**Railway is no longer misconfigured (07-27, her fix):** the duplicate `virtual-closet`
+service — connected to `main` but with no `DATABASE_URL`, so it crash-looped on every push —
+was deleted, and `virtual-closet-api` was repointed off the deleted `2d-reboot` branch to
+`main`. Consequence: **a push to `main` now redeploys the API as well as the site.**
+
+**STILL TO DO — Phase 3c, the payoff:** `dump_closet.py` does not yet carry wear counts into
+the snapshot, so `/insights`, `/galaxy` and `/stylist` still read wears as "appearances in
+published looks". Until that lands, logging changes nothing downstream. **Open decision,
+deliberately not taken: whether `source='worn'` outfits feed the stylist's affinity alongside
+the 18 published looks.** The schema keeps them distinguishable precisely so this stays a
+measurement rather than a silent change — the current model measured AUC 0.824.
+
 ## v1 state (2026-07-19)
 
 - **Repo on GitHub (07-17):** github.com/janicechang2016/virtual-closet — PRIVATE
