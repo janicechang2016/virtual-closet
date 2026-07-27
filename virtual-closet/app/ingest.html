@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>the archive — ingest</title>
+<style>
+  /* SYVE: white void, 1px black hairlines, uppercase Helvetica, italic wordmark.
+     LOCAL ONLY — this writes files and shells out to rembg, so it cannot exist
+     on the static deploy. It is the missing half of ingestion: until now a
+     garment needed a product URL to enter the closet at all. */
+  :root { --line:#000; --bg:#fff; --dim:#8a8a8a; --alert:#6F2B2B; --rule:#e6e6e6; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:var(--bg); color:#000;
+    font:13px/1.45 Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  .up { text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+  button,input,select,textarea { font:inherit; }
+
+  header { position:sticky; top:0; z-index:20; background:var(--bg);
+    border-bottom:1px solid var(--line); padding:14px 22px;
+    display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; }
+  .wordmark { font-style:italic; font-size:17px; color:inherit; text-decoration:none; }
+  .spacer { flex:1; }
+  header .up { color:var(--dim); }
+
+  main { max-width:1080px; padding:22px; }
+  .step { border:1px solid var(--line); padding:0; margin-bottom:20px; }
+  .step > h2 { margin:0; padding:12px 16px; border-bottom:1px solid var(--line);
+    font-size:10px; font-weight:normal; text-transform:uppercase; letter-spacing:.14em; }
+  .step > .body { padding:16px; }
+  .step[hidden] { display:none; }
+
+  /* drop zone */
+  #drop { border:1px dashed var(--line); padding:44px 20px; text-align:center;
+    cursor:pointer; color:var(--dim); }
+  #drop.over { background:#f4f4f4; color:#000; }
+
+  .row { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:12px; }
+  .f { display:flex; flex-direction:column; gap:5px; }
+  .f label { color:var(--dim); text-transform:uppercase; letter-spacing:.14em;
+    font-size:10px; }
+  .f input, .f select { border:1px solid var(--line); background:none; padding:9px 10px; }
+  .f.wide { flex:1; min-width:220px; }
+
+  .primary { background:#000; color:#fff; border:0; padding:12px 22px; cursor:pointer;
+    text-transform:uppercase; letter-spacing:.14em; font-size:11px; }
+  .primary:disabled { opacity:.3; cursor:default; }
+  .ghost { background:none; border:1px solid var(--line); padding:11px 16px;
+    cursor:pointer; text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+
+  /* result */
+  .result { display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; }
+  .shot { border:1px solid var(--rule); padding:12px; width:220px; text-align:center; }
+  .shot img { max-width:100%; max-height:230px; object-fit:contain; display:block;
+    margin:0 auto 8px; }
+  .shot .cap { color:var(--dim); }
+  .swatches { display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; }
+  .sw { display:flex; align-items:center; gap:7px; color:var(--dim); }
+  .sw i { width:18px; height:18px; border:1px solid var(--rule); display:block; }
+  .tier { display:inline-block; border:1px solid var(--line); padding:4px 8px;
+    text-transform:uppercase; letter-spacing:.14em; font-size:9px; }
+  .tier.catalog { border-color:var(--alert); color:var(--alert); }
+
+  #msg { padding:10px 0; color:var(--alert); }
+  .note { color:var(--dim); font-size:11px; margin-top:10px; }
+  table.log { width:100%; border-collapse:collapse; margin-top:10px; }
+  table.log td { border-top:1px solid var(--rule); padding:7px 0; }
+  table.log td.n { color:var(--dim); text-transform:uppercase; letter-spacing:.1em;
+    font-size:10px; }
+</style></head>
+<body>
+
+<header data-nav-mount>
+  <a class="wordmark" href="/">the archive.</a>
+  <span class="up">Ingest</span>
+  <span class="spacer"></span>
+  <span class="up" id="count"></span>
+</header>
+
+<main>
+  <div class="step" id="step1">
+    <h2>1 · the photo</h2>
+    <div class="body">
+      <div id="drop">drop a photo here, or click to choose<br>
+        <span class="up" style="color:var(--dim)">flat lay on a plain ground gives the best cutout</span>
+      </div>
+      <input type="file" id="file" accept="image/*" hidden>
+      <div class="row" style="margin-top:16px">
+        <div class="f wide"><label for="name">Name</label>
+          <input id="name" placeholder="e.g. dune draped pants"></div>
+        <div class="f"><label for="category">Category</label>
+          <select id="category">
+            <option value="">choose…</option>
+            <option>top</option><option>bottom</option><option>dress</option>
+            <option>outerwear</option><option>shoes</option>
+          </select></div>
+        <div class="f"><label for="brand">Brand</label><input id="brand"></div>
+        <div class="f"><label for="size">Size</label><input id="size" size="6"></div>
+      </div>
+      <button class="primary" id="stage" disabled>process</button>
+      <div id="msg"></div>
+      <div class="note">Runs locally: rembg for the cutout, the LAB extractor for colour.
+        Nothing is sent anywhere and nothing is spent.</div>
+    </div>
+  </div>
+
+  <div class="step" id="step2" hidden>
+    <h2>2 · what came out</h2>
+    <div class="body">
+      <div class="result">
+        <div class="shot"><img id="cut" alt=""><div class="cap up">cutout</div></div>
+        <div class="shot"><img id="raw" alt=""><div class="cap up">your photo</div></div>
+        <div style="flex:1;min-width:240px">
+          <div id="tier"></div>
+          <div class="swatches" id="sw"></div>
+          <table class="log" id="log"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step" id="step3" hidden>
+    <h2>3 · attributes</h2>
+    <div class="body">
+      <div class="row">
+        <div class="f"><label for="subcategory">Subcategory</label>
+          <input id="subcategory" placeholder="e.g. wide-leg trousers"></div>
+        <div class="f"><label for="formality">Formality 1–5</label>
+          <select id="formality"></select></div>
+        <div class="f"><label for="warmth">Warmth 1–5</label>
+          <select id="warmth"></select></div>
+        <div class="f"><label for="volume">Volume</label>
+          <select id="volume">
+            <option value="">—</option><option>fitted</option>
+            <option>regular</option><option>oversized</option></select></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="pattern">Pattern</label>
+          <input id="pattern" value="solid"></div>
+        <div class="f wide"><label for="fabric">Fabric</label>
+          <input id="fabric" placeholder="models guess badly at this — yours is better"></div>
+        <div class="f"><label for="fit">Fit</label><input id="fit"></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="seasons">Seasons</label>
+          <input id="seasons" placeholder="spring, summer" size="24"></div>
+        <div class="f"><label for="price">Price paid</label>
+          <input id="price" type="number" step="1" size="8"></div>
+        <div class="f"><label for="bought">Bought on</label>
+          <input id="bought" type="date"></div>
+      </div>
+      <button class="primary" id="commit">add to closet</button>
+      <button class="ghost" id="discard">discard</button>
+      <div class="note">Committing writes the garment folder AND the Postgres row — both
+        stores or neither, since a garment missing from the database is invisible to every
+        page that reads the snapshot. Refresh the snapshot afterwards with
+        <code>server/scripts/dump_closet.py</code>.</div>
+    </div>
+  </div>
+</main>
+
+<script src="/app/nav.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+let IMAGE = null, STAGED = null;
+
+for (const id of ['formality', 'warmth']) {
+  $('#' + id).innerHTML = '<option value="">—</option>'
+    + [1,2,3,4,5].map(n => `<option>${n}</option>`).join('');
+}
+
+// ── 1 · the photo ────────────────────────────────────────────────────────────
+$('#drop').addEventListener('click', () => $('#file').click());
+['dragenter','dragover'].forEach(e => $('#drop').addEventListener(e, ev => {
+  ev.preventDefault(); $('#drop').classList.add('over'); }));
+['dragleave','drop'].forEach(e => $('#drop').addEventListener(e, ev => {
+  ev.preventDefault(); $('#drop').classList.remove('over'); }));
+$('#drop').addEventListener('drop', ev => take(ev.dataTransfer.files[0]));
+$('#file').addEventListener('change', e => take(e.target.files[0]));
+
+function take(f) {
+  if (!f || !f.type.startsWith('image/')) return;
+  const r = new FileReader();
+  r.onload = () => {
+    IMAGE = r.result;
+    $('#drop').innerHTML = `<img src="${IMAGE}" style="max-height:190px;max-width:100%">`
+      + `<div class="up" style="margin-top:8px">${f.name}</div>`;
+    if (!$('#name').value) {
+      $('#name').value = f.name.replace(/\.[a-z0-9]+$/i, '').replace(/[-_]+/g, ' ');
+    }
+    check();
+  };
+  r.readAsDataURL(f);
+}
+
+const check = () => {
+  $('#stage').disabled = !(IMAGE && $('#name').value.trim() && $('#category').value);
+};
+['name','category'].forEach(id => $('#' + id).addEventListener('input', check));
+
+$('#stage').addEventListener('click', async () => {
+  $('#stage').disabled = true; $('#msg').textContent = '';
+  $('#stage').textContent = 'cutting out…';
+  try {
+    const r = await fetch('/api/ingest/stage', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name: $('#name').value.trim(), category: $('#category').value,
+        brand: $('#brand').value.trim(), size_owned: $('#size').value.trim(),
+        image: IMAGE })
+    }).then(r => r.json());
+    if (r.error) throw new Error(r.error);
+    STAGED = r;
+    showResult(r);
+  } catch (e) {
+    $('#msg').textContent = e.message;
+  }
+  $('#stage').textContent = 'process'; check();
+});
+
+// ── 2 · what came out ────────────────────────────────────────────────────────
+function showResult(r) {
+  $('#step2').hidden = false; $('#step3').hidden = false;
+  $('#cut').src = r.cutout || ''; $('#raw').src = r.raw || '';
+  $('#cut').parentElement.style.display = r.cutout ? '' : 'none';
+
+  // A.1's tiers, stated plainly rather than hidden: a photo we could not
+  // separate is still perfectly good for planning outfits, just not for
+  // generating from — and saying so is what stops a bad photo surprising her
+  // later at render time.
+  $('#tier').innerHTML = r.tier === 'render_ready'
+    ? '<span class="tier">render ready</span> clean cutout — usable for try-on renders'
+    : '<span class="tier catalog">catalog</span> no clean cutout, so it will plan outfits '
+      + 'but not generate them. A flat lay on a plain ground usually fixes this.';
+
+  $('#sw').innerHTML = (r.colors || []).slice(0, 4).map(c =>
+    `<span class="sw"><i style="background:rgb(${(c.rgb||[136,136,136]).join(',')})"></i>`
+    + `${c.name || '—'} · ${Math.round((c.coverage || 0) * 100)}%</span>`).join('')
+    || '<span class="sw">no colour measured</span>';
+
+  $('#log').innerHTML = `<tr><td class="n">id</td><td>${r.id}</td></tr>`
+    + `<tr><td class="n">cutout</td><td>${r.log.cutout}</td></tr>`
+    + `<tr><td class="n">colour</td><td>${r.log.colour}</td></tr>`;
+
+  // defaults by category — a starting point to correct, not a claim. The same
+  // principle as the Phase 1 capture forms: confirm rather than author.
+  const D = { top:      {f:3, w:2, v:'regular'},
+              bottom:   {f:3, w:2, v:'regular'},
+              dress:    {f:4, w:2, v:'regular'},
+              outerwear:{f:3, w:4, v:'regular'},
+              shoes:    {f:3, w:2, v:'fitted'} }[$('#category').value] || {};
+  if (D.f) $('#formality').value = D.f;
+  if (D.w) $('#warmth').value = D.w;
+  if (D.v) $('#volume').value = D.v;
+  $('#step3').scrollIntoView({behavior: 'smooth'});
+}
+
+// ── 3 · commit ───────────────────────────────────────────────────────────────
+$('#commit').addEventListener('click', async () => {
+  if (!STAGED) return;
+  $('#commit').disabled = true; $('#commit').textContent = 'writing…';
+  const seasons = $('#seasons').value.split(',').map(s => s.trim()).filter(Boolean);
+  const purchase = {};
+  if ($('#price').value) purchase.price_usd = Number($('#price').value);
+  if ($('#bought').value) purchase.date = $('#bought').value;
+  try {
+    const r = await fetch('/api/ingest/commit', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        id: STAGED.id, name: $('#name').value.trim(), category: $('#category').value,
+        brand: $('#brand').value.trim(), size_owned: $('#size').value.trim(),
+        subcategory: $('#subcategory').value.trim() || null,
+        pattern: $('#pattern').value.trim(), fabric: $('#fabric').value.trim(),
+        fit: $('#fit').value.trim(),
+        formality: Number($('#formality').value) || null,
+        warmth: Number($('#warmth').value) || null,
+        volume: $('#volume').value || null,
+        season_tags: seasons, colors: STAGED.colors || [],
+        asset_tier: STAGED.tier, purchase,
+        color: (STAGED.colors && STAGED.colors[0] || {}).name || null })
+    }).then(r => r.json());
+    if (!r.ok) throw new Error(r.db || 'commit failed');
+    reset(`${r.id} added — refresh the snapshot to see it in the other pages`);
+  } catch (e) {
+    $('#msg').textContent = e.message;
+  }
+  $('#commit').disabled = false; $('#commit').textContent = 'add to closet';
+});
+
+$('#discard').addEventListener('click', async () => {
+  if (!STAGED) return;
+  await fetch('/api/ingest/discard', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({id: STAGED.id})
+  });
+  reset('discarded');
+});
+
+function reset(message) {
+  STAGED = null; IMAGE = null;
+  $('#step2').hidden = true; $('#step3').hidden = true;
+  $('#drop').textContent = 'drop a photo here, or click to choose';
+  ['name','brand','size','subcategory','fabric','fit','seasons','price','bought']
+    .forEach(id => $('#' + id).value = '');
+  $('#category').value = ''; $('#pattern').value = 'solid';
+  $('#count').textContent = message;
+  check();
+  scrollTo({top: 0, behavior: 'smooth'});
+}
+
+fetch('/api/manifest').then(r => r.json())
+  .then(m => { $('#count').textContent = m.garments.length + ' in the closet'; });
+</script>
+</body></html>

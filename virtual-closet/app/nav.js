@@ -24,7 +24,8 @@
     { href: '/insights',     label: 'Insights' },
     { href: '/galaxy',       label: 'Galaxy'   },
     { href: '/wear',         label: 'Wear'     },
-    // sourcing alone stays local — its scan/save routes need the live server
+    // these two stay local: both write files and shell out to rembg
+    { href: '/ingest',       label: 'Ingest',   local: true },
     { href: '/sourcing',     label: 'Sourcing', local: true }
   ];
 

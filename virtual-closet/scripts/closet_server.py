@@ -33,7 +33,9 @@ published looks, the fitting room lists and manages all of them.
 
 Run:  python3 scripts/closet_server.py   ->  http://localhost:8765
 """
+import base64
 import json
+import shutil
 import os
 import random
 import re
@@ -89,6 +91,8 @@ def garment_list():
             meta = json.loads(meta_path.read_text())
         except json.JSONDecodeError:
             continue
+        if meta.get("pending"):
+            continue          # mid-ingest: not part of the closet until committed
         folder = meta_path.parent
         photos = [f"/assets/garments/{folder.name}/{sub}/{p.name}"
                   for sub in ("clean", "raw")
@@ -509,6 +513,209 @@ def _logged_wears(data):
     return len(data.get("wears") or [])
 
 
+
+# ── Track A: ingest a garment from a photo ($0) ───────────────────────────────
+# The spec's bulk pipeline (SAM detection, vision-LLM tagging) is paid and
+# deferred. This is the half that was actually missing: until now a garment could
+# only enter the closet through a product URL, so anything without a product page
+# could not be added at all. Everything here is local and free — rembg for the
+# cutout, the LAB extractor for colour, both already proven on this closet.
+INGEST_VENV = Path("/Users/janice.chang/liminal-wardrobe/.venv/bin/python")
+CATEGORIES = ("top", "bottom", "dress", "outerwear", "shoes")
+
+
+def _slugify(text):
+    out = re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
+    return out or "garment"
+
+
+def _next_garment_number():
+    """Ids are NN-slug and the number is load-bearing — it is how renders match
+    garments and how the catalogue reads. Continue the sequence, never reuse."""
+    nums = [0]
+    for d in (ROOT / "garments").iterdir():
+        m = re.match(r"(\d+)-", d.name) if d.is_dir() else None
+        if m:
+            nums.append(int(m.group(1)))
+    return max(nums) + 1
+
+
+def _venv_run(script_path, args, timeout=600):
+    if not INGEST_VENV.exists():
+        return False, "liminal venv missing — rembg lives there, not here"
+    try:
+        r = subprocess.run([str(INGEST_VENV), str(script_path)] + list(args),
+                           cwd=str(script_path.parent.parent), capture_output=True,
+                           text=True, timeout=timeout)
+        return r.returncode == 0, (r.stdout or r.stderr)[-800:]
+    except Exception as e:
+        return False, f"{type(e).__name__}: {e}"
+
+
+def ingest_stage(data):
+    """Create the garment folder, cut it out, measure its colour. Reversible:
+    the row is `pending` until committed and `discard` removes it entirely."""
+    name = (data.get("name") or "").strip()
+    category = (data.get("category") or "").strip()
+    raw_b64 = data.get("image") or ""
+    if not name:
+        return {"error": "name is required"}
+    if category not in CATEGORIES:
+        return {"error": "category must be one of " + ", ".join(CATEGORIES)}
+    if "," in raw_b64:
+        header, raw_b64 = raw_b64.split(",", 1)
+    else:
+        header = ""
+    ext = ".png" if "png" in header else ".jpg"
+    try:
+        blob = base64.b64decode(raw_b64)
+    except Exception:
+        return {"error": "image was not valid base64"}
+    if len(blob) < 1024:
+        return {"error": "that image is too small to be a photo"}
+
+    gid = "%02d-%s" % (_next_garment_number(), _slugify(name))
+    folder = ROOT / "garments" / gid
+    (folder / "raw").mkdir(parents=True, exist_ok=True)
+    (folder / "raw" / (gid + ext)).write_bytes(blob)
+
+    meta = {
+        "id": gid, "name": name, "category": category,
+        "pending": True,
+        "source_photo_type": data.get("source_photo_type") or "own-photo",
+        "layer_order": 0, "difficulty": 3, "notes": "",
+        "brand": (data.get("brand") or "").strip(),
+        "size_owned": (data.get("size_owned") or "").strip(),
+    }
+    (folder / "meta.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+    cut_ok, cut_log = _venv_run(ROOT / "scripts" / "dragcut.py", [gid])
+    cutout = folder / "clean" / f"{gid}_dragcut.png"
+    col_ok, col_log = _venv_run(ENGINE_DIR / "scripts" / "extract_colors.py", [gid])
+
+    colors = []
+    cpath = ENGINE_DIR / "scripts" / "colors.json"
+    if col_ok and cpath.is_file():
+        try:
+            colors = (json.loads(cpath.read_text()).get(gid) or {}).get("colors") or []
+        except ValueError:
+            pass
+
+    # A.1's two tiers, decided by whether a clean cutout was actually possible:
+    # a silhouette we could separate is render-ready, a photo we could not is
+    # catalog — good enough to plan outfits with, not to generate from.
+    tier = "render_ready" if cutout.is_file() else "catalog"
+    return {
+        "ok": True, "id": gid, "tier": tier,
+        "cutout": f"/assets/garments/{gid}/clean/{cutout.name}" if cutout.is_file() else None,
+        "raw": f"/assets/garments/{gid}/raw/{gid}{ext}",
+        "colors": colors,
+        "log": {"cutout": cut_log if not cut_ok else "ok",
+                "colour": col_log if not col_ok else "ok"},
+    }
+
+
+def ingest_discard(gid):
+    folder = (ROOT / "garments" / gid).resolve()
+    if ROOT / "garments" not in folder.parents or not folder.is_dir():
+        return {"error": "unknown garment"}
+    meta = folder / "meta.json"
+    if not meta.is_file() or not json.loads(meta.read_text()).get("pending"):
+        return {"error": "that garment is committed — discard only removes pending ingests"}
+    shutil.rmtree(folder)
+    return {"ok": True, "removed": gid}
+
+
+def ingest_commit(data):
+    """Drop `pending` and write the row to Postgres. Both stores or neither —
+    a garment that exists locally but not in the database is invisible to every
+    page that reads the snapshot."""
+    gid = data.get("id") or ""
+    folder = ROOT / "garments" / gid
+    mpath = folder / "meta.json"
+    if not mpath.is_file():
+        return {"error": "unknown garment"}
+    meta = json.loads(mpath.read_text())
+
+    for key in ("name", "brand", "size_owned", "pattern", "fabric", "fit", "notes"):
+        if data.get(key) is not None:
+            meta[key] = data[key]
+    meta["category"] = data.get("category") or meta.get("category")
+    if data.get("color"):
+        meta["color"] = data["color"]
+    meta.pop("pending", None)
+    mpath.write_text(json.dumps(meta, indent=1) + "\n")
+
+    row = {
+        "id": gid,
+        "category": meta.get("category"),
+        "subcategory": data.get("subcategory") or None,
+        "colors": data.get("colors") or [],
+        "pattern": meta.get("pattern"),
+        "formality": data.get("formality"),
+        "warmth": data.get("warmth"),
+        "season_tags": data.get("season_tags") or [],
+        "fabric": meta.get("fabric"),
+        "fit": meta.get("fit"),
+        "volume": data.get("volume"),
+        "asset_tier": data.get("asset_tier") or "catalog",
+        "size_owned": meta.get("size_owned") or None,
+        "brand": meta.get("brand") or None,
+        "purchase": data.get("purchase") or {},
+    }
+    ok, log = _push_garment_row(row)
+    return {"ok": ok, "id": gid, "db": log, "meta": meta}
+
+
+def _push_garment_row(row):
+    """One upsert, through the same railway-run psql path every other script
+    here uses — there is no Postgres driver on the laptop by design."""
+    sql = """
+INSERT INTO garment (id, category, subcategory, colors, pattern, formality, warmth,
+                     season_tags, fabric, fit, volume, asset_tier, size_owned, brand, purchase)
+VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s, %s::text[], %s, %s, %s, %s, %s, %s, %s::jsonb)
+ON CONFLICT (id) DO UPDATE SET
+  category=EXCLUDED.category, subcategory=EXCLUDED.subcategory, colors=EXCLUDED.colors,
+  pattern=EXCLUDED.pattern, formality=EXCLUDED.formality, warmth=EXCLUDED.warmth,
+  season_tags=EXCLUDED.season_tags, fabric=EXCLUDED.fabric, fit=EXCLUDED.fit,
+  volume=EXCLUDED.volume, asset_tier=EXCLUDED.asset_tier, size_owned=EXCLUDED.size_owned,
+  brand=EXCLUDED.brand, purchase=EXCLUDED.purchase;
+""".strip()
+
+    def lit(v):
+        if v is None:
+            return "NULL"
+        if isinstance(v, bool):
+            return "TRUE" if v else "FALSE"
+        if isinstance(v, (int, float)):
+            return str(v)
+        if isinstance(v, (dict, list)) and not (v and isinstance(v[0], str) if isinstance(v, list) else False):
+            return "'" + json.dumps(v).replace("'", "''") + "'"
+        if isinstance(v, list):
+            return "'{" + ",".join('"%s"' % str(x).replace('"', '\\"') for x in v) + "}'"
+        return "'" + str(v).replace("'", "''") + "'"
+
+    vals = [row["id"], row["category"], row["subcategory"], row["colors"], row["pattern"],
+            row["formality"], row["warmth"], row["season_tags"], row["fabric"], row["fit"],
+            row["volume"], row["asset_tier"], row["size_owned"], row["brand"], row["purchase"]]
+    filled = sql
+    for v in vals:
+        filled = filled.replace("%s", lit(v), 1)
+
+    tmp = ENGINE_DIR / "scripts" / "_ingest_row.sql"
+    tmp.write_text(filled + "\n")
+    try:
+        cmd = ["railway", "run", "--service", "Postgres", "bash", "-c",
+               '/opt/homebrew/opt/libpq/bin/psql "$DATABASE_PUBLIC_URL" -v ON_ERROR_STOP=1 -f %s'
+               % json.dumps(str(tmp))]
+        r = subprocess.run(cmd, cwd=str(ENGINE_DIR), capture_output=True, text=True, timeout=180)
+        return r.returncode == 0, (r.stdout or r.stderr)[-500:]
+    except Exception as e:
+        return False, f"{type(e).__name__}: {e}"
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
 def galaxy_data(potential_per_node=3):
     """Track E graph. $0, offline, no new tables (v2 plan E.7).
 
@@ -915,6 +1122,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._file(ROOT / "app" / "galaxy.html")
         if url.path == "/wear":
             return self._file(ROOT / "app" / "wear.html")
+        if url.path == "/ingest":
+            return self._file(ROOT / "app" / "ingest.html")
         if url.path == "/api/garments":
             # the small payload /wear needs: cutouts and names, nothing else
             if not SNAPSHOT.exists():
@@ -987,6 +1196,12 @@ class Handler(SimpleHTTPRequestHandler):
         url = urlparse(self.path)
         length = int(self.headers.get("Content-Length", 0))
         data = json.loads(self.rfile.read(length) or b"{}")
+        if url.path == "/api/ingest/stage":
+            return self._json(ingest_stage(data))
+        if url.path == "/api/ingest/commit":
+            return self._json(ingest_commit(data))
+        if url.path == "/api/ingest/discard":
+            return self._json(ingest_discard(data.get("id") or ""))
         if url.path == "/api/stylist/retract":
             ids = data.get("ids") or []
             if not ids:

@@ -2210,5 +2210,89 @@
     "wb_applied": true,
     "meta_color": "washed black with green/ecru painted band",
     "source_photo_type": "flat-lay"
+  },
+  "60-ingest-test-trousers": {
+    "colors": [
+      {
+        "lab": [
+          68.17,
+          1.14,
+          7.38
+        ],
+        "rgb": [
+          174,
+          165,
+          153
+        ],
+        "name": "greige",
+        "coverage": 0.6517
+      },
+      {
+        "lab": [
+          40.92,
+          13.43,
+          17.49
+        ],
+        "rgb": [
+          126,
+          87,
+          68
+        ],
+        "name": "brown",
+        "coverage": 0.129
+      },
+      {
+        "lab": [
+          11.36,
+          0.14,
+          -2.06
+        ],
+        "rgb": [
+          28,
+          30,
+          32
+        ],
+        "name": "black",
+        "coverage": 0.1189
+      },
+      {
+        "lab": [
+          87.9,
+          -0.03,
+          5.51
+        ],
+        "rgb": [
+          225,
+          220,
+          210
+        ],
+        "name": "oatmeal light",
+        "coverage": 0.0595
+      },
+      {
+        "lab": [
+          54.93,
+          13.89,
+          18.05
+        ],
+        "rgb": [
+          165,
+          122,
+          101
+        ],
+        "name": "camel",
+        "coverage": 0.0409
+      }
+    ],
+    "source": "garments/60-ingest-test-trousers/clean/60-ingest-test-trousers_dragcut.png",
+    "source_kind": "dragcut",
+    "wb_gains": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "wb_applied": false,
+    "meta_color": null,
+    "source_photo_type": "own-photo"
   }
 }
