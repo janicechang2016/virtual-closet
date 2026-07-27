@@ -943,12 +943,17 @@ def stylist_suggest(occasion="", n=6):
     garments, looks = data["garments"], data["outfits"]
     by_id = {g["id"]: g for g in garments}
 
-    # Outfits she LIVED are evidence of taste alongside outfits she PUBLISHED
-    # (her call, 07-27). 'worn' rows come from the wear logger; keeping the two
-    # sources distinguishable in the schema is what made this a decision rather
-    # than a silent change, and what lets it be measured against the 0.824 the
-    # published-only model scored.
-    PRIOR = ("manual", "worn")
+    # MEASURED 07-27 and reverted: 'worn' rows are NOT prior evidence. Held out
+    # against the 15 logged wears (leave-one-out, per-fold AUC), adding them made
+    # prediction WORSE — 0.660 -> 0.540 against the whole outfit space, and
+    # 0.555 -> 0.383 once garment rotation is controlled for. Wear FREQUENCY is
+    # not preference: she wears jeans and yello-heels constantly because they are
+    # defaults, so a per-garment counter just ranks by frequency, and the boosted
+    # garments sit in the negatives too. Same failure as rejections; this is the
+    # sibling of preference.NEGATIVE_WEIGHT = 0.0. Wears TRAINED ALONE score about
+    # the same as published-only (0.622/0.549) — it is COMBINING them that hurts.
+    # Revisit at ~50 wears; repro in CLAUDE.md.
+    PRIOR = ("manual",)
     published = [o for o in looks if o.get("source") in PRIOR]
     if occasion:
         matching = [o for o in published

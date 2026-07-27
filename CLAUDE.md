@@ -51,15 +51,16 @@ hashing files against every branch.
   `make_purchase_form.py` + matching `apply_*.py`); **she prefers browser forms to editing
   TSV in an editor.** `scripts/verify_backfill.sql` is the re-runnable acceptance check.
 - **Phase 2 — engine.** `server/engine/`: `colour.py`, `constraints.py`, `gaps.py`,
-  `preference.py` — pure functions, 33 stdlib unit tests, no I/O. `dump_closet.py` snapshots
-  Postgres to JSON so the engine needs no database. 2220 valid outfits = (21×10 + 12)×10.
+  `preference.py` — pure functions, 28 stdlib unit tests, no I/O. `dump_closet.py` snapshots
+  Postgres to JSON so the engine needs no database. 2320 valid outfits = (22×10 + 12)×10 (was 2220 = 21 tops, before 59-el-hoodie gained its `top` alt-role 07-27).
 - **THE FINDING that shaped everything after it: colour theory does not predict her taste.**
   Measured blind on 24 outfits the model had never seen — colour + constraints AUC **0.491**
   (chance), learned per-garment affinity **0.824**. Hard constraints filter, learned
   preference ranks, colour is a low-weight tiebreak. Rejections are collected but NOT
   applied (`NEGATIVE_WEIGHT = 0.0`): measured twice, they cost accuracy, because a rejection
   is contextual ("wrong shoe for this outfit") and a per-garment scalar cannot hold that.
-- **Track C preview:** 23 of 58 garments appear in no published look, **$2,381 idle**.
+- **Track C preview:** 23 of 58 garments appear in no published look, $2,381 — but that is
+  the PUBLISHED-ONLY figure. With the wear log it is **13 garments / $1,456**; see Phase 3c.
 - Deferred, recorded, NOT priorities (her call): explore mode, pairwise compatibility,
   vertical body-stacked outfit cards, wildcard as a full-width interruption.
 

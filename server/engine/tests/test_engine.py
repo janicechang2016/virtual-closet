@@ -194,10 +194,38 @@ class TestRealCloset(unittest.TestCase):
         self.assertEqual([g_["id"] for g_ in self.garments if not g_.get("colors")], [])
 
     def test_enumeration_matches_arithmetic(self):
-        n = {c: len([x for x in self.garments if x["category"] == c])
+        # Slot membership follows the same rule as gaps._cat: a garment fills its
+        # primary `category` plus anything in `alt_categories` (migration 0005 —
+        # 59-el-hoodie is outerwear she wears as a top). Spelled out here rather
+        # than calling _cat, so this stays an INDEPENDENT check of the enumerator
+        # instead of comparing it against itself.
+        def fills(g_, c):
+            return g_["category"] == c or c in (g_.get("alt_categories") or ())
+        n = {c: len([x for x in self.garments if fills(x, c)])
              for c in ("top", "bottom", "dress", "shoes")}
         expected = (n["top"] * n["bottom"] + n["dress"]) * n["shoes"]
         self.assertEqual(len(gaps.enumerate_outfits(self.garments)), expected)
+
+    def test_dual_role_garment_is_enumerated_in_its_alt_slot(self):
+        """A garment with an alt role must actually reach the outfit space.
+
+        59-el-hoodie is outerwear she wears as the top: 3 of her first 15 logged
+        wears were bottom + shoes + hoodie, a shape hard_violations already
+        allowed but that the enumerator never generated, so one of her most-worn
+        garments could never be suggested.
+        """
+        combos = gaps.enumerate_outfits(self.garments)
+        with_hoodie = [c for c in combos
+                       if any(g_["id"] == "59-el-hoodie" for g_ in c)]
+        self.assertTrue(with_hoodie,
+                        "dual-role garment never appears in the outfit space")
+
+    def test_no_garment_appears_twice_in_one_outfit(self):
+        """A dual-role garment must not become its own outer layer."""
+        for combo in gaps.enumerate_outfits(self.garments, with_outerwear=True):
+            ids = [g_["id"] for g_ in combo]
+            self.assertEqual(len(ids), len(set(ids)),
+                             "garment duplicated within an outfit: %s" % ids)
 
     def test_published_looks_are_structurally_valid(self):
         """Her own 18 looks must pass the rules. If they do not, the rules are wrong."""
