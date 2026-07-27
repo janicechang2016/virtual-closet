@@ -400,9 +400,15 @@ function draw(d) {
     el.append(k, v, s); $('#kpis').appendChild(el);
   });
 
-  $('#caveat').textContent =
-    'wear counts come from your ' + t.looks + ' published looks — the only wear record '
-    + 'that exists. a garment worn often but never photographed reads here as never worn.';
+  // The floor rises as wears are logged, so the sentence has to change with it —
+  // claiming published looks are "the only wear record that exists" stops being
+  // true the moment anything is logged.
+  $('#caveat').textContent = t.logged_wears
+    ? 'wear counts come from your ' + t.looks + ' published looks plus '
+      + t.logged_wears + ' logged wear' + (t.logged_wears === 1 ? '' : 's')
+      + '. a garment worn but neither photographed nor logged still reads as never worn.'
+    : 'wear counts come from your ' + t.looks + ' published looks — nothing has been '
+      + 'logged yet. a garment worn often but never photographed reads here as never worn.';
 
   const idleMax = Math.max(...d.idle_by_category.map(c => c.value), 1);
   $('#idle').innerHTML = '';

@@ -61,7 +61,13 @@ def stylist_pool(limit=POOL_DEPTH):
     data = json.loads(closet_server.SNAPSHOT.read_text())
     garments, looks = data["garments"], data["outfits"]
     by_id = {g["id"]: g for g in garments}
-    published = [o for o in looks if o.get("source") == "manual"]
+    # Outfits she LIVED are evidence of taste alongside outfits she PUBLISHED
+    # (her call, 07-27). 'worn' rows come from the wear logger; keeping the two
+    # sources distinguishable in the schema is what made this a decision rather
+    # than a silent change, and what lets it be measured against the 0.824 the
+    # published-only model scored.
+    PRIOR = ("manual", "worn")
+    published = [o for o in looks if o.get("source") in PRIOR]
 
     worn = set()
     for o in published:

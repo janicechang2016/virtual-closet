@@ -25,7 +25,9 @@ SELECT json_build_object(
       FROM garment ORDER BY id) g),
   'outfits', (SELECT coalesce(json_agg(row_to_json(o)), '[]'::json) FROM (
       SELECT id, garment_ids, source, context, render_cache_key
-      FROM outfit ORDER BY render_cache_key) o)
+      FROM outfit ORDER BY render_cache_key) o),
+  'wears', (SELECT coalesce(json_agg(row_to_json(w)), '[]'::json) FROM (
+      SELECT outfit_id, worn_on FROM wear_log ORDER BY worn_on) w)
 );
 """
 
@@ -55,8 +57,9 @@ def main():
 
     with open(OUT, "w") as fh:
         json.dump(payload, fh, indent=1)
-    print("garments %d · outfits %d -> %s"
-          % (len(payload["garments"]), len(payload["outfits"]), os.path.relpath(OUT)))
+    print("garments %d · outfits %d · wears %d -> %s"
+          % (len(payload["garments"]), len(payload["outfits"]),
+             len(payload.get("wears") or []), os.path.relpath(OUT)))
     return 0
 
 

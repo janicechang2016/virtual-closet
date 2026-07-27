@@ -477,6 +477,38 @@ def _judged_signatures():
     return set(stylist_current().keys())
 
 
+
+def _wear_counts(data):
+    """Per-garment evidence of wear.
+
+    TWO independent records, added rather than merged: an appearance in a
+    published look (she styled and photographed it, so it was worn at least
+    once) and a row in wear_log (she logged wearing it on a day). Adding is
+    correct — publishing a look in June and wearing it again in July is two
+    wearings — and it degrades gracefully: with an empty wear_log this returns
+    exactly the number these pages showed before wear logging existed.
+
+    It remains a FLOOR. An unphotographed, unlogged wear is still invisible; the
+    difference is that the floor now rises every time she logs something.
+    """
+    counts, by_outfit = {}, {}
+    for o in data.get("outfits") or []:
+        by_outfit[o.get("id")] = o
+        if o.get("source") == "manual":
+            for gid in (o.get("garment_ids") or []):
+                counts[gid] = counts.get(gid, 0) + 1
+    for w in data.get("wears") or []:
+        o = by_outfit.get(w.get("outfit_id"))
+        for gid in ((o or {}).get("garment_ids") or []):
+            counts[gid] = counts.get(gid, 0) + 1
+    return counts
+
+
+def _logged_wears(data):
+    """How many wears came from the log — what the copy needs to stay honest."""
+    return len(data.get("wears") or [])
+
+
 def galaxy_data(potential_per_node=3):
     """Track E graph. $0, offline, no new tables (v2 plan E.7).
 
@@ -504,10 +536,7 @@ def galaxy_data(potential_per_node=3):
     looks = [o for o in data["outfits"] if o.get("source") == "manual"]
     names = _garment_names()
 
-    wears = {}
-    for lk in looks:
-        for gid in (lk.get("garment_ids") or []):
-            wears[gid] = wears.get(gid, 0) + 1
+    wears = _wear_counts(data)
 
     def hexcol(g):
         cols = g.get("colors") or []
@@ -585,6 +614,7 @@ def galaxy_data(potential_per_node=3):
             "worn_edges": len(worn),
             "potential_edges": len(keep),
             "looks": len(looks),
+            "logged_wears": _logged_wears(data),
             "dark_nodes": sum(1 for n in nodes if n["lab"][0] < 25),
         },
     }
@@ -593,11 +623,13 @@ def galaxy_data(potential_per_node=3):
 def insights_data():
     """Track C numbers. $0, offline, straight from the snapshot.
 
-    WEARS ARE A FLOOR, NOT THE TRUTH: they count appearances in published looks,
-    which is the only wear record that exists. A garment worn every week but
-    never photographed reads as never worn. Every surface that shows a wear count
-    says so — an unqualified "never worn $2,381" would be an accusation the data
-    cannot support.
+    WEARS ARE A FLOOR, NOT THE TRUTH: appearances in published looks plus rows in
+    the wear log. A garment worn every week but neither photographed nor logged
+    still reads as never worn. Every surface that shows a wear count says so — an
+    unqualified "never worn $2,381" would be an accusation the data cannot
+    support. The difference since wear logging is that the floor now RISES, so
+    the copy reports how much of it is logged rather than implying published
+    looks are all there is.
     """
     if not SNAPSHOT.exists():
         return {"error": "no closet snapshot - run server/scripts/dump_closet.py"}
@@ -606,10 +638,7 @@ def insights_data():
     looks = [o for o in outfits if o.get("source") == "manual"]
     names = _garment_names()
 
-    wears = {}
-    for lk in looks:
-        for gid in (lk.get("garment_ids") or []):
-            wears[gid] = wears.get(gid, 0) + 1
+    wears = _wear_counts(data)
 
     def price(g):
         v = (g.get("purchase") or {}).get("price_usd")
@@ -683,6 +712,7 @@ def insights_data():
             "never_worn": len(idle),
             "worn": len(worn),
             "looks": len(looks),
+            "logged_wears": _logged_wears(data),
             "median_cpw": median_cpw,
         },
         "idle_by_category": by_cat(idle),
@@ -706,7 +736,13 @@ def stylist_suggest(occasion="", n=6):
     garments, looks = data["garments"], data["outfits"]
     by_id = {g["id"]: g for g in garments}
 
-    published = [o for o in looks if o.get("source") == "manual"]
+    # Outfits she LIVED are evidence of taste alongside outfits she PUBLISHED
+    # (her call, 07-27). 'worn' rows come from the wear logger; keeping the two
+    # sources distinguishable in the schema is what made this a decision rather
+    # than a silent change, and what lets it be measured against the 0.824 the
+    # published-only model scored.
+    PRIOR = ("manual", "worn")
+    published = [o for o in looks if o.get("source") in PRIOR]
     if occasion:
         matching = [o for o in published
                     if (o.get("context") or {}).get("occasion") == occasion]
