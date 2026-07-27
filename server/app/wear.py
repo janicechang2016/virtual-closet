@@ -120,13 +120,32 @@ async def recent_wears(limit: int = 30) -> dict:
 
 
 async def delete_wear(wear_id: str) -> dict:
-    """Undo. Mis-taps are the most likely input error on a phone, so removing a
-    wear has to be as cheap as adding one — the same revisability the feedback
-    logs already promise. An outfit row created by the wear is left behind on
-    purpose: it costs nothing and may be worn again."""
+    """Undo. Mis-taps are the likeliest input error on a phone, so removing a wear
+    has to be as cheap as adding one — the same revisability the feedback logs
+    already promise.
+
+    An outfit this logger CREATED and that now has no wears left goes with it.
+    Leaving it was the first behaviour and it is wrong: these outfits are destined
+    to feed the stylist's corpus, so an orphan is a combination she mis-tapped
+    once and undid, quietly teaching the model anyway. Published looks and stylist
+    suggestions are never touched — they exist independently of any wear.
+    """
     async with pool().acquire() as con:
-        try:
-            deleted = await con.execute("DELETE FROM wear_log WHERE id = $1::uuid", wear_id)
-        except Exception:
-            raise WearError("wear_id must be a uuid")
-    return {"ok": True, "deleted": deleted.split()[-1] == "1"}
+        async with con.transaction():
+            try:
+                row = await con.fetchrow(
+                    "DELETE FROM wear_log WHERE id = $1::uuid RETURNING outfit_id", wear_id)
+            except Exception:
+                raise WearError("wear_id must be a uuid")
+            if row is None:
+                return {"ok": True, "deleted": False, "outfit_removed": False}
+            gone = await con.execute(
+                """
+                DELETE FROM outfit o
+                 WHERE o.id = $1 AND o.source = 'worn'
+                   AND NOT EXISTS (SELECT 1 FROM wear_log w WHERE w.outfit_id = o.id)
+                """,
+                row["outfit_id"],
+            )
+    return {"ok": True, "deleted": True,
+            "outfit_removed": gone.split()[-1] == "1"}
