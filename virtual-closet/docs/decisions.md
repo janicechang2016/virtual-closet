@@ -1,5 +1,36 @@
 # Decision log
 
+## 2026-07-26 — Deployed figures are encrypted, not merely masked
+
+**Decision (user):** on the public build, money reads `$XXX` until a passcode reveals it.
+
+**The thing that shaped the implementation:** a static site has no server to check a passcode
+against. Masking in the UI would have left every figure sitting in `/api/insights.json`,
+readable with one `curl` — a curtain, not a lock. So `scripts/lock_money.mjs` STRIPS the
+values out of the payloads at build time and seals them in an AES-256-GCM blob keyed by
+PBKDF2(passcode, 210k, SHA-256). 283 figures across the three payloads. The numbers are
+genuinely absent until the key derives; a wrong passcode fails the GCM tag and throws, so
+there is no comparison in our code to get subtly wrong.
+
+**Node, not Python** — `export_static.py` is stdlib-only by design and the stdlib has no AEAD
+cipher, while `node:crypto` is guaranteed present in Vercel's build image and needs no
+dependency. The browser side is WebCrypto, also dependency-free.
+
+**The passcode lives as a Vercel env var (`INSIGHTS_PASSCODE`), never in the repo.** If it is
+missing the locker FAILS the build on Vercel rather than skipping — a silent skip there would
+publish the real figures, which is the exact thing the script exists to prevent. Locally a
+missing passcode just warns, so `python3 export_static.py` alone still works.
+
+**Locked charts draw no bar at all.** A zero-width stub reads as broken, or worse as a real
+near-zero value; an empty track beside `$XXX` reads as withheld. Counts, wear numbers and the
+idle SHARE (38%) are not money and stay visible, so the page keeps its shape.
+
+**Known limit, accepted:** amounts are sealed, **rank order is not**. `idle_top`,
+`best_cpw` and `spend_by_category` are sorted server-side before locking, so a locked page
+still discloses WHICH garment is most expensive, just not by how much. Sealing the ordering
+too would mean re-sorting client-side after unlock.
+
+
 ## 2026-07-26 — Glass moves to a real shader; chromatic aberration ships OFF
 
 **Decision (user):** build the WebGL layer, from the Brik "Refractive Glass Studio" source

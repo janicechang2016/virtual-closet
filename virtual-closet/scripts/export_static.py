@@ -22,7 +22,8 @@ import closet_server
 
 # sourcing.html stays out: its scan/save routes need the live local server
 APP_FILES = ["carousel.html", "index.html", "app.js", "nav.js", "style.css",
-             "entrance-bg.jpg", "stylist.html", "insights.html", "galaxy.html"]
+             "entrance-bg.jpg", "stylist.html", "insights.html", "galaxy.html",
+             "unlock.js"]
 
 # How deep a ranked pool the browser gets. The live stylist shuffles the top
 # max(n*6, 15% of ranked) ~= 333 and scans 3x that for a wildcard, so 1200

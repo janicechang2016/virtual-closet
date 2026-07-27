@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "python3 virtual-closet/scripts/export_static.py --out site",
+  "buildCommand": "python3 virtual-closet/scripts/export_static.py --out site && node virtual-closet/scripts/lock_money.mjs site",
   "outputDirectory": "site",
   "rewrites": [
     { "source": "/", "destination": "/app/carousel.html" },

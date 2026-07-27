@@ -98,6 +98,17 @@
   #hint { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
     color:var(--dim); z-index:20; }
   @media (max-width:860px) { #panel, #legend { display:none; } }
+  /* money lock — the figures are encrypted in the deployed payload */
+  .moneylock { display: inline-flex; align-items: center; gap: 8px; margin-left: 14px; }
+  .moneylock button { font-family: 'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;
+    text-transform: uppercase; letter-spacing: .16em; font-size: 10px;
+    background: none; border: 1px solid var(--graphite); color: var(--dim);
+    padding: 5px 10px; cursor: pointer; }
+  .moneylock button:hover { border-color: var(--paper); color: var(--paper); }
+  .moneylock input { font: inherit; font-size: 11px; padding: 4px 7px; width: 100px;
+    background: rgba(14,14,16,.8); border: 1px solid var(--graphite); color: var(--paper); }
+  .moneylock .ml-msg { font-size: 10px; letter-spacing: .14em; color: var(--oxblood);
+    text-transform: uppercase; }
 </style></head>
 <body>
 <header>
@@ -105,6 +116,7 @@
   <span class="mono">Galaxy</span>
   <span class="spacer"></span>
   <span class="mono" id="stats"></span>
+  <span id="lockhost"></span>
 </header>
 
 <div id="stage"><canvas id="c"></canvas><canvas id="glass"></canvas></div>
@@ -140,6 +152,7 @@
 <div id="hint" class="mono">drag to pan · scroll to zoom · click a garment</div>
 
 <script src="/app/nav.js"></script>
+<script src="/app/unlock.js"></script>
 <script>
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 let NODES = [], EDGES = [], IMG = {}, VIEW = {x:0, y:0, k:1};
@@ -155,10 +168,31 @@ function resize() {
 }
 addEventListener('resize', resize); resize();
 
+function buildOrphans() {
+  const host = document.getElementById('orphans');
+  host.innerHTML = '';
+  NODES.filter(n => n.orphan)
+    .sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, 8)
+    .forEach(n => {
+      const row = document.createElement('div'); row.className = 'orow';
+      const a = document.createElement('span'); a.textContent = n.name;
+      const b = document.createElement('span'); b.textContent = price(n.price);
+      row.append(a, b);
+      row.onclick = () => { select(n); centreOn(n); };
+      host.appendChild(row);
+    });
+}
+
 function radius(n) {
   // size encodes wear count (plan E.2); floor keeps a never-worn garment findable
   return 13 + Math.min(n.wears, 6) * 3.0;
 }
+
+// Prices are stripped from the deployed payload and sealed (see unlock.js), so
+// a locked figure must read $XXX while a garment that simply has no price stays
+// blank — `null` means different things in those two cases.
+const price = p => (window.MoneyLock && MoneyLock.locked) ? '$XXX'
+                 : (p ? '$' + Math.round(p) : '');
 
 fetch('/api/galaxy').then(r => r.json()).then(d => {
   if (d.error) { document.getElementById('stats').textContent = d.error; return; }
@@ -191,19 +225,19 @@ fetch('/api/galaxy').then(r => r.json()).then(d => {
     chips.appendChild(b);
   });
 
-  // plain panel: the orphans, listed — the graph explores, this answers
-  const orphans = NODES.filter(n => n.orphan)
-    .sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, 8);
-  const host = document.getElementById('orphans');
-  orphans.forEach(n => {
-    const row = document.createElement('div'); row.className = 'orow';
-    const a = document.createElement('span'); a.textContent = n.name;
-    const b = document.createElement('span');
-    b.textContent = n.price ? '$' + Math.round(n.price) : '';
-    row.append(a, b);
-    row.onclick = () => { select(n); centreOn(n); };
-    host.appendChild(row);
+  // Attach BEFORE the first paint: until it runs, MoneyLock.locked is false and
+  // every sealed price would render blank instead of $XXX.
+  // Prices live in the payload, but NODES are copies of those objects, so an
+  // unlock has to be carried across before anything re-renders.
+  MoneyLock.attach(d, () => {
+    d.nodes.forEach((n, i) => { NODES[i].price = n.price; });
+    buildOrphans();
+    if (selected) select(selected);
   });
+  MoneyLock.mount(document.getElementById('lockhost'));
+
+  // plain panel: the orphans, listed — the graph explores, this answers
+  buildOrphans();
 
   NODES.forEach(n => { if (n.img) { const im = new Image(); im.src = n.img; IMG[n.id] = im; } });
   revealT0 = performance.now();
@@ -703,7 +737,7 @@ function drawHUD(n) {
   const line1 = n.id.toUpperCase();
   const wear = n.wears === 0 ? 'NEVER WORN' : n.wears + (n.wears === 1 ? ' WEAR' : ' WEARS');
   const line2 = [(n.subcategory || n.category || '').toUpperCase(), wear,
-                 n.price ? '$' + Math.round(n.price) : null].filter(Boolean).join('  ·  ');
+                 price(n.price) || null].filter(Boolean).join('  ·  ');
   // the readout sits over a dot field, so it needs its own ground to stay legible
   const w = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width);
   ctx.fillStyle = 'rgba(14,14,16,.82)';
@@ -882,7 +916,7 @@ function select(n) {
   document.getElementById('dimg').src = n.img || '';
   document.getElementById('dname').textContent = n.name;
   document.getElementById('dmeta').textContent =
-    [n.subcategory || n.category, n.price ? '$' + Math.round(n.price) : null]
+    [n.subcategory || n.category, price(n.price) || null]
       .filter(Boolean).join(' · ');
   const st = document.getElementById('dstats'); st.innerHTML = '';
   [['worn', n.wears], ['links', n.worn_links],

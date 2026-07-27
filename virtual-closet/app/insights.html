@@ -178,12 +178,23 @@
     .row { grid-template-columns:110px 1fr 78px; gap:8px; }
     .kpi .v { font-size:30px; }
   }
+  /* money lock — the figures are encrypted in the deployed payload */
+  .moneylock { display: inline-flex; align-items: center; gap: 8px; }
+  .moneylock button { font: inherit; text-transform: uppercase; letter-spacing: .16em;
+    font-size: 10px; background: none; border: 1px solid #111; color: #111;
+    padding: 7px 12px; cursor: pointer; }
+  .moneylock button:hover { background: #111; color: #fff; }
+  .moneylock input { font: inherit; font-size: 11px; padding: 6px 8px; width: 110px;
+    border: 1px solid #111; background: #fff; color: #111; }
+  .moneylock .ml-msg { text-transform: uppercase; letter-spacing: .14em;
+    font-size: 10px; color: #6F2B2B; }
 </style></head>
 <body>
 <header data-nav-mount>
   <a class="wordmark" href="/">the archive.</a>
   <span class="up" style="color:var(--dim)">Insights</span>
   <span class="spacer"></span>
+  <span id="lockhost"></span>
   <button id="tabletoggle">table view</button>
 </header>
 
@@ -238,9 +249,13 @@
 <footer id="foot"></footer>
 <div id="tip"><div class="tv"></div><div class="tl"></div></div>
 
+<script src="/app/unlock.js"></script>
 <script>
 const $ = s => document.querySelector(s);
-const money = n => '$' + Math.round(n).toLocaleString();
+// (unlock.js is loaded just above — MoneyLock must exist before the payload lands)
+// Deployed builds ship these figures encrypted, so `money` defers to MoneyLock:
+// while locked it prints $XXX because the number genuinely is not here.
+const money = n => window.MoneyLock ? MoneyLock.fmt(n) : '$' + Math.round(n).toLocaleString();
 const tip = $('#tip');
 
 // Labels come from garment metadata — insert as text, never as HTML.
@@ -272,10 +287,15 @@ function barRow(host, {label, value, max, text, alert, tipLabel}) {
   const lab = document.createElement('div');
   lab.className = 'lab up'; lab.textContent = label;
   const track = document.createElement('div'); track.className = 'track';
-  const bar = document.createElement('div');
-  bar.className = 'bar' + (alert ? ' alert' : '');
-  bar.style.width = Math.max(2, (value / max) * 100) + '%';
-  track.appendChild(bar);
+  // Locked: draw NO bar rather than a zero-width one. An empty track beside
+  // "$XXX" reads as withheld; a 2px stub reads as broken, or worse as a real
+  // near-zero value.
+  if (!(window.MoneyLock && MoneyLock.locked)) {
+    const bar = document.createElement('div');
+    bar.className = 'bar' + (alert ? ' alert' : '');
+    bar.style.width = Math.max(2, (value / max) * 100) + '%';
+    track.appendChild(bar);
+  }
   const val = document.createElement('div');
   val.className = 'val'; val.textContent = text;
   row.append(lab, track, val);
@@ -290,10 +310,13 @@ function columns(host, labhost, items, {valueOf, textOf, labelOf, alertOf, tipOf
     const col = document.createElement('div'); col.className = 'col';
     const cv = document.createElement('div'); cv.className = 'cv';
     cv.textContent = textOf(it);
-    const bar = document.createElement('div');
-    bar.className = 'cbar' + (alertOf && alertOf(it) ? ' alert' : '');
-    bar.style.height = Math.max(2, (valueOf(it) / max) * 130) + 'px';
-    col.append(cv, bar);
+    col.append(cv);
+    if (!(window.MoneyLock && MoneyLock.locked)) {
+      const bar = document.createElement('div');
+      bar.className = 'cbar' + (alertOf && alertOf(it) ? ' alert' : '');
+      bar.style.height = Math.max(2, (valueOf(it) / max) * 130) + 'px';
+      col.append(bar);
+    }
     host.appendChild(col);
     const l = document.createElement('div'); l.textContent = labelOf(it);
     labhost.appendChild(l);
@@ -348,6 +371,15 @@ function unitChart(host, keyHost, units) {
 
 fetch('/api/insights').then(r => r.json()).then(d => {
   if (d.error) { document.body.insertAdjacentText('afterbegin', d.error); return; }
+  // Re-runs wholesale once the figures are unlocked — every chart is derived
+  // from the same payload, so re-rendering is simpler and safer than trying to
+  // patch each number in place.
+  MoneyLock.attach(d, () => draw(d));
+  draw(d);
+  MoneyLock.mount(document.querySelector('#lockhost'));
+});
+
+function draw(d) {
   const t = d.totals;
 
   const kpis = [
@@ -435,7 +467,7 @@ fetch('/api/insights').then(r => r.json()).then(d => {
     + 'appearances in published looks. Nothing is estimated and nothing was generated. '
     + '"Never worn" means no recorded wear, not unworn: it is a floor. Oxblood marks the '
     + 'idle measure only, and always beside a written label.';
-});
+}
 
 $('#tabletoggle').addEventListener('click', () => {
   const w = $('#tablewrap');
@@ -446,3 +478,4 @@ $('#tabletoggle').addEventListener('click', () => {
 </script>
   <script src="/app/nav.js"></script>
 </body></html>
+
