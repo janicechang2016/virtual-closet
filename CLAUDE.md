@@ -402,6 +402,19 @@ actually look at the PNG.
 
 ## Queued next (do not build until asked)
 
+- **FIND-A-BETTER-PHOTO SEARCH (her note 07-27, Track A stretch, NOT started):** from a photo
+  she took, find a better product shot of the same garment on the web. Reverse image search is
+  the obvious route and is BLOCKED: Google Lens has no official API, Bing Visual Search was
+  retired, and TinEye matches exact image reuse rather than "same garment, better photo".
+  The workable architecture is identification-then-text-search, and it reuses most of what
+  exists: vision LLM reads brand / label / distinctive details -> text query -> search API ->
+  `ingest_fetch.py --list` ranks images on the candidate pages -> she picks in the `/sourcing`
+  grid. Only the identification call and the search API are new, and both cost money.
+  Caveats to weigh before building: it works on identifiable pieces (this closet is full of
+  them) and not at all on a plain black tank; and for ~10 items, searching the brand herself
+  and pasting the URL into `/sourcing` is faster and free. The case it genuinely wins is
+  garments she cannot identify — a model reading a care label beats her there.
+
 - **GALAXY TITLE FONT (her note 07-26):** explore changing the type for the `/galaxy` page
   title. Currently the shared italic wordmark + uppercase mono label; the page's cybercore
   direction may want something else for the title specifically. Not started.
