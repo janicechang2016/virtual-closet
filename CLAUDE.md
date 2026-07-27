@@ -90,12 +90,29 @@ service — connected to `main` but with no `DATABASE_URL`, so it crash-looped o
 was deleted, and `virtual-closet-api` was repointed off the deleted `2d-reboot` branch to
 `main`. Consequence: **a push to `main` now redeploys the API as well as the site.**
 
-**STILL TO DO — Phase 3c, the payoff:** `dump_closet.py` does not yet carry wear counts into
-the snapshot, so `/insights`, `/galaxy` and `/stylist` still read wears as "appearances in
-published looks". Until that lands, logging changes nothing downstream. **Open decision,
-deliberately not taken: whether `source='worn'` outfits feed the stylist's affinity alongside
-the 18 published looks.** The schema keeps them distinguishable precisely so this stays a
-measurement rather than a silent change — the current model measured AUC 0.824.
+**Phase 3c — LANDED 07-27, and it was already built.** The previous note here claimed
+`dump_closet.py` did not carry wear counts; that was wrong. It always selected
+`wear_count`, `last_worn` and the whole `wear_log` as `wears`; `closet_server.py`
+`_wear_counts()` already merged the log into per-garment counts ADDITIVELY (a published
+look and a logged wear are two independent records of wearing, and it degrades to the old
+numbers on an empty log); `/insights` already switched its caveat copy on `logged_wears`.
+**The only blocker was a STALE `closet_snapshot.json`** — dumped while production was
+restored to `wear_log=0` after the end-to-end verification. Lesson for the next one of
+these: when logging "changes nothing downstream", suspect the snapshot before the code.
+First real refresh (15 wears): **never-worn 23 → 13, idle $2,381 → $1,456** — 10 garments
+and $925 stop being an accusation the data could not support.
+
+**THE FINDING from the first 15 wears (07-27): what she WEARS and what she PUBLISHES do
+not overlap.** All 15 wears created 15 NEW outfits — not one matched a published look —
+and 18 of the 35 garments used by the 18 published looks have never actually been worn.
+27 of 58 garments have been worn; 13 appear in neither record. The stylist's affinity model
+(AUC 0.824) is trained entirely on the published looks, so it may be learning an
+aspirational/photographic corpus rather than behaviour. **This makes the open decision —
+whether `source='worn'` outfits feed affinity — answerable by MEASUREMENT, which is why the
+schema keeps them distinguishable: hold the wear log out and test whether
+affinity-trained-on-published-looks predicts what she actually wore**, exactly as the blind
+24-outfit calibration produced colour 0.491 vs affinity 0.824. $0, pure computation. NOT YET
+RUN. Caveat: 15 wears is thin — directional, not conclusive, and it sharpens with every log.
 
 ## Track A — ingestion (2026-07-27), $0 half done
 
@@ -346,6 +363,38 @@ Verified end to end against production, then removed from both stores (58 garmen
     photo fades to white, NO ghost) revealing the live carousel; once per session
     (`sessionStorage.archiveEntered`), reduced-motion skip, `?entrance=1/0` debug.
     Previews kept in `design-inspo/entrance-previews/` (options 1–3; see decisions.md).
+    **PASSPHRASE GATE — BUILT AND REVERTED 07-27 (her call). NOT IN THE CODE.**
+    Explored, fully working, then backed out: **THE SITE STAYS PUBLIC, because she wants
+    interviewers to be able to look at it.** Topic tabled, not closed. Do not rebuild
+    without a new ask. What it was: click morphed "enter the archive." into a password
+    field *inside the same pill*, Enter submitted, wrong answers dissolved into noise.
+    Findings worth keeping, since they are what a rebuild would otherwise re-derive:
+    - **Vercel Deployment Protection is NOT available to her — paid Pro feature ($20/mo),
+      this project is on Hobby.** It was the "real lock" half of the original plan and its
+      absence is what collapsed the plan. Do not suggest it again.
+    - **The free replacement, researched but NOT built:** Vercel **Routing Middleware**
+      (ex-Edge Middleware) is framework-agnostic — a root `middleware.ts` works on a
+      non-Next build like this one's Python `export_static.py` — and runs BEFORE the cache,
+      so it covers the ~80MB of assets, with the password in an env var rather than in the
+      page. Hobby includes 1M invocations / 1M edge requests / 4 CPU-hours free.
+      **And it need not cost the morph a single pixel:** protect `/api/manifest` and
+      `/assets/*` but let the carousel SHELL through, so the cover stays up while JS
+      fetches and builds the archive behind it, then dissolves onto a loaded carousel —
+      the current reveal exactly, no navigation. Est. 2–3h.
+    - **Any in-page check is ceremony, never a lock** — the deploy is static, so it runs in
+      the browser and its secret ships in the page; the carousel underneath is already
+      loaded, every garment image is fetchable at its own URL, `?entrance=0` walks past it,
+      and `/fitting-room` is reachable directly. If a gate is ever wanted for real, it goes
+      at the edge; hardening the page is wasted work.
+    - Build notes if it returns: **the pill must be ONE object across both states**, never
+      swapped — label in normal flow so it decides the natural width (164px), field
+      absolutely positioned so it contributes nothing to sizing, and JS pins the measured
+      width before easing to 244px (`width:auto` cannot transition). Refusal was nav.js's
+      resolve-out-of-noise run BACKWARDS, borrowing its `POOL` verbatim, eroding to zero
+      over 460ms at ~22fps (re-randomising every rAF reads as a strobe); the value must be
+      overwritten with noise BEFORE unmasking `password`->`text`, or the real passphrase
+      renders for a frame. A switch constant must fail OPEN — a non-empty *invalid* value
+      fails closed and locks her out of her own archive (`?entrance=0` is the way back in).
   - `/fitting-room` (`/classic` kept as alias) — **fitting room** (outfit rail | stage |
     racks). Design lineage: Boutique v3 (313NY, tag `boutique-v3`; amber rejected as
     masculine, violet/rose rejected outright) → SYVE restyle 07-13 (tag
