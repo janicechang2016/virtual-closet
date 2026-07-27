@@ -7,7 +7,7 @@ carries the standing rules). Plans: `virtual-closet-execution-plan.md` (v1),
 `virtual-closet-plan-v2.md` (v2 spec), `virtual-closet-v2-foundation-plan.md` (Phases 0–2),
 `virtual-closet-v2-HANDOFF.md` (cold-resume).
 
-## v2 state (2026-07-26) — foundation + engine + stylist all done, $0.00 API spend
+## v2 state (2026-07-27) — foundation + engine + stylist + wear logging done, $0.00 API spend
 
 **DEPLOY SOURCE: `main`** (Vercel → Settings → Git → Production Branch, switched 07-26).
 Pushing to `main` deploys the public archive; verify at virtual-closet-seven.vercel.app.
@@ -84,7 +84,8 @@ day away from the laptop. That is the whole reason it talks to the hosted API in
   teaching the model. Scoped to `source='worn'` with no wears left; published looks and
   stylist suggestions are never touched.
 - Verified end to end against production, then production restored to `wear_log=0`,
-  `manual=18`, `stylist=24`, 0 orphans.
+  `manual=18`, `stylist=24`, 0 orphans. **That was the 07-27 acceptance run; production now
+  holds 15 real wears and 57 outfits (18 manual · 15 worn · 24 stylist).**
 
 **Railway is no longer misconfigured (07-27, her fix):** the duplicate `virtual-closet`
 service — connected to `main` but with no `DATABASE_URL`, so it crash-looped on every push —
@@ -146,7 +147,10 @@ its own fold's model):
 | the other 14 wears only | 0.622 (−0.038) | 0.549 (−0.006) |
 
 **Feeding `source='worn'` outfits into affinity makes prediction WORSE, consistently across
-both negative pools. Do not do it.** `NEGATIVE_WEIGHT = 0.0` has a sibling: wears stay out
+both negative pools. Do not do it.** **The code now matches: `PRIOR = ("manual",)` in BOTH
+`closet_server.py` (live route) and `export_static.py` (deployed pool) — it had been
+`("manual", "worn")`, i.e. the exact configuration this measured as harmful. Deployed stylist
+prior dropped 33 -> 18 looks.** `NEGATIVE_WEIGHT = 0.0` has a sibling: wears stay out
 of `affinity()` too. The reason is the same failure as rejections — **a per-garment scalar
 cannot hold context. Wear FREQUENCY is not preference:** she wears jeans and yello-heels
 constantly because they are defaults, not favourites, and adding wear counts just ranks by
@@ -557,6 +561,17 @@ actually look at the PNG.
   put — the carousel's Carousel/Index viewtabs are a lens toggle, not navigation.
 
 ## Queued next (do not build until asked)
+
+- **HER NEXT SESSION, stated 07-27:** (a) evaluate where things stand and what needs
+  tweaking — start from `virtual-closet-v2-HANDOFF.md` §3, which was rewritten for exactly
+  this; (b) **IMAGE RENDERING UPDATES IN `/fitting-room` — NOT YET SPECIFIED. Ask her what
+  she wants changed before touching `tryon.py` or the stage.** This is the one live area that
+  SPENDS: every render is a fal call at ~$0.059, standing rule #1 (approved batches only)
+  applies, and the fal balance was last seen at **-$0.08**, so a top-up likely comes first.
+  Relevant constraints already recorded above and worth re-reading before proposing anything:
+  face-swap finish is mandatory on any visible face (rule #2), never edit the avatar's head
+  region with NB models, prompts must stay neutrally worded (rule #3), chained correctives
+  compound face drift, and difficulty-4/5 garments stay on the front pose.
 
 - **FIND-A-BETTER-PHOTO SEARCH (her note 07-27, Track A stretch, NOT started):** from a photo
   she took, find a better product shot of the same garment on the web. Reverse image search is
