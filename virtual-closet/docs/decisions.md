@@ -1,5 +1,23 @@
 # Decision log
 
+## 2026-07-27 — Logged outfits never reach the archive carousel
+
+**Standing rule (user):** an outfit created by wear logging must NEVER appear in the archive
+carousel unless she explicitly asks for it later. The archive is curated and published; the
+wear log is a private record of what happened, and the two must not blur.
+
+**This holds structurally today, which is why it is cheap to keep.** The carousel is built
+from `looks.json` via `looks_list()` — the local draft/published store — while wear logging
+writes `outfit` rows to Postgres. Verified: 18 looks in the carousel against 42 outfits in
+Postgres, two stores with no path between them. Publishing is the only thing that writes
+`looks.json`, and it is a deliberate act with a pose picker and a billed render behind it.
+
+**What would break it,** and therefore what to refuse without asking: any change that builds
+the carousel from the snapshot or from `outfit`, or that makes `/wear` write a look. If the
+archive ever needs to show lived outfits, that is a new decision and a `source` filter, not a
+side effect.
+
+
 ## 2026-07-26 — Deployed figures are encrypted, not merely masked
 
 **Decision (user):** on the public build, money reads `$XXX` until a passcode reveals it.
