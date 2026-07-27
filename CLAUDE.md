@@ -97,6 +97,35 @@ deliberately not taken: whether `source='worn'` outfits feed the stylist's affin
 the 18 published looks.** The schema keeps them distinguishable precisely so this stays a
 measurement rather than a silent change — the current model measured AUC 0.824.
 
+## Track A — ingestion (2026-07-27), $0 half done
+
+**`/ingest`** (LOCAL ONLY — writes files and shells out to rembg, so it cannot exist on the
+static deploy). Drop a photo → name + category → `process` → attributes → `add to closet`.
+
+**Why this half and not the spec's.** Plan §5.A is SAM detection + vision-LLM tagging, both
+paid, and fal sits at **-$0.08** so that half is blocked regardless. The gap that actually
+hurt was different: `/sourcing` is URL-only, so a garment needed a product page to enter the
+closet at all and anything photographed could not be added. Note the spec was written for
+cold start (0 → 58 garments); the closet is past that, so the realistic shape is one to three
+items at a time.
+
+- **All local, all free**, reusing what this closet already proved: `dragcut.py` (rembg) for
+  the cutout, `extract_colors.py` for LAB colour — which already does the white-balance
+  normalisation A.3 asks for.
+- **A.1's two tiers are decided by whether a clean cutout was possible, and said out loud in
+  the UI**: `render_ready` generates, `catalog` only plans. Stating it at ingest is what stops
+  a bad photo surprising her at render time instead.
+- **Staging is reversible.** The folder is written with `pending: true`; `garment_list()`
+  skips pending so a half-finished ingest never appears in the app; `discard` removes it, and
+  refuses to touch a committed garment. **Commit writes meta.json AND the Postgres row — both
+  stores or neither**, since a garment missing from the DB is invisible to every page that
+  reads the snapshot.
+- **After ingesting, run `server/scripts/dump_closet.py`** or the other pages will not see it.
+- Structured for the paid half: `stage` takes one image and returns one garment, so
+  multi-garment detection becomes N calls into the same commit path, not a rewrite.
+
+Verified end to end against production, then removed from both stores (58 garments again).
+
 ## v1 state (2026-07-19)
 
 - **Repo on GitHub (07-17):** github.com/janicechang2016/virtual-closet — PRIVATE

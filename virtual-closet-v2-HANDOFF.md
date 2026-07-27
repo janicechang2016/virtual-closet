@@ -1,129 +1,155 @@
 # Virtual Closet v2 — Handoff / Resume Point
 
-**Date:** 2026-07-25 · **Branch:** `2d-reboot` (pushed) · **Status:** Phase 0 PROVISIONED + deployed
-and verified. Phase 1 not started.
+**Last updated 2026-07-27 · branch `main`.** Read `CLAUDE.md` first — it is the source of
+truth and is kept current. `virtual-closet/docs/decisions.md` carries the standing rules.
+This file is the five-minute orientation: what runs where, what to do next, what has already
+cost time.
 
-**Live:** https://virtual-closet-api-production.up.railway.app — Railway project `virtual-closet`
-(`d8cf0dfa-1353-4f98-8c9a-cc7aab7dbced`), Postgres 18 + `virtual-closet-api`, region sfo,
-deployed from GitHub `2d-reboot` / root dir `server`. Verified 07-25: `/health` 200 open,
-`/budget` 401 without token, JSON with it (a real Postgres round-trip — schema + budget gate
-proven, not assumed). Bearer token is in `server/.app_secret` (gitignored, never committed).
+*(The 07-25 version of this file described Phase 0 on a `2d-reboot` branch with "Phase 1 not
+started". All of that is obsolete — Phases 0–3 and Track A's $0 half are done, and
+`2d-reboot` no longer exists.)*
 
-Read this to resume the v2 pivot cold. Source-of-truth docs: `CLAUDE.md` (2D app),
-`virtual-closet-plan-v2.md` (full v2 spec, tracks A–F), `virtual-closet-v2-foundation-plan.md`
-(scope-reconciled Phases 0–2), `virtual-closet/docs/decisions.md` (07-25 entries).
+---
 
-## What this is
-The app is pivoting from an aesthetic lookbook ("the archive") to a **utility wardrobe
-tool** (stylist, sustainability, gap analysis, constellation dashboard). This iteration
-builds the **foundation only** (Phases 0–2), then stops to pick the first user-facing feature.
+## 1. Where everything runs
 
-## Decisions locked (2026-07-25) — do not re-litigate
-1. **Hosted Postgres** — deliberately reverses the 07-20 "no live endpoint" rule. → auth +
-   server-side budget gate are load-bearing (both already built).
-2. **Host = Railway + Vercel + Cloudflare R2.** Railway (Postgres + API + worker), Vercel
-   (frontend; archive stays put), R2 (object storage — Railway has no native blob).
-3. **Scope = foundation only** (Phases 0–2). ~$0 on API calls. Stop and reassess.
-4. **Additive identity** — archive carousel stays home; `/stylist` `/insights` `/galaxy` added later.
-5. **Glassmorphism re-homed** — off the archive, onto `/galaxy` (primary) + stylist cards
-   (secondary); resolve at Phase 5. Archive stays glass-free.
+| Thing | Where | State |
+|---|---|---|
+| Public site | virtual-closet-seven.vercel.app | builds from **`main`** |
+| API | virtual-closet-api-production.up.railway.app | Railway, from **`main`**, root dir `server` |
+| Postgres | Railway `Postgres` service | 58 garments · 42 outfits · **0 wears** |
+| Local app | `localhost:8765` | `python3 scripts/closet_server.py` from `virtual-closet/` |
 
-## Safety nets (rollback points)
-- `2d-final-pre-v2` — tag at `3b069e0`, pushed to origin. The complete pre-pivot 2D app.
-  Restore: `git checkout 2d-final-pre-v2`.
+**A push to `main` redeploys BOTH** the site and the API. Deliberate — one branch, no
+promotion step — and the fix for two separate stale-branch incidents (§5).
+
+Check what is actually live in two requests:
+
+```bash
+curl -s https://virtual-closet-seven.vercel.app/api/manifest \
+  | python3 -c "import sys,json;print(json.load(sys.stdin)['build'])"
+curl -s -o /dev/null -w "%{http_code}\n" \
+  https://virtual-closet-api-production.up.railway.app/wear      # 401 = deployed
+```
+
+## 2. The pages
+
+| Route | Deployed? | Reads | Writes |
+|---|---|---|---|
+| `/` archive carousel | yes | `looks.json` | — |
+| `/fitting-room` | yes | manifest | local only |
+| `/stylist` | yes, read-only | precomputed ranked pool | local only |
+| `/insights` | yes, figures encrypted | `api/insights.json` | — |
+| `/galaxy` | yes, figures encrypted | `api/galaxy.json` | — |
+| `/wear` | **yes — and it writes** | `api/garments.json` | Railway `POST /wear` |
+| `/ingest` | **no — local only** | — | garment folder + Postgres row |
+| `/sourcing` | no — local only | — | `garments/raw/` |
+
+Adding a page to the deploy takes **four** things; missing any one is a 404. A `vercel.json`
+rewrite, the file in `APP_FILES`, a static payload *plus its own rewrite* for every route the
+page fetches, and `asset_urls()` walking that payload or its images 404.
+
+## 3. What to do next
+
+1. **She is testing `/wear` in parallel. Nothing to build until wears exist.** When they do:
+   - run `server/scripts/dump_closet.py` and **commit the snapshot** — the Vercel build reads
+     it from the repo and has no Postgres;
+   - **re-measure the ranking.** Affinity now learns from lived outfits as well as published
+     ones (her call, 07-27). The **0.824 AUC was published-only and has NOT been re-measured**
+     — do not assume it improved.
+2. **`/galaxy` time scrubber** (plan E.4) — previously impossible because `wear_log` was
+   empty. It carries dates now, so it finally has something to animate.
+3. **Track A paid half** — multi-garment detection + vision-LLM tagging. Blocked on the fal
+   balance (**-$0.08**) and needs approval. Build only if *tagging* rather than *photographing*
+   turns out to be her bottleneck. `/ingest`'s `stage` already returns one garment per call,
+   so detection becomes N calls into the same commit path, not a rewrite.
+4. **Track D — style learning + gap analysis.** The last unbuilt track, materially better once
+   real wear data exists. Do it after (1).
+
+## 4. Queued and discussed, NOT started
+
+- **Galaxy title type** — six treatments built, previews in
+  `virtual-closet/design-inspo/galaxy-title-previews/`. She looked and tabled it.
+- **Non-black galaxy ground** — her idea; the glass effect is limited by what sits behind it.
+  Touches the locked Ink-palette decision, so discuss before building.
+- **Find-a-better-photo search** — reverse image search is blocked (Lens has no API, Bing
+  Visual Search retired, TinEye matches exact reuse). Workable route is
+  identify-then-text-search, reusing `ingest_fetch.py` and the `/sourcing` grid.
+- **Carousel detail glassmorphism**, **looks grid/index lens**, **fal top-up → recover the
+  $0 pilot segment → hero look videos**.
+
+**Closed — do not re-propose:** stylist index/catalog numbering (four treatments previewed,
+all rejected 07-26), Aquiline Two on the entrance (built then reverted at her request),
+stylist explore mode, pairwise compatibility, vertical body-stacked cards, wildcard as a
+full-width interruption.
+
+## 5. Traps that have already cost time
+
+- **Stale deploy branches, twice.** Vercel built from a `production` branch 38 commits behind.
+  Railway built from `2d-reboot` after it was deleted, while a *duplicate* service that was on
+  `main` crash-looped for want of `DATABASE_URL`. Both now point at `main`. **If a deploy looks
+  wrong, check the branch setting before reading the code.**
+- **`--virtual-time-budget` starves `/galaxy`'s rAF load-in** — headless `--screenshot` always
+  captures an empty field. Drive it over CDP on a real clock with `--remote-allow-origins=*`.
+- **Chrome clamps `--window-size` to ~500px** — a true phone viewport needs
+  `Emulation.setDeviceMetricsOverride`, or you are not testing what you think you are.
+- **`server/scripts/closet_snapshot.json` is deliberately TRACKED.** The Vercel build has no
+  Postgres and no `.app_secret`; without it in the repo, `/insights`, `/galaxy` and `/stylist`
+  cannot be generated at all.
+- **`INSIGHTS_PASSCODE` must exist in Vercel, Production *and* Preview.** Missing it fails the
+  build on purpose — a silent skip would publish real figures.
+- **Serving a copy of a page from another path breaks it** — node and garment images resolve
+  relative. Test on the real route.
+
+## 6. Standing rules — re-read before touching anything
+
+- **Spending is gated.** fal only in approved batches, every call through `scripts/genlog.py`
+  ($11.78 of $25 used). Track A's paid half and Track F need approval *and* a top-up.
+- **She decides aesthetics.** Build it, show it, expect rejection sometimes. Rejected variants
+  get tags or preview folders, never deletion.
+- **Logged outfits never reach the archive carousel** (07-27). Holds structurally — the
+  carousel reads `looks.json`, wear logging writes Postgres `outfit` rows. Any change that
+  builds the carousel from the snapshot breaks it.
+- **Colour theory does not predict her taste** — AUC 0.491 (chance) vs 0.824 learned. Hard
+  constraints filter, learned preference ranks, colour is a low-weight tiebreak.
+- **Rejections are collected but NOT applied** (`NEGATIVE_WEIGHT = 0.0`) — measured twice, on
+  independent data, and they cost accuracy both times.
+- **Money on the deployed site is encrypted, not masked.** `lock_money.mjs` strips 283 figures
+  into an AES-GCM blob; a UI-only mask would leave them in the JSON for anyone to curl.
+
+## 7. Infrastructure facts worth not re-deriving
+
+- Railway **Hobby $5/mo** was required — the trial had expired and `railway init` refused
+  without a plan. Separate recurring cost from the fal budget.
+- **`railway up` (CLI upload) returns 403 — unexplained.** Auth was fine on the same
+  credentials. Deploys come from GitHub instead; this is the known blocker if CLI upload is
+  ever needed.
+- `DATABASE_URL` is **not** auto-injected — Railway variables are per-service. Set as a
+  reference: `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
+- Migrations from a laptop need **`DATABASE_PUBLIC_URL`**, not `DATABASE_URL` (the latter is a
+  `railway.internal` host, unreachable off-platform). `psql` is keg-only from `brew install
+  libpq` → `/opt/homebrew/opt/libpq/bin/psql`.
+- **R2 credentials and the worker service are still deliberately deferred.** Nothing built so
+  far touches object storage or needs a second process.
+
+## 8. Safety nets
+
+- `2d-final-pre-v2` — tag at `3b069e0`, pushed. The complete pre-pivot 2D app.
 - `archive/360-avatar-v4-20260724` — the 3D/360 exploration.
 - `~/wardrobe-v3-360-local-assets-20260724/` — 2.1 GB of parked 360 assets.
 
-## What's built (Phase 0 scaffold, `server/`)
-FastAPI backend, compiles on Python 3.9. **The two reversal guardrails are real, not stubbed:**
-- `app/auth.py` — shared-secret bearer token; every route except `/health` requires it.
-- `app/budget.py` — Postgres-backed port of `genlog.py` (COST_TABLE + `check_budget()`);
-  raises **before** any paid call. The worker is the only place paid calls happen.
-- `app/queue.py` + `app/worker.py` — Postgres job queue (SKIP LOCKED) + async worker.
-- `app/main.py` — `/health` (open), `/budget` (auth), `/jobs/*` (auth) demonstrating the
-  enqueue→poll async pattern all future generation endpoints follow.
-- `migrations/0001_init.sql` — full v2 §6 data model + infra tables. `garment.id` = existing
-  slug (preserves render-matching). Colours as LAB. Job queue + generation_log + budget.
-- `engine/` — Phase 2 placeholder (constraints / colour / gaps), do not build yet.
-- `README.md` — exact provisioning commands.
+## 9. Commands
 
-## Provisioning — DONE 2026-07-25 (recorded so it isn't re-derived)
-- Railway **Hobby $5/mo** was required: the trial had expired and `railway init` refused
-  without a plan. This is a new recurring cost, separate from the fal budget.
-- **`railway up` (CLI upload) returns 403 Forbidden — unexplained, still unresolved.** Auth
-  was fine (project create, DB provision, variable writes all succeeded on the same
-  credentials). Routed around by deploying from GitHub instead; if CLI upload is ever needed,
-  this is the known blocker.
-- Deploying from GitHub required pushing `2d-reboot` (the scaffold was local-only). **Do not
-  merge to `main`** — `main` is what Vercel builds the live archive from.
-- Connecting the repo in the dashboard spawned a **stray duplicate service** named
-  `virtual-closet`; deleted 07-25. The real service is `virtual-closet-api`.
-- `DATABASE_URL` is **not** auto-injected — Railway variables are per-service. Set as a
-  reference: `DATABASE_URL=${{Postgres.DATABASE_URL}}` (works via CLI with single quotes).
-- Migrations run from a laptop need **`DATABASE_PUBLIC_URL`**, not `DATABASE_URL` (the latter
-  is a `railway.internal` host, unreachable off-platform). `psql` came from `brew install
-  libpq`, keg-only → `/opt/homebrew/opt/libpq/bin/psql`.
-- `scripts/set_railway_vars.sh` pushes secrets from `virtual-closet/.env` without echoing them.
+```bash
+python3 scripts/closet_server.py                              # local app, from virtual-closet/
+python3 server/scripts/dump_closet.py                         # Postgres -> snapshot (after ingesting!)
+python3 virtual-closet/scripts/export_static.py --out site    # exactly what Vercel builds
+INSIGHTS_PASSCODE=... node virtual-closet/scripts/lock_money.mjs site
+python3 scripts/genlog.py summary                             # spend vs cap
+railway variables -s Postgres --kv | grep DATABASE_PUBLIC_URL # psql from the laptop
+/opt/homebrew/opt/libpq/bin/psql "$URL" -v ON_ERROR_STOP=1 -f server/migrations/000N_x.sql
+```
 
-**Deferred on purpose:** the three `R2_*` credentials (Cloudflare dashboard task; nothing in
-Phases 1–2 touches object storage) and the **worker service** (Railway runs one start command
-per service; no paid jobs exist yet — add a service with `python -m app.worker` when
-generation is wired).
-
-## RESUME HERE — next actions in order
-1. ~~Provision~~ **DONE** — see above.
-2. ~~Apply schema + first deploy~~ **DONE** — all 8 tables live, `/health` + authed `/budget` verified.
-3. **Phase 1 — backfill: OBJECTIVE HALF DONE 2026-07-25, $0.** In Postgres now:
-   **58 garment rows** (slug ids, size + brand carried, LAB colours, images, asset_tier)
-   and **18 outfit rows** (`source='manual'`, `render_cache_key` = look id) = the
-   cold-start prior. Acceptance checks all pass and are re-runnable:
-   `scripts/verify_backfill.sql` → 0 orphan refs, 0 dupes, 0 garments without colours,
-   idempotent on re-run. Notable signal: **23 garments appear in no published look** —
-   real input for Phase 2 gap analysis.
-   - `scripts/extract_colors.py` (venv python) — LAB per garment, white-balanced,
-     median-cut, $0. Follows dragcut.py's routing rule: on-model photos use cloth-seg,
-     NEVER the general model (that keeps the whole figure, so a garment's palette picks
-     up the model's skin and other clothes). For the 7 garments dragcut could never cut,
-     cloth-seg files the outfit under `full` and leaves upper/lower empty — fallback
-     intersects `full` with a category-appropriate vertical band. `--rename` re-names
-     from stored LAB without a second rembg pass.
-   - `scripts/backfill.py` → `backfill.sql`. Values reach Postgres via dollar-quoted
-     `jsonb_to_recordset`, so nothing is hand-escaped. Idempotent.
-   - **CONFIRMED + APPLIED 07-25:** all **58 garments** have formality, warmth, volume,
-     subcategory and season_tags; all **18 looks** have occasion/time merged into
-     `outfit.context` (`||`, so title/pose/render survived — verified 18/18/18). She
-     hand-set 46 and accepted the proposals for the remaining 12. Only **purchase data
-     is still outstanding** (`make_purchase_form.py` → browser form; the TSV workflow was
-     retired as too hard to edit — `apply_purchase.py` still accepts `.tsv` as an escape
-     hatch). Phase 2 does not depend on purchase data; only Track C does.
-   - Original framing of the gap: formality + warmth have no source in meta.json.
-     `scripts/make_attr_grid.py` builds `attr_grid.html` (open via file://), a SYVE-styled
-     $0 grid pre-filled with proposals derived from each garment's own name/fabric/fit
-     text. She confirms/overrides → DOWNLOAD JSON → `scripts/apply_attrs.py <file>` →
-     `attrs.sql`. season_tags is derived from confirmed warmth, not asked separately.
-     Verified by applying with COMMIT→ROLLBACK: valid SQL, `UPDATE 58`, nothing persisted.
-   - **Metadata review (her call 07-25, all three accepted).** Three inputs, all $0:
-     (a) `make_occasion_form.py` → `occasion_form.html` — occasion/time/venue for the 18
-     looks. Highest leverage: without it the prior teaches only "these go together"; with
-     it, "these go together FOR X". `apply_occasions.py` MERGES into `outfit.context` (`||`)
-     so backfill's title/pose/render survive. (b) `make_purchase_tsv.py` → `purchase.tsv`
-     (fill in an editor; TSV because brands contain commas; never overwritten once it
-     exists) → `--apply` → `purchase.sql`. Unlocks Track C cost-per-wear, which is
-     arithmetically impossible to reconstruct later. (c) volume + subcategory: DERIVED from
-     each garment's own name/fit text and folded into the same grid as confirm rows, so she
-     spot-checks rather than authors. New column via `migrations/0003_garment_volume.sql`
-     (applied); subcategory uses the existing column with a closed per-category vocabulary.
-   - **Colour QA: 6 of 58 flagged for her eye** (was 15; 9 were my naming anchors, since
-     recalibrated — a real garment black measures L*~15-22, not L*~7). Genuine finding:
-     **36-realisation-liv-dress meta.color is wrong** — says "violet-blue with dark leopard
-     print", the garment is black with dark red spots. meta.json left unedited: her data.
-4. **Phase 2 — constraint engine.** `engine/constraints.py` + `colour.py` + `gaps.py`, pure
-   functions, unit-tested against the real closet. Acceptance: enumerate valid outfits,
-   orphans obvious, harmony scores rank sane. → STOP, pick first UI (stylist / insights / galaxy).
-
-## Standing rules that still apply
-- Spending gated: fal/Anthropic only in approved batches; every paid call through the budget
-  gate. Foundation is $0.
-- She decides aesthetics — build, show, expect rejection sometimes.
-- v2's "Track A first" is wrong for this closet (already tagged) — backfill + engine is the
-  real critical path.
+API bearer token: `server/.app_secret` (gitignored). The liminal venv
+(`/Users/janice.chang/liminal-wardrobe/.venv/bin/python`) is where rembg/cv2/PIL live —
+system python3 is 3.9 and has none of them.
