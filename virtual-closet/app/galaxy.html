@@ -643,12 +643,12 @@ const GLASS_GL = (() => {
   // the cursor drives the refraction; when it has been still a moment the glass
   // takes over and breathes on its own (reference: auto_hover), because on this
   // page nothing is allowed to rest
-  const M = { x: 0.9, y: 0.5, moved: -1e9, auto: 1 };
-  addEventListener('pointermove', e => {
-    M.x = e.clientX / innerWidth; M.y = e.clientY / innerHeight;
-    M.moved = performance.now();
-  }, { passive: true });
-
+  // The light is NOT the cursor. An earlier pass let a pointermove hand the
+  // highlight over to the mouse and only returned it after 1600ms of stillness,
+  // which
+  // meant the loop stopped the moment you touched the trackpad — the one thing
+  // this page's language forbids. The reference's own preset ships auto_hover
+  // true, ignoring the pointer for exactly this reason.
   // Aberration DEFAULTS OFF, and the reference's own saved preset had it at 0 too.
   // Measured here: it is the one thing Canvas 2D could not do, but the nodes are
   // Bayer-dithered dot fields — single-pixel high frequency — so separating the
@@ -679,17 +679,16 @@ const GLASS_GL = (() => {
 
     const x0 = b.left / innerWidth, x1 = (b.left + b.width) / innerWidth;
 
-    let mx = M.x, my = M.y;
+    let mx, my;
     if (REDUCED) { mx = (x0 + x1) / 2; my = 0.5; }
     else {
       // The reference's own cadence: uTime += 0.01/frame x speed 2.5 = 1.5 rad/s,
       // a ~4.2s orbit. Faster than this page's ambient drift on purpose — the
       // glass is a surface catching light, not part of the field's motion.
+      // Driven by the clock alone, so it never stops and never waits for input.
       const a = now / 1000 * 1.5;
-      const ox = (x0 + x1) / 2 + Math.cos(a) * (x1 - x0) * 0.5;
-      const oy = 0.5 + Math.sin(a * 0.7) * 0.34;
-      M.auto += (((now - M.moved > 1600) ? 1 : 0) - M.auto) * 0.03;
-      mx = mx + (ox - mx) * M.auto; my = my + (oy - my) * M.auto;
+      mx = (x0 + x1) / 2 + Math.cos(a) * (x1 - x0) * 0.5;
+      my = 0.5 + Math.sin(a * 0.7) * 0.34;
     }
 
     gl.uniform1i(U.uTex, 0);
