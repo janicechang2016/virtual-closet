@@ -58,10 +58,14 @@ ALTER TABLE wear_log ADD COLUMN IF NOT EXISTS instead_of  text REFERENCES garmen
 ALTER TABLE wear_log DROP CONSTRAINT IF EXISTS wear_log_swap_check;
 ALTER TABLE wear_log ADD CONSTRAINT wear_log_swap_check
     CHECK ((nearly_wore IS NULL) = (instead_of IS NULL));
--- A garment cannot be its own alternative.
+-- A garment cannot be its own alternative. Written as "null, or different"
+-- rather than IS DISTINCT FROM: that operator treats two NULLs as NOT distinct,
+-- so it rejects every row without a swap — which is all 15 existing wears, and
+-- is how this failed on first run. The both-or-neither check above guarantees
+-- instead_of is non-null whenever nearly_wore is, so the comparison is total.
 ALTER TABLE wear_log DROP CONSTRAINT IF EXISTS wear_log_swap_distinct_check;
 ALTER TABLE wear_log ADD CONSTRAINT wear_log_swap_distinct_check
-    CHECK (nearly_wore IS DISTINCT FROM instead_of);
+    CHECK (nearly_wore IS NULL OR nearly_wore <> instead_of);
 
 -- "Which occasions do I actually dress for" is the query this exists to answer.
 CREATE INDEX IF NOT EXISTS wear_log_occasion_idx ON wear_log (occasion)

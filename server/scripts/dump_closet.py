@@ -16,6 +16,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "closet_snapshot.json")
 PSQL = "/opt/homebrew/opt/libpq/bin/psql"
 
+# NO `--` COMMENTS INSIDE THIS QUERY. It is flattened to a single line before it
+# reaches psql (see main), so a line comment swallows everything after it —
+# which is exactly how the 0006 fields broke this on 07-28.
+#
+# The wear columns: `id` is carried so laptop-side tools can address one specific
+# wear (the occasion backfill form writes against it). `occasion`, `weather` and
+# the swap (`nearly_wore`/`instead_of`) are migration 0006 — the swap being the
+# first true negative in the dataset.
 QUERY = """
 SELECT json_build_object(
   'garments', (SELECT coalesce(json_agg(row_to_json(g)), '[]'::json) FROM (
@@ -27,11 +35,6 @@ SELECT json_build_object(
       SELECT id, garment_ids, source, context, render_cache_key
       FROM outfit ORDER BY render_cache_key) o),
   'wears', (SELECT coalesce(json_agg(row_to_json(w)), '[]'::json) FROM (
-      -- `id` is carried so laptop-side tools can address a specific wear
-      -- (the occasion backfill form writes against it). Context fields are
-      -- migration 0006: occasion is tapped, weather is derived, and the swap is
-      -- the first TRUE negative in the dataset — a garment she nearly wore
-      -- instead of one she did, matched within one day and one occasion.
       SELECT id, outfit_id, worn_on, occasion, weather, nearly_wore, instead_of
         FROM wear_log ORDER BY worn_on) w)
 );
