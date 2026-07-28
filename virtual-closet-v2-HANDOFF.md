@@ -1,9 +1,40 @@
 # Virtual Closet v2 — Handoff / Resume Point
 
-**Last updated 2026-07-27 (late) · branch `main`.** Read `CLAUDE.md` first — it is the source of
+**Last updated 2026-07-28 · branch `main`.** Read `CLAUDE.md` first — it is the source of
 truth and is kept current. `virtual-closet/docs/decisions.md` carries the standing rules.
 This file is the five-minute orientation: what runs where, what to do next, what has already
 cost time.
+
+> ## ⛔ READ FIRST — two things that will bite you
+>
+> **1. THE STYLE PROFILE NEVER SHIPS PUBLICLY (her directive 07-28).** `style_profile.json`,
+> `style_profile.txt`, `style_rules.txt`. The deploy is public so interviewers can look at it;
+> the profile records what she wore by date, what she rejects, and her own note that weekday
+> wears are work-from-home. `export_static.assert_private()` fails the build if any of them
+> reach the output — verified in both directions. Building a `/profile` page into the deploy
+> means deciding to publish her. Don't.
+>
+> **2. THE PROFILE IS NOT IN GIT, BY DESIGN.** `style_profile.json` and `.txt` are gitignored
+> (her call 07-28). They are NOT missing and NOT lost — regenerate with
+> `build_profile.py --generate` (~$0.27) or just re-render from an existing json with
+> `profile_view.py` ($0). **`style_rules.txt` IS tracked** — it is her authored work and the
+> one irreplaceable file here. Never "fix" this by adding the profile back to git.
+
+## 0. Where the style-profile files live (decided 07-28)
+
+| File | In git? | Why |
+|---|---|---|
+| `server/scripts/style_rules.txt` | **tracked** | Her 5 authored rules. Irreplaceable — no way to regenerate a rule she wrote. Least revealing of the three. |
+| `server/scripts/style_profile.json` | gitignored | Generated. Regenerable for ~$0.27, and the sensitive artifact (wears by date, rejections). |
+| `server/scripts/style_profile.txt` | gitignored | Rendered view of the json; `profile_view.py` rebuilds it for $0. |
+
+The repo is private, so tracking everything would have been *safe today* — but it is one
+visibility flip from public and that repo's intent has already been flipped once for the
+portfolio. Backing up only the irreplaceable half removes the question entirely.
+
+**This is separate from, and weaker than, the public-deploy rule.** Gitignoring is about the
+private repo; `assert_private()` is what stops the profile reaching the public site, and it
+fails the build rather than trusting anyone to remember.
 
 *(The 07-25 version of this file described Phase 0 on a `2d-reboot` branch with "Phase 1 not
 started". All of that is obsolete — Phases 0–3 and Track A's $0 half are done, and
@@ -50,6 +81,17 @@ rewrite, the file in `APP_FILES`, a static payload *plus its own rewrite* for ev
 page fetches, and `asset_urls()` walking that payload or its images 404.
 
 ## 3. What to do next
+
+0. **STRONGEST NEXT BUILD — wire her rules into the engine as hard constraints ($0).**
+   Two of her five rules in `style_rules.txt` are executable today: *"Never suggest a sneaker
+   with a skirt or dress"* and *"Keen sandals are for extremely casual and walking days only —
+   never with a skirt or dress."* `constraints.hard_violations()` can enforce both at
+   $0/suggestion. **This would be the first time anything she wrote changes what `/stylist`
+   actually suggests** — the profile itself changes nothing (see the Track D.1 section of
+   `CLAUDE.md`). It also validates the sneaker/skirt finding cheaply, ahead of the ~50-wear
+   Phase 6 measurement, since she has now confirmed it by rule rather than by inference.
+   Note the interaction: enforcing these SHRINKS the valid outfit space, so re-run
+   `engine_report.py` and the 41 tests afterwards — `TestRealCloset` asserts on space size.
 
 1. **HER STATED NEXT STEP (07-27): evaluate where things stand, then tweak.** The wear track
    is DONE and deployed — 15 wears logged, snapshot refreshed, pages reading them. What the
@@ -151,6 +193,25 @@ strongest candidate, so raise it with her rather than treating it as closed.**
   independent data, and they cost accuracy both times.
 - **Money on the deployed site is encrypted, not masked.** `lock_money.mjs` strips 283 figures
   into an AES-GCM blob; a UI-only mask would leave them in the JSON for anyone to curl.
+- **The style profile never ships publicly** (07-28) — see the banner at the top. Enforced by
+  `export_static.assert_private()`, which fails the build rather than trusting anyone to
+  remember.
+- **Anthropic spend goes through `genlog.py` too**, not just fal. It is one shared $25 cap;
+  `claude-opus-5` sits in `by_model` beside the fal models. `build_profile.py` records spend
+  BEFORE checking the outcome, because a refused or truncated call is billed just the same —
+  a truncated one slipped past the ledger on 07-28 and had to be reconstructed.
+- **Thinking bills as OUTPUT on Opus 5, and is on by default.** A "short JSON answer" is not a
+  short response: measured output ran 4–9x the naive estimate, and `max_tokens` caps thinking
+  and response TOGETHER (8000 truncated mid-object; it is now 20000). Budget from measured
+  `usage`, never from the expected length of the visible answer.
+- **Never round-trip user edits out of a regenerated document.** The style profile's rendered
+  `.txt` was briefly editable and the parser ate her rules twice — once by merging the first
+  rule into the section header, once because the banner text itself contained the heading the
+  splitter anchored on. Rules now live in `style_rules.txt`, which nothing regenerates.
+- **When a model reports that data is missing, suspect your digest first.** The D.1 profile
+  correctly said no rejection named a garment; the blame data was there, and the builder was
+  reading `garment_ids`/`reason_code` instead of the log's real `ids`/`blame`. Cost a whole
+  billed call and produced a confidently wrong profile.
 
 ## 7. Infrastructure facts worth not re-deriving
 

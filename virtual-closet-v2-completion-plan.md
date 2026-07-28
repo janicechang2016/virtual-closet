@@ -247,8 +247,20 @@ median instead of valid ones, which makes formality and warmth discriminate hone
 101 good outfits to white's 208, so a colour-aware recommender would tell her to buy white and
 avoid black — her signature — on a signal measured below chance against her wears.
 
-**Still open: D.1 style profile** — LLM-maintained from `interaction_log`, and **invariant #10
-requires it be user-visible and user-editable**. Needs Anthropic calls, so it is a gated spend.
+**D.1 style profile — BUILT 07-28 ($0.842 across 4 calls).** `build_profile.py` +
+`profile_view.py` + `style_rules.txt`. Invariant #10 verified end to end: her 5 rules pass in
+as authoritative, are restated verbatim, and survive regeneration. See the Track D.1 section
+of `CLAUDE.md` for the cost reality and the three failures worth not repeating.
+
+**But be clear about what it is: the profile powers NO feature.** `/stylist` ranks exactly as
+before. Its value is as a diagnostic that elicits rules — and **her rules are free to enforce**.
+The next build is wiring the two executable ones into `constraints.py` at $0, which is the
+first thing that would actually change a suggestion.
+
+**Her directive 07-28: the style profile NEVER ships publicly.** Enforced by
+`export_static.assert_private()`, which fails the build. A `/profile` page can therefore only
+ever be local — which is also why it is not the priority: it is polish on something that does
+not act yet, and it cannot be part of the portfolio story.
 
 *(Original scope note below.)*
 

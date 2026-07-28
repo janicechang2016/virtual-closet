@@ -499,6 +499,70 @@ her real wears. A wrong answer delivered with a number attached.
 - **NOT built: D.1 style profile** (LLM-maintained, must be user-visible and user-editable per
   invariant #10). Needs Anthropic calls; the $0 half shipped first per the conserve-credits rule.
 
+## Track D.1 — the style profile (2026-07-28), BUILT. **It powers no feature yet.**
+
+**Say this plainly before spending again: `/stylist` ranks exactly as it did before.** The
+profile is a document, not an input — `engine.preference` has never heard of it. What the
+Anthropic spend actually buys is a DIAGNOSTIC that surfaces patterns worth turning into
+rules, and **her rules are free to enforce forever after**. Two of her five are already hard
+constraints in disguise ("never suggest a sneaker with a skirt or dress"; the Keen sandals
+rule) — `constraints.py` could apply them at $0/suggestion. **The LLM is the elicitation
+cost, not the running cost**, which argues for regenerating at ~50 wears, not weekly.
+
+- `server/scripts/build_profile.py` — one `messages.create` on `claude-opus-5`, structured
+  outputs (`output_config.format` + json_schema) so the response cannot come back unparseable.
+  **$0 by default**; `--generate` bills. Reads the closet, published looks, wears and stylist
+  verdicts (~13KB digest — her whole history fits in one call, no retrieval or chunking).
+- `server/scripts/profile_view.py` — READ-ONLY renderer → `style_profile.txt`.
+- **`server/scripts/style_rules.txt` IS THE SINGLE SOURCE OF TRUTH FOR HER RULES.** Nothing
+  regenerates it. Both scripts read from it.
+- **Git split, her call 07-28: `style_rules.txt` is TRACKED; `style_profile.json`/`.txt` are
+  GITIGNORED.** Rules are irreplaceable (nothing can regenerate a rule she wrote); the profile
+  is regenerable for ~$0.27 and is the sensitive half. A clone with no `style_profile.json` is
+  correct, not broken — run `build_profile.py --generate`, or `profile_view.py` for $0 if a
+  json already exists. **Do not "restore" the profile to git.** This is about the private repo
+  and is independent of standing rule #0, which is what keeps it off the public site.
+
+**COST REALITY — the first quote was wrong by 20x, twice over.** Estimated $0.04/run;
+**actual total $0.842 across 4 calls**. Two independent causes, both worth remembering:
+(a) **output tokens ran 4–9x the estimate because THINKING BILLS AS OUTPUT** and is on by
+default on Opus 5 — a "short JSON answer" is not a short response; (b) two calls were wasted
+(see below). `max_tokens` must cover thinking + response TOGETHER: 8000 truncated, it is now
+20000. Measured: ~8000 in / ~9000 out ≈ **$0.27 per regeneration**.
+
+**THREE FAILURES, all mine, all worth not repeating:**
+1. **Wrong field names cost a whole call.** The digest read `garment_ids`/`reason_code`; the
+   feedback log uses **`ids`/`blame`**. It did not raise — all 85 verdicts arrived as
+   `no||blame=`, and the model correctly reported that no rejection named a garment. The
+   blame data is the single most valuable signal here, and it was silently absent. There is
+   now a warning if blame ever parses empty. **When an LLM says the data lacks something you
+   know exists, suspect the digest before the model.**
+2. **Round-tripping edits out of a REGENERATED document ate her rules twice.** The rendered
+   `.txt` was briefly editable; the parser first merged her opening rule into the section
+   header and dropped it, then the banner I added itself contained the words "YOUR RULES", so
+   the splitter re-anchored there and swallowed the summary, compounding per run. The fix was
+   not a better parser — it was moving her rules into a file nothing regenerates.
+3. **Spend bypassed genlog** (standing rule #1) and had to be logged retroactively; a
+   truncated call slipped past entirely because the early `return 1` sat above the ledger
+   write. `record_spend()` now runs BEFORE the outcome checks — a refusal or truncation is
+   billed and must be recorded.
+
+**INVARIANT #10 IS VERIFIED END TO END.** Her 5 rules pass in as authoritative, are restated
+verbatim in `confirmed_preferences`, and are re-attached to the output afterwards, so a
+regeneration cannot overwrite them. The system prompt forbids contradicting them.
+**And they measurably changed the reading:** v2 called her sneaker wears a contradiction it
+could not resolve; v3, given her rule that weekday wears are work-from-home, read them as
+comfort rather than taste, and read the unworn Woodrose/event pieces as "no occasion yet"
+rather than dislike. That is the difference between an accusation and an explanation.
+
+**WHAT IT FOUND (v3):** footwear decides almost everything — **29 of 44 rejections blame a
+shoe**, while tops and bottoms scatter across 14 garments blamed once each. `52-camper-flats`
+is never blamed in 82 verdicts. `53-keen-sandals` was genuinely unresolved (blamed 6,
+accepted 4) — **she then resolved it by rule**. Boots are "live but not safe": often accepted
+AND often killed. **The sneaker finding is the Phase 6 pairwise signal in prose** — sneakers
+were never worn with a skirt or dress, only with trousers or the hoodie, and the rejected
+suggestions had paired them with skirts. She confirmed it as an explicit rule.
+
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear
@@ -618,8 +682,17 @@ her real wears. A wrong answer delivered with a number attached.
 
 ## Standing rules
 
+0. **THE STYLE PROFILE NEVER SHIPS PUBLICLY (her directive 07-28).** `style_profile.json`,
+   `style_profile.txt` and `style_rules.txt` stay off the public deploy. The site is public so
+   interviewers can look at it; the profile is a document about *her* — what she wore by date,
+   what she rejects, her own note that weekday wears are work-from-home. Enforced, not
+   remembered: `export_static.assert_private()` FAILS the build if any file matching
+   `style_profile` / `style_rules` reaches the output. Adding a `/profile` page to the deploy
+   means deciding to publish her; don't.
 1. **Spending:** fal calls only in user-approved batches/envelopes. All calls go through
-   `scripts/genlog.py` budget gate; never bypass it.
+   `scripts/genlog.py` budget gate; never bypass it — **including Anthropic calls** (07-28:
+   the D.1 profile ran outside it and had to be logged retroactively; `build_profile.py` now
+   logs before checking the outcome, so a refused or truncated call is still recorded).
 2. **Identity:** every render with a visible avatar face gets a `fal-ai/face-swap`
    finishing pass, source `avatar/avatar-v3/front.png` (v3 canon 2026-07-14; v1 renders
    are legacy lineage). Never edit the avatar's head region with NB models (edits collage

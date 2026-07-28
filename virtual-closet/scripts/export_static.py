@@ -259,6 +259,31 @@ def main():
             print("  " + u)
         sys.exit(1)
 
+    assert_private(out)
+
+
+# HER STANDING DIRECTIVE (2026-07-28): the style profile is NEVER shipped
+# publicly. The deploy is public so interviewers can look at it, and the profile
+# is a document about her — worn garments by date, what she rejects, her own
+# notes about working from home. Keeping it out is not a matter of remembering:
+# any future page, payload or asset walk could pull it in silently, so the build
+# FAILS instead of publishing it.
+PRIVATE = ("style_profile", "style_rules")
+
+
+def assert_private(out):
+    leaked = sorted(p.relative_to(out) for p in out.rglob("*")
+                    if p.is_file() and any(k in p.name for k in PRIVATE))
+    if not leaked:
+        print("privacy check: no style-profile files in the build")
+        return
+    print("\nPRIVACY CHECK FAILED — these must never ship publicly:")
+    for p in leaked:
+        print("  " + str(p))
+    print("Remove them from APP_FILES / the payloads, or drop the page that "
+          "fetches them. Not shipping.")
+    sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

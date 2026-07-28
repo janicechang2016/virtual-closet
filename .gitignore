@@ -1,3 +1,11 @@
 .DS_Store
 virtual-closet/logs/server.log
 site/
+
+# The style profile is generated and is a document about her (wears by date,
+# rejections, her own notes). Regenerable for ~$0.27 via build_profile.py, so
+# there is nothing to lose by keeping it out of git — and it is the sensitive
+# artifact of the pair. Her AUTHORED rules (server/scripts/style_rules.txt) are
+# deliberately NOT ignored: they are irreplaceable and need the backup.
+server/scripts/style_profile.json
+server/scripts/style_profile.txt
