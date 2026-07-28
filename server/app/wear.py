@@ -10,6 +10,7 @@ an ad-hoc combination becomes an outfit row before it can be logged. That means
 every wear grows the corpus the stylist learns from — a garment-level wear table
 would have grown a counter and nothing else.
 """
+import json
 from datetime import date
 from typing import Optional
 
@@ -24,6 +25,17 @@ WearError = wear_rules.WearError
 OCCASIONS = wear_rules.OCCASIONS
 _clean_occasion = wear_rules.clean_occasion
 _clean_swap = wear_rules.clean_swap
+
+
+def _as_json(value):
+    """asyncpg returns jsonb as text. Tolerates both, so registering a codec
+    later cannot break this."""
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except ValueError:
+            return {}
+    return value or {}
 
 
 async def _resolve_outfit(con, garment_ids: list) -> tuple:
@@ -142,9 +154,12 @@ async def recent_wears(limit: int = 30) -> dict:
         "garment_ids": list(r["garment_ids"]),
         "source": r["source"],
         "occasion": r["occasion"],
-        # jsonb arrives as a string from asyncpg unless a codec is registered;
-        # the page only needs to know whether it is populated.
-        "weather": r["weather"],
+        # asyncpg hands back jsonb as TEXT unless a codec is registered, so this
+        # returned the literal string "{}" — which is truthy, meaning any caller
+        # doing `if (w.weather)` would read an empty weather as a present one.
+        # Decoded here rather than registering a codec, so the fix is visible at
+        # the one place the contract is defined. Caught in the 07-28 acceptance run.
+        "weather": _as_json(r["weather"]),
         "swap": None if not r["nearly_wore"] else
                 {"nearly_wore": r["nearly_wore"], "instead_of": r["instead_of"]},
     } for r in rows]}
