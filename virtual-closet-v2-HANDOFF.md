@@ -56,11 +56,13 @@ page fetches, and `asset_urls()` walking that payload or its images 404.
    data REVEALED is the open work, not more plumbing. Read the Phase 3 section of `CLAUDE.md`
    for the measurements before deciding anything; the headline is that nothing currently
    predicts her wears well.
-2. **FITTING-ROOM IMAGE RENDERING — her other stated next piece (07-27). NOT YET SPECIFIED.**
-   She wants rendering updates in `/fitting-room`. Nothing is scoped: **ask what she wants
-   changed before touching `tryon.py` or the stage.** Note this is the one live area that
-   SPENDS — every render is a fal call at ~$0.059 and §6's batch-approval rule applies, and
-   the fal balance was last seen at **-$0.08**, so a top-up may be needed before anything runs.
+2. **FITTING-ROOM RENDERING — SPECIFIED AND DONE 07-27.** Her reading was *coverage*, and the
+   specific gap was that **opening a look never tried it on**. Fixed: `stage_render()` +
+   `showLook()` put a look's front render on the mirror from both doors, and the 9 looks that
+   had no front render got one (~$0.53). See the "Fitting room — looks reach the mirror"
+   section of `CLAUDE.md`, and `virtual-closet-v2-completion-plan.md` §4.1 for the audit that
+   sized it. **`scripts/render_coverage.py` is the re-runnable check** — it found garment-level
+   coverage already complete, which is why this was a wiring job and not a render backlog.
 3. **The stylist cannot yet hit its own target.** Her call 07-27: `/stylist` should suggest
    outfits she would WEAR, not ones she would publish. Measured, it does not — 0.660 held out
    against real wears, and **0.555 (CI spanning chance)** once garment rotation is controlled

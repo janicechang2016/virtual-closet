@@ -225,6 +225,47 @@ items at a time.
 
 Verified end to end against production, then removed from both stores (58 garments again).
 
+## Fitting room — looks reach the mirror (2026-07-27)
+
+**Her diagnosis, and it was right: opening a look never tried it on.** Both doors into a look
+loaded the slots and left the base avatar on stage — the carousel handoff (`app.js`, which
+only called `tryOn()` for `kind === "garment"` with one item) and `loadLook()` on the fitting
+room's own rail, which never touched `#stage-img` at all. **Nothing was missing but the wiring:**
+all 18 published looks already had a render and a cutout on disk, and `looks_list()` already
+served them.
+
+- **`stage_render()` (server) resolves the look's FRONT render** — the untagged
+  `outfit_<nums>_<n>.png` — skipping `hidden.json` and pose-tagged stems, chosen by numeric
+  suffix (a plain sort puts `_10` before `_2`). Served as a `stage_render` field per look.
+  **Poses stay archive-only:** a look published on a pose shows its front twin in the fitting
+  room while the posed render remains the archive's. `None` falls back to the base avatar.
+- **`showLook()` (client)** is called from both doors. The handoff payload now carries
+  `lookId`, with an items-set fallback so a payload written by the older carousel still
+  resolves. The feedback bar stays hidden for a whole look — corrective edits need
+  `currentGarment` to attribute an edit, and an outfit cannot supply one.
+- **`stagedLook` had to exist.** `publish` overwrites the caption with "publishing…" and its
+  `finally` restored it via `showAvatar()` — which only ran because `currentRender` was null
+  for looks. Putting a render on the mirror silently broke that restore. The staged look is now
+  tracked explicitly, re-read from the refreshed manifest (publishing on the front pose mints
+  exactly the render `showLook()` wants), and cleared by `showAvatar()` and `tryOn()`.
+
+**THE ASPECT-RATIO ARGUMENT FOR RENDERING FRONT TWINS WAS WRONG, recorded so it is not
+re-derived:** front-pose look renders are *not* uniformly square — among the 7 pre-existing
+front looks they are 1024×1024, 922×1152 **and** 843×1264. Pose does not predict aspect. And it
+would not have mattered either way: `#stage-frame` has been a fixed rectangle with
+`object-fit: contain` since July, locked precisely because "42 of 126 renders are not square."
+CDP-verified across a look with a render and one without — the mirror held 760×712 in both.
+**The real justification for front twins is the archive-only pose rule, nothing else.**
+
+- **Batch sized by audit, not assumption:** `scripts/render_coverage.py` ($0, re-runnable)
+  found garment-level coverage already complete — 0 of 58 garments lacking a visible render, a
+  v3 render, or a cutout, and 0 of 18 looks missing files. Only **9** looks needed a front
+  render, not 11: looks 004 and 006 already had clean untagged front renders on disk from the
+  07-19 session, made minutes before their posed versions.
+- **`next_suffix()` counts the whole outfit family**, pose-tagged siblings included, so the new
+  front renders are not uniformly `_1` (the pilot came out `outfit_42+56+59_4.png`). Harmless —
+  `stage_render()` picks by suffix, not by name — but do not assume `_1` means front.
+
 ## v1 state (2026-07-19)
 
 - **Repo on GitHub (07-17):** github.com/janicechang2016/virtual-closet — PRIVATE

@@ -1,6 +1,7 @@
 let M = null;                 // manifest
 let currentGarment = null;    // garment shown on stage
 let currentRender = null;     // render path shown on stage
+let stagedLook = null;        // look shown on stage (mutually exclusive with currentGarment)
 let filter = "all";
 const POSES = ["front", "contrapposto", "hand-on-hip", "34turn"];
 const SLOTS = ["top", "bottom", "layer", "shoes"];
@@ -73,7 +74,7 @@ function consumeIncomingLook() {
   if (!raw) return;
   localStorage.removeItem("incomingLook");
   try {
-    const { title, items, kind } = JSON.parse(raw);
+    const { title, items, kind, lookId } = JSON.parse(raw);
     SLOTS.forEach((s) => delete outfit[s]);
     items.forEach((gid) => {
       const g = M.garments.find((x) => x.id === gid);
@@ -83,7 +84,14 @@ function consumeIncomingLook() {
     renderSlots();
     if (kind === "garment" && items.length === 1) {
       tryOn(items[0]);   // its newest front render goes on stage
-    }                    // looks arrive as loaded slots + base avatar (front-only stage)
+    } else if (kind === "look") {
+      // lookId was added to the handoff on 07-27; fall back to matching the
+      // garment set so a payload written by an older carousel still works.
+      const key = [...items].sort().join(",");
+      const l = (M.looks || []).find((x) => x.id === lookId)
+        || (M.looks || []).find((x) => [...x.items].sort().join(",") === key);
+      if (l) showLook(l);
+    }
     toast(`from the archive: ${title}`);
   } catch { /* stale handoff — ignore */ }
 }
@@ -91,6 +99,7 @@ function consumeIncomingLook() {
 function showAvatar() {
   currentRender = null;
   currentGarment = null;
+  stagedLook = null;
   if (M.avatar.draft) {
     $("#stage-img").src = M.avatar.draft;
     const v = M.avatar.locked_version || "draft";
@@ -136,6 +145,7 @@ function previewGarment(id) {
 function tryOn(id) {
   const g = M.garments.find((x) => x.id === id);
   currentGarment = g;
+  stagedLook = null;     // a single garment replaces the look on the mirror
   if (g.renders.length) {
     // newest render for this garment goes on stage
     currentRender = g.renders[g.renders.length - 1];
@@ -370,6 +380,27 @@ function renderSaved() {
     }));
 }
 
+// A look opens ON the mirror. Until 07-27 both paths into a look (the rail here
+// and the carousel handoff) loaded the slots and left the base avatar on stage,
+// so "open in fitting room" never actually tried anything on. The render already
+// existed and the server already served it — only this was missing.
+// stage_render is the FRONT render: poses stay archive-only, so a look published
+// on a pose shows its front twin here, and the posed one remains the archive's.
+function showLook(l) {
+  if (!l.stage_render) { showAvatar(); return; }   // no front render yet
+  currentGarment = null;
+  stagedLook = l;
+  currentRender = l.stage_render;
+  $("#stage-img").src = l.stage_render;
+  const n = l.items.length;
+  $("#stage-caption").textContent =
+    `${l.title} — ${n} piece${n === 1 ? "" : "s"}`;
+  // Corrective feedback is per-garment (it needs currentGarment to attribute an
+  // edit), so it stays hidden for a whole look rather than offering a control
+  // that cannot be acted on.
+  $("#feedback-bar").hidden = true;
+}
+
 function loadLook(id) {
   const l = (M.looks || []).find((x) => x.id === id);
   if (!l) return;
@@ -380,6 +411,7 @@ function loadLook(id) {
   });
   localStorage.setItem("outfit", JSON.stringify(outfit));
   renderSlots();
+  showLook(l);
   toast(`look loaded: ${l.title}`);
 }
 
@@ -420,7 +452,16 @@ $("#publish-go").addEventListener("click", async () => {
   } catch (e) {
     toast("publish failed: " + e.message);
   } finally {
-    if (!currentRender) showAvatar();   // stage stays front-only; posed render lives in the archive
+    // The caption was overwritten with "publishing…" above, so it has to be
+    // restored whatever the stage holds. Before looks reached the mirror this
+    // was always showAvatar(); now a staged look owns the caption and must be
+    // re-read from the refreshed manifest — publishing on the front pose mints
+    // exactly the render showLook() wants.
+    if (stagedLook) {
+      showLook((M.looks || []).find((x) => x.id === stagedLook.id) || stagedLook);
+    } else if (!currentRender) {
+      showAvatar();                     // stage stays front-only; posed render lives in the archive
+    }
   }
 });
 

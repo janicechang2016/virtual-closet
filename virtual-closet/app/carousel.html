@@ -695,6 +695,7 @@ $('#detail-open').addEventListener('click', () => {
   const items_ = detailItem.kind === 'look' ? detailItem.items : [detailItem.gid];
   localStorage.setItem('incomingLook', JSON.stringify({
     title: detailItem.title, items: items_, kind: detailItem.kind,
+    lookId: detailItem.lookId,   // lets the fitting room put the look on the mirror
   }));
   location.href = '/fitting-room';
 });

@@ -145,6 +145,33 @@ def renumber_looks(looks):
     return looks
 
 
+def outfit_slug(items):
+    """Render stem for a garment set — same rule as tryon.tryon_outfit."""
+    return "outfit_" + "+".join(g.split("-")[0] for g in sorted(items))
+
+
+def stage_render(items):
+    """The look's FRONT render, for the fitting-room mirror.
+
+    Poses are archive-only (07-14), so the stage takes the untagged render of
+    this garment set — never the published posed one, which stays the archive's.
+    Returns None when no front render exists yet; the caller falls back to the
+    base avatar, which is what the stage did for every look before 07-27.
+    """
+    slug = outfit_slug(items)
+    hidden = hidden_stems()
+    cands = [p for p in (ROOT / "renders").glob(f"{slug}_*.png")
+             if not p.stem.endswith("_raw") and not is_posed(p.stem)
+             and p.stem not in hidden]
+    if not cands:
+        return None
+    # newest = highest numeric suffix; plain sort() would order _10 before _2
+    def suffix(p):
+        m = re.search(r"_(\d+)$", p.stem)
+        return int(m.group(1)) if m else 0
+    return f"/assets/renders/{max(cands, key=suffix).name}"
+
+
 def looks_list():
     """looks.json entries with render/cutout resolved to asset URLs (or None)."""
     out = []
@@ -154,6 +181,7 @@ def looks_list():
         c = ROOT / "renders" / "cutouts" / (lk.get("cutout") or "_")
         d["render"] = f"/assets/renders/{r.name}" if r.is_file() else None
         d["cutout"] = f"/assets/renders/cutouts/{c.name}" if c.is_file() else None
+        d["stage_render"] = stage_render(lk.get("items") or [])
         out.append(d)
     return out
 
