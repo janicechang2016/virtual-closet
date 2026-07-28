@@ -96,14 +96,19 @@ page fetches, and `asset_urls()` walking that payload or its images 404.
    silhouette is deliberately split. None is a filter; the first two are arguments for
    occasion/context modelling, which is candidate (3) below.
 
-0b. **WEAR CONTEXT — BUILT 07-28, NOT YET MIGRATED OR DEPLOYED.** Migration 0006 adds
-   `occasion`, `weather` and the swap (`nearly_wore`/`instead_of`) to `wear_log`, which until
-   now held `outfit_id` and `worn_on` and nothing else. This is COLLECTION, not modelling —
-   it changes no ranking; it changes what the next measurement can use. **The swap is the first
-   true negative the dataset has ever had.** See the "Wear CONTEXT" section of `CLAUDE.md`.
-   **Outstanding, in order:** run 0006 against production · `dump_closet.py` · fill the backfill
-   form (`make_wear_form.py`) · `apply_wear_context.py` + run its SQL · `weather_backfill.py`
-   (NEEDS HER LOCATION — lat/lon, not yet supplied) · re-dump · push (deploys site + API).
+0b. **WEAR CONTEXT — LIVE 07-28.** Migration 0006 adds `occasion`, `weather` and the swap
+   (`nearly_wore`/`instead_of`) to `wear_log`, which until now held `outfit_id` and `worn_on`
+   and nothing else. COLLECTION, not modelling — it changes no ranking; it changes what the
+   next measurement can use. **The swap is the first true negative the dataset has ever had.**
+   See the "Wear CONTEXT" section of `CLAUDE.md`.
+   **Done:** 0006 applied · **15/15 wears carry NYC weather** (Open-Meteo archive, $0) ·
+   API + site deployed at `e282c58` · acceptance run passed against production (reversed swap
+   and unknown occasion both 400; valid wear round-trips; undo removes wear + created outfit;
+   restored to 15 wears / 57 outfits / 0 orphans).
+   **THE ONE THING OUTSTANDING IS HERS:** occasion on the 15 existing wears, which only she can
+   supply. `server/scripts/wear_form.html` is generated and waiting —
+   fill it, DOWNLOAD JSON, then `apply_wear_context.py <file>` and run the SQL it prints.
+   Until then `with_occasion` is 0 and the context work has no signal in it yet.
 
 1. **HER STATED NEXT STEP (07-27): evaluate where things stand, then tweak.** The wear track
    is DONE and deployed — 15 wears logged, snapshot refreshed, pages reading them. What the
