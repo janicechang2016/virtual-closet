@@ -68,10 +68,23 @@ async def enqueue_echo(payload: dict):
 @app.post("/wear", dependencies=[Depends(require_auth)])
 async def post_wear(payload: dict):
     try:
+        # occasion and the swap are OPTIONAL — an older client, or a tired tap
+        # that skips them, must still log a wear. Context is worth having, not
+        # worth losing a wear over.
+        swap = payload.get("swap") or {}
         return await wear.log_wear(payload.get("garment_ids") or [],
-                                   payload.get("worn_on"))
+                                   payload.get("worn_on"),
+                                   occasion=payload.get("occasion"),
+                                   nearly_wore=swap.get("nearly_wore"),
+                                   instead_of=swap.get("instead_of"))
     except wear.WearError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/wear/occasions")
+async def wear_occasions():
+    """The vocabulary, so the page cannot drift from the CHECK constraint."""
+    return {"occasions": list(wear.OCCASIONS)}
 
 
 @app.get("/wear", dependencies=[Depends(require_auth)])

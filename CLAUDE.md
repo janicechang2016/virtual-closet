@@ -564,6 +564,58 @@ AND often killed. **The sneaker finding is the Phase 6 pairwise signal in prose*
 were never worn with a skirt or dress, only with trousers or the hoodie, and the rejected
 suggestions had paired them with skirts. She confirmed it as an explicit rule.
 
+## Wear CONTEXT — migration 0006 (2026-07-28, $0). Collection, not modelling.
+
+**THE DIAGNOSIS: `wear_log` carried `outfit_id` and `worn_on` and nothing else** — the
+thinnest record in the system, and the one that is now the stylist's TARGET. With only what
+and when, the only pattern available to learn is which garments are in rotation, which is
+exactly what the held-out test measured (0.660, and 0.555 once rotation is controlled for).
+Meanwhile **all 18 published looks carry `context.occasion`** — the field sits entirely on the
+half of the data that is no longer the target. This is a COLLECTION problem, not a model one,
+so nothing here changes a ranking. It changes what the next measurement has to work with.
+
+- **`occasion`** — six slugs, her call 07-28: `work_home`, `work_out`, `day_out`, `dinner`,
+  `event`, `home`. **Work SPLITS into from-home and out**, because under the published looks'
+  single `work` a WFH day is ambiguous with `home / lounge`, and that is the majority of her
+  logging. Two of her five style rules are context claims ("weekday wears are work-from-home",
+  "the dresses are event pieces — I've had no events") and **neither was representable before
+  this**, so the model could not tell comfort-first from taste.
+- **`weather` jsonb** — the ONLY context field that costs her nothing. Derived from `worn_on`
+  via Open-Meteo (free, no key, no attribution). `weather_backfill.py` uses the ARCHIVE
+  endpoint (reanalysis — what happened, not what was forecast) and falls back to the forecast
+  endpoint for the ~5-day lag, tagging which in `weather.source` so the two are never silently
+  mixed. Verified: all 15 wear dates return from the archive in one request.
+- **THE SWAP (`nearly_wore` / `instead_of`) — the first TRUE NEGATIVE in the dataset.** Every
+  negative until now was synthesised from the whole space, which is precisely why controlling
+  for rotation collapses the score: the model could win by scoring dead stock low. A swap is a
+  negative from the same day, same weather, same occasion, and it is PAIRWISE — where the blame
+  data already points (29 of 44 rejections blame a shoe). Shape chosen over a full alternative
+  outfit because it is two taps, and a wear is logged tired.
+- **THE SWAP CREATES NO OUTFIT ROW**, unlike a wear. A near-miss is a pair, not something she
+  put on; minting a `considered` outfit would grow the corpus with clothes she did NOT wear,
+  and `_resolve_outfit`'s set-matching would then return that row the day she actually wears
+  it. It also cannot inflate wear counts — `_wear_counts()` reads only `outfit_id ->
+  garment_ids` and never touches the swap columns.
+- **DIRECTION IS VALIDATED, NOT ASSUMED.** `instead_of` must be IN the outfit and `nearly_wore`
+  OUT of it. Reversed, the pair records a true negative with its sign flipped — worse than
+  collecting nothing — and on a phone the two are easy to transpose. Enforced in the API AND
+  made unpickable in the UI (the two selects are drawn from disjoint lists).
+- **Everything is OPTIONAL.** A wear with no context is still a wear; losing the wear to enforce
+  the field would be the wrong trade. A half-filled swap is sent as nothing rather than as an
+  error.
+- **`app/wear_rules.py` is pure and DB-free**, split out of `wear.py` because that module
+  imports asyncpg and could therefore only be tested where a driver is installed. Same doctrine
+  as `engine/`. **62 tests now** (41 -> 50 -> 62).
+- **Backfill, her call 07-28: occasion from memory + weather fetched, for all 15 existing
+  wears.** `make_wear_form.py` -> browser form -> `apply_wear_context.py` -> SQL, matching the
+  established capture pattern (she prefers browser forms). Prints the WEEKDAY beside each date,
+  because her own rule keys off it and a bare date two weeks old is hard to place. **The swap is
+  deliberately NOT backfilled** — "what did I nearly wear on the 14th" is exactly what people
+  confabulate, and a fabricated negative is worse than none. Garment display names come from
+  each `meta.json`, not the snapshot, which carries attributes only.
+- The generated form addresses rows by `wear_id` where available, else `(outfit_id, worn_on)` —
+  unique in practice at one wear a day, and the generated SQL RAISEs rather than trusting it.
+
 ## Her rules run in the engine (2026-07-28, $0) — the FIRST time her words change `/stylist`
 
 **`constraints.py` now has THREE tiers, not two: HARD (structural) · USER (hers) · SOFT

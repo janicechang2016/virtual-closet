@@ -13,11 +13,17 @@ would have grown a counter and nothing else.
 from datetime import date
 from typing import Optional
 
+from . import wear_rules
 from .db import pool
 
 
-class WearError(ValueError):
-    """Bad input from the client — surfaces as a 400, never a 500."""
+# The validation rules live in wear_rules — pure, importable without a database
+# driver, and therefore testable on a laptop. Re-exported here so callers and the
+# existing `wear.WearError` handling in main.py are unchanged.
+WearError = wear_rules.WearError
+OCCASIONS = wear_rules.OCCASIONS
+_clean_occasion = wear_rules.clean_occasion
+_clean_swap = wear_rules.clean_swap
 
 
 async def _resolve_outfit(con, garment_ids: list) -> tuple:
@@ -59,7 +65,10 @@ async def _resolve_outfit(con, garment_ids: list) -> tuple:
     return new_id, True
 
 
-async def log_wear(garment_ids: list, worn_on: Optional[str] = None) -> dict:
+async def log_wear(garment_ids: list, worn_on: Optional[str] = None,
+                   occasion: Optional[str] = None,
+                   nearly_wore: Optional[str] = None,
+                   instead_of: Optional[str] = None) -> dict:
     if not garment_ids or not isinstance(garment_ids, list):
         raise WearError("garment_ids must be a non-empty list")
     if len(garment_ids) > 12:
@@ -74,16 +83,27 @@ async def log_wear(garment_ids: list, worn_on: Optional[str] = None) -> dict:
         if day > date.today():
             raise WearError("cannot log a wear in the future")
 
+    occasion = _clean_occasion(occasion)
+    nearly_wore, instead_of = _clean_swap(nearly_wore, instead_of, garment_ids)
+
     async with pool().acquire() as con:
         async with con.transaction():
             outfit_id, created = await _resolve_outfit(con, garment_ids)
+            if nearly_wore:
+                # The swap references a garment that was never in an outfit, so
+                # it gets no foreign-key check from _resolve_outfit's lookup.
+                known = await con.fetchval(
+                    "SELECT count(*) FROM garment WHERE id = $1", nearly_wore)
+                if not known:
+                    raise WearError("unknown garment: %s" % nearly_wore)
             wear_id = await con.fetchval(
                 """
-                INSERT INTO wear_log (outfit_id, worn_on, confirmed_by)
-                VALUES ($1, COALESCE($2::date, CURRENT_DATE), 'user')
+                INSERT INTO wear_log (outfit_id, worn_on, confirmed_by,
+                                      occasion, nearly_wore, instead_of)
+                VALUES ($1, COALESCE($2::date, CURRENT_DATE), 'user', $3, $4, $5)
                 RETURNING id
                 """,
-                outfit_id, day,
+                outfit_id, day, occasion, nearly_wore, instead_of,
             )
             total = await con.fetchval(
                 "SELECT count(*) FROM wear_log WHERE outfit_id = $1", outfit_id)
@@ -94,6 +114,9 @@ async def log_wear(garment_ids: list, worn_on: Optional[str] = None) -> dict:
         "outfit_id": str(outfit_id),
         "outfit_created": created,
         "times_worn": total,
+        "occasion": occasion,
+        "swap": None if not nearly_wore else
+                {"nearly_wore": nearly_wore, "instead_of": instead_of},
     }
 
 
@@ -102,7 +125,9 @@ async def recent_wears(limit: int = 30) -> dict:
     async with pool().acquire() as con:
         rows = await con.fetch(
             """
-            SELECT w.id, w.worn_on, o.id AS outfit_id, o.garment_ids, o.source
+            SELECT w.id, w.worn_on, w.occasion, w.weather,
+                   w.nearly_wore, w.instead_of,
+                   o.id AS outfit_id, o.garment_ids, o.source
               FROM wear_log w
               JOIN outfit o ON o.id = w.outfit_id
              ORDER BY w.worn_on DESC, w.id DESC
@@ -116,6 +141,12 @@ async def recent_wears(limit: int = 30) -> dict:
         "outfit_id": str(r["outfit_id"]),
         "garment_ids": list(r["garment_ids"]),
         "source": r["source"],
+        "occasion": r["occasion"],
+        # jsonb arrives as a string from asyncpg unless a codec is registered;
+        # the page only needs to know whether it is populated.
+        "weather": r["weather"],
+        "swap": None if not r["nearly_wore"] else
+                {"nearly_wore": r["nearly_wore"], "instead_of": r["instead_of"]},
     } for r in rows]}
 
 

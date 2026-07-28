@@ -27,7 +27,13 @@ SELECT json_build_object(
       SELECT id, garment_ids, source, context, render_cache_key
       FROM outfit ORDER BY render_cache_key) o),
   'wears', (SELECT coalesce(json_agg(row_to_json(w)), '[]'::json) FROM (
-      SELECT outfit_id, worn_on FROM wear_log ORDER BY worn_on) w)
+      -- `id` is carried so laptop-side tools can address a specific wear
+      -- (the occasion backfill form writes against it). Context fields are
+      -- migration 0006: occasion is tapped, weather is derived, and the swap is
+      -- the first TRUE negative in the dataset — a garment she nearly wore
+      -- instead of one she did, matched within one day and one occasion.
+      SELECT id, outfit_id, worn_on, occasion, weather, nearly_wore, instead_of
+        FROM wear_log ORDER BY worn_on) w)
 );
 """
 

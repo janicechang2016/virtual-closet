@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>the archive — wear occasions</title>
+<style>
+  :root { --line:#000; --bg:#fff; --dim:#8a8a8a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:#000;
+         font:13px/1.45 Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  header { position:sticky; top:0; z-index:10; background:var(--bg);
+            border-bottom:1px solid var(--line); padding:18px 24px;
+            display:flex; align-items:baseline; gap:24px; flex-wrap:wrap; }
+  .wordmark { font-style:italic; font-size:17px; }
+  .meta { text-transform:uppercase; letter-spacing:.14em; font-size:10px; color:var(--dim); }
+  .spacer { flex:1; }
+  button { font:inherit; text-transform:uppercase; letter-spacing:.14em; font-size:10px;
+            background:var(--bg); border:1px solid var(--line); padding:9px 16px; cursor:pointer; }
+  button.primary { background:#000; color:#fff; }
+  button:hover { opacity:.7; }
+  .legend { padding:14px 24px; border-bottom:1px solid var(--line);
+             font-size:11px; color:#444; max-width:78ch; }
+  .legend b { font-weight:600; color:#000; }
+  .row { border-bottom:1px solid var(--line); padding:16px 24px;
+          display:grid; grid-template-columns:130px 1fr; gap:20px; align-items:start; }
+  .row.touched { background:#fafafa; }
+  .when .day { text-transform:uppercase; letter-spacing:.12em; font-size:10px; }
+  .when .dt { font-size:11px; color:var(--dim); margin-top:3px; }
+  .when .wk { font-size:9px; letter-spacing:.14em; text-transform:uppercase;
+               color:var(--dim); margin-top:6px; border:1px solid #ddd;
+               display:inline-block; padding:2px 6px; }
+  .fits { display:flex; gap:10px; align-items:flex-end; margin-bottom:10px; flex-wrap:wrap; }
+  .it { text-align:center; width:74px; }
+  .it img { height:60px; max-width:100%; object-fit:contain; display:block; margin:0 auto 4px; }
+  .it span { font-size:9px; color:var(--dim); line-height:1.25; display:block; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { border:1px solid var(--line); padding:7px 11px; cursor:pointer;
+           text-transform:uppercase; letter-spacing:.1em; font-size:9.5px;
+           background:var(--bg); user-select:none; }
+  .chip:hover { background:#f0f0f0; }
+  .chip.on { background:#000; color:#fff; }
+  .chip .hint { display:block; text-transform:none; letter-spacing:0;
+                 font-size:9px; color:var(--dim); margin-top:2px; }
+  .chip.on .hint { color:#bbb; }
+  footer { padding:26px 24px 60px; }
+  .note { color:var(--dim); font-size:11px; max-width:70ch; }
+  @media (max-width:640px) { .row { grid-template-columns:1fr; gap:10px; } }
+</style></head><body>
+<header>
+  <span class="wordmark">the archive.</span>
+  <span class="meta">wear occasions · backfill</span>
+  <span class="spacer"></span>
+  <span class="meta" id="count">0 / 15 filled</span>
+  <button id="dl" class="primary">download json</button>
+</header>
+<div class="legend">
+  One tap per day. <b>Only answer where you actually remember</b> — a blank row is
+  written as nothing, and no occasion is much better than a guessed one. Weather is
+  not asked here; it is fetched from the date. The weekday is shown because your own
+  rule keys off it: weekday wears are work-from-home.
+</div>
+<div id="rows"></div>
+<footer><p class="note">Nothing here writes to the database. Export with DOWNLOAD JSON,
+then run <code>apply_wear_context.py &lt;file&gt;</code>. Only rows you tapped are written.</p></footer>
+<script>
+const WEARS = [{"wear_id": null, "worn_on": "2026-07-13", "outfit_id": "2eebb0b8-6591-4a0a-8e30-4eeb285e8141", "weekday": "Monday", "pretty": "Mon 13 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "02-jeans", "name": "black wide-leg trousers", "img": "../../virtual-closet/garments/02-jeans/clean/02-jeans_dragcut.png"}, {"id": "04-structured-blazer", "name": "black tailored blazer", "img": "../../virtual-closet/garments/04-structured-blazer/clean/04-structured-blazer_dragcut.png"}, {"id": "07-aritzia-suit-vest", "name": "tailored suit vest", "img": "../../virtual-closet/garments/07-aritzia-suit-vest/clean/07-aritzia-suit-vest_dragcut.png"}, {"id": "54-salomon-sneakers", "name": "trail sneakers", "img": "../../virtual-closet/garments/54-salomon-sneakers/clean/54-salomon-sneakers_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-14", "outfit_id": "37acd301-722c-49c8-b878-bc5081f33156", "weekday": "Tuesday", "pretty": "Tue 14 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "42-sagittarius-trousers", "name": "draped barrel trousers", "img": "../../virtual-closet/garments/42-sagittarius-trousers/clean/42-sagittarius-trousers_dragcut.png"}, {"id": "57-puma-ssg-sneakers", "name": "sculpted rubber-cage sneakers", "img": "../../virtual-closet/garments/57-puma-ssg-sneakers/clean/57-puma-ssg-sneakers_dragcut.png"}, {"id": "59-el-hoodie", "name": "painted band hoodie", "img": "../../virtual-closet/garments/59-el-hoodie/clean/59-el-hoodie_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-15", "outfit_id": "a25a8539-214a-434d-b628-62e2cc01334d", "weekday": "Wednesday", "pretty": "Wed 15 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "42-sagittarius-trousers", "name": "draped barrel trousers", "img": "../../virtual-closet/garments/42-sagittarius-trousers/clean/42-sagittarius-trousers_dragcut.png"}, {"id": "55-asics-sneakers", "name": "gel runner sneakers", "img": "../../virtual-closet/garments/55-asics-sneakers/clean/55-asics-sneakers_dragcut.png"}, {"id": "59-el-hoodie", "name": "painted band hoodie", "img": "../../virtual-closet/garments/59-el-hoodie/clean/59-el-hoodie_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-16", "outfit_id": "858ce733-06be-4c00-8618-695b7b663a12", "weekday": "Thursday", "pretty": "Thu 16 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "10-coucou-black-midi-skirt", "name": "pointelle midi skirt", "img": "../../virtual-closet/garments/10-coucou-black-midi-skirt/clean/10-coucou-black-midi-skirt_dragcut.png"}, {"id": "13-coucou-long-sleeve-top", "name": "long-sleeve top with curved hem", "img": "../../virtual-closet/garments/13-coucou-long-sleeve-top/clean/13-coucou-long-sleeve-top_dragcut.png"}, {"id": "52-camper-flats", "name": "square-toe flats", "img": "../../virtual-closet/garments/52-camper-flats/clean/52-camper-flats_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-17", "outfit_id": "a7a667cc-acf9-474d-9621-ce1bac27d0e4", "weekday": "Friday", "pretty": "Fri 17 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "02-jeans", "name": "black wide-leg trousers", "img": "../../virtual-closet/garments/02-jeans/clean/02-jeans_dragcut.png"}, {"id": "30-off-shoulder-top", "name": "off-shoulder sheer top", "img": ""}, {"id": "50-yello-heels", "name": "studded mule heels", "img": "../../virtual-closet/garments/50-yello-heels/clean/50-yello-heels_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-18", "outfit_id": "a91bc510-5577-4f42-81aa-0c7bc2c14297", "weekday": "Saturday", "pretty": "Sat 18 Jul", "is_weekend": true, "occasion": "", "items": [{"id": "10-coucou-black-midi-skirt", "name": "pointelle midi skirt", "img": "../../virtual-closet/garments/10-coucou-black-midi-skirt/clean/10-coucou-black-midi-skirt_dragcut.png"}, {"id": "23-issey-black-tank", "name": "pleated high-neck tank", "img": "../../virtual-closet/garments/23-issey-black-tank/clean/23-issey-black-tank_dragcut.png"}, {"id": "50-yello-heels", "name": "studded mule heels", "img": "../../virtual-closet/garments/50-yello-heels/clean/50-yello-heels_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-19", "outfit_id": "9de4fee9-d3c8-450f-a478-f9ee7c08fab5", "weekday": "Sunday", "pretty": "Sun 19 Jul", "is_weekend": true, "occasion": "", "items": [{"id": "01-plain-tee", "name": "draped mock-neck top", "img": "../../virtual-closet/garments/01-plain-tee/clean/01-plain-tee_dragcut.png"}, {"id": "15-coucou-mini-skirt", "name": "pointelle mini skirt", "img": "../../virtual-closet/garments/15-coucou-mini-skirt/clean/15-coucou-mini-skirt_dragcut.png"}, {"id": "49-jil-sander-boots", "name": "leather riding boots", "img": "../../virtual-closet/garments/49-jil-sander-boots/clean/49-jil-sander-boots_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-20", "outfit_id": "dd67b4b8-4551-43fe-ba02-fb273c177850", "weekday": "Monday", "pretty": "Mon 20 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "41-sagittarius-top", "name": "cowl halter top", "img": "../../virtual-closet/garments/41-sagittarius-top/clean/41-sagittarius-top_dragcut.png"}, {"id": "42-sagittarius-trousers", "name": "draped barrel trousers", "img": "../../virtual-closet/garments/42-sagittarius-trousers/clean/42-sagittarius-trousers_dragcut.png"}, {"id": "56-mizuno-sneakers", "name": "wave leather sneakers", "img": "../../virtual-closet/garments/56-mizuno-sneakers/clean/56-mizuno-sneakers_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-21", "outfit_id": "409c2d60-105d-4435-97b9-45c4ab194663", "weekday": "Tuesday", "pretty": "Tue 21 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "36-realisation-liv-dress", "name": "liv midi dress", "img": "../../virtual-closet/garments/36-realisation-liv-dress/clean/36-realisation-liv-dress_dragcut.png"}, {"id": "52-camper-flats", "name": "square-toe flats", "img": "../../virtual-closet/garments/52-camper-flats/clean/52-camper-flats_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-22", "outfit_id": "d2663e4e-3130-4d30-acc3-2fcca1813d99", "weekday": "Wednesday", "pretty": "Wed 22 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "10-coucou-black-midi-skirt", "name": "pointelle midi skirt", "img": "../../virtual-closet/garments/10-coucou-black-midi-skirt/clean/10-coucou-black-midi-skirt_dragcut.png"}, {"id": "12-coucou-black-scoop-tank", "name": "scoop tank", "img": "../../virtual-closet/garments/12-coucou-black-scoop-tank/clean/12-coucou-black-scoop-tank_dragcut.png"}, {"id": "50-yello-heels", "name": "studded mule heels", "img": "../../virtual-closet/garments/50-yello-heels/clean/50-yello-heels_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-23", "outfit_id": "d8b086b4-d9f5-49a5-87d3-37fff34171c6", "weekday": "Thursday", "pretty": "Thu 23 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "02-jeans", "name": "black wide-leg trousers", "img": "../../virtual-closet/garments/02-jeans/clean/02-jeans_dragcut.png"}, {"id": "45-sundae-gorum-shirt", "name": "gorum wrap-collar shirt", "img": "../../virtual-closet/garments/45-sundae-gorum-shirt/clean/45-sundae-gorum-shirt_dragcut.png"}, {"id": "51-weejuns-loafers", "name": "weejuns tassel loafers", "img": "../../virtual-closet/garments/51-weejuns-loafers/clean/51-weejuns-loafers_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-24", "outfit_id": "d2b1c21c-417b-41c7-8d9b-9916bdf3e8a5", "weekday": "Friday", "pretty": "Fri 24 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "18-coucou-white-midi-skirt", "name": "pointelle midi skirt", "img": "../../virtual-closet/garments/18-coucou-white-midi-skirt/clean/18-coucou-white-midi-skirt_dragcut.png"}, {"id": "19-coucou-white-scoop-tank", "name": "scoop tank", "img": "../../virtual-closet/garments/19-coucou-white-scoop-tank/clean/19-coucou-white-scoop-tank_dragcut.png"}, {"id": "52-camper-flats", "name": "square-toe flats", "img": "../../virtual-closet/garments/52-camper-flats/clean/52-camper-flats_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-25", "outfit_id": "1a290369-9de6-4363-bfb8-ffc06cda7285", "weekday": "Saturday", "pretty": "Sat 25 Jul", "is_weekend": true, "occasion": "", "items": [{"id": "09-bunnyhill-white-top", "name": "draped asymmetric top", "img": ""}, {"id": "27-liniss-pants", "name": "lace-up flare trousers", "img": "../../virtual-closet/garments/27-liniss-pants/clean/27-liniss-pants_dragcut.png"}, {"id": "50-yello-heels", "name": "studded mule heels", "img": "../../virtual-closet/garments/50-yello-heels/clean/50-yello-heels_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-26", "outfit_id": "ee8e0c67-7cc2-4302-8e4c-1b9c29bd07ce", "weekday": "Sunday", "pretty": "Sun 26 Jul", "is_weekend": true, "occasion": "", "items": [{"id": "09-bunnyhill-white-top", "name": "draped asymmetric top", "img": ""}, {"id": "42-sagittarius-trousers", "name": "draped barrel trousers", "img": "../../virtual-closet/garments/42-sagittarius-trousers/clean/42-sagittarius-trousers_dragcut.png"}, {"id": "50-yello-heels", "name": "studded mule heels", "img": "../../virtual-closet/garments/50-yello-heels/clean/50-yello-heels_dragcut.png"}]}, {"wear_id": null, "worn_on": "2026-07-27", "outfit_id": "37d15d7e-01e3-4f5f-bc37-d295e457c837", "weekday": "Monday", "pretty": "Mon 27 Jul", "is_weekend": false, "occasion": "", "items": [{"id": "02-jeans", "name": "black wide-leg trousers", "img": "../../virtual-closet/garments/02-jeans/clean/02-jeans_dragcut.png"}, {"id": "54-salomon-sneakers", "name": "trail sneakers", "img": "../../virtual-closet/garments/54-salomon-sneakers/clean/54-salomon-sneakers_dragcut.png"}, {"id": "59-el-hoodie", "name": "painted band hoodie", "img": "../../virtual-closet/garments/59-el-hoodie/clean/59-el-hoodie_dragcut.png"}]}];
+const OCC = [["work_home", "work \u2014 from home", "a working weekday, not going out"], ["work_out", "work \u2014 out", "into an office, a client, a work thing"], ["day_out", "day out", "errands, friends, walking around"], ["dinner", "dinner", "dinner out, drinks"], ["event", "event / formal", "the thing the dresses are for"], ["home", "home / lounge", "not working, not going out"]];
+const host = document.getElementById('rows');
+
+host.innerHTML = WEARS.map((w, i) => `
+  <div class="row" id="row-${i}">
+    <div class="when">
+      <div class="day">${w.weekday || '—'}</div>
+      <div class="dt">${w.pretty}</div>
+      ${w.is_weekend ? '<div class="wk">weekend</div>' : ''}
+    </div>
+    <div>
+      <div class="fits">
+        ${w.items.map(it => `<div class="it">
+            ${it.img ? `<img src="${it.img}" alt="" loading="lazy">` : ''}
+            <span>${it.name}</span></div>`).join('')}
+      </div>
+      <div class="chips">
+        ${OCC.map(o => `<div class="chip" data-i="${i}" data-slug="${o[0]}">
+            ${o[1]}<span class="hint">${o[2]}</span></div>`).join('')}
+      </div>
+    </div>
+  </div>`).join('');
+
+function paint() {
+  let n = 0;
+  WEARS.forEach((w, i) => {
+    if (w.occasion) n++;
+    document.getElementById('row-' + i).classList.toggle('touched', !!w.occasion);
+  });
+  document.getElementById('count').textContent = n + ' / ' + WEARS.length + ' filled';
+}
+
+host.addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const i = +chip.dataset.i, slug = chip.dataset.slug;
+  // Tapping the active chip clears it — a mis-tap must be undoable without a reload.
+  WEARS[i].occasion = (WEARS[i].occasion === slug) ? '' : slug;
+  document.querySelectorAll(`.chip[data-i="${i}"]`).forEach(c =>
+    c.classList.toggle('on', c.dataset.slug === WEARS[i].occasion));
+  paint();
+});
+
+document.getElementById('dl').addEventListener('click', () => {
+  const wears = WEARS.filter(w => w.occasion).map(w => ({
+    wear_id: w.wear_id, outfit_id: w.outfit_id,
+    worn_on: w.worn_on, occasion: w.occasion,
+  }));
+  const blob = new Blob([JSON.stringify({wears}, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'wear_context.json';
+  a.click();
+});
+
+paint();
+</script></body></html>

@@ -96,6 +96,15 @@ page fetches, and `asset_urls()` walking that payload or its images 404.
    silhouette is deliberately split. None is a filter; the first two are arguments for
    occasion/context modelling, which is candidate (3) below.
 
+0b. **WEAR CONTEXT — BUILT 07-28, NOT YET MIGRATED OR DEPLOYED.** Migration 0006 adds
+   `occasion`, `weather` and the swap (`nearly_wore`/`instead_of`) to `wear_log`, which until
+   now held `outfit_id` and `worn_on` and nothing else. This is COLLECTION, not modelling —
+   it changes no ranking; it changes what the next measurement can use. **The swap is the first
+   true negative the dataset has ever had.** See the "Wear CONTEXT" section of `CLAUDE.md`.
+   **Outstanding, in order:** run 0006 against production · `dump_closet.py` · fill the backfill
+   form (`make_wear_form.py`) · `apply_wear_context.py` + run its SQL · `weather_backfill.py`
+   (NEEDS HER LOCATION — lat/lon, not yet supplied) · re-dump · push (deploys site + API).
+
 1. **HER STATED NEXT STEP (07-27): evaluate where things stand, then tweak.** The wear track
    is DONE and deployed — 15 wears logged, snapshot refreshed, pages reading them. What the
    data REVEALED is the open work, not more plumbing. Read the Phase 3 section of `CLAUDE.md`
