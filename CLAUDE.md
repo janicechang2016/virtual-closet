@@ -396,7 +396,8 @@ CDP-verified across a look with a render and one without — the mirror held 760
   reference photos — generating silhouettes for them was tried and reverted as worse than
   the photo. Queued, not priority: vertical body-stacked outfits, wildcard as a full-width
   interruption.
-- **`/galaxy` — Track E constellation (07-26, $0, on branch `track-e-galaxy`, NOT deployed):**
+- **`/galaxy` — Track E constellation (07-26, $0; built on branch `track-e-galaxy`, merged and
+  DEPLOYED since 07-26 — figures encrypted like /insights):**
   canvas force graph on the tokens' Ink ground. `/api/galaxy` serves it; no new tables.
   - **Nodes are Bayer-DITHERED dot fields, not photos and not tinted by garment colour.** Dot
     density carries luminance, so a near-black garment (60% of this closet is below L*25)
@@ -563,6 +564,49 @@ AND often killed. **The sneaker finding is the Phase 6 pairwise signal in prose*
 were never worn with a skirt or dress, only with trousers or the hoodie, and the rejected
 suggestions had paired them with skirts. She confirmed it as an explicit rule.
 
+## Her rules run in the engine (2026-07-28, $0) — the FIRST time her words change `/stylist`
+
+**`constraints.py` now has THREE tiers, not two: HARD (structural) · USER (hers) · SOFT
+(judgement).** Two of her five rules in `style_rules.txt` are executable and now filter every
+suggestion at $0/suggestion: *never a sneaker with a skirt or dress*, and *never the Keen
+sandals with a skirt or dress*. Everything else about the stylist is unchanged — this is a
+FILTER, not a ranker; affinity still does the ranking.
+
+- **WHY A SEPARATE TIER AND NOT `hard_violations()` — measured, not assumed.** Checked against
+  all 57 outfits: **zero WORN outfits break either rule**, but **two PUBLISHED looks do** (both
+  `32-personal-language-skirt` + `53-keen-sandals`) and **neither was ever worn**. Folding these
+  into the hard rules would retroactively declare two of her own published looks structurally
+  invalid — the exact failure the module header warns about, and the one that already bit
+  look-023. Published-but-never-worn is precisely the 07-27 gap, so her rule corrects what gets
+  SUGGESTED; it does not claim those looks were never outfits.
+- **The affinity prior is deliberately untouched.** Those two looks still train
+  `preference.affinity()` — they are real evidence about tops and skirts, and the rule is about
+  the shoe. Filtering suggestions and training preference are separate concerns.
+- **One insertion point: `gaps.enumerate_outfits(..., apply_user_rules=True)`.** Every consumer
+  funnels through it — ranked suggestions, wildcard, gap analysis, rediscovery — so both stylist
+  paths (`closet_server.py` live route and `export_static.py` deployed pool) inherited it with
+  NO per-path change. That is the fix for the 07-27 trap where the two paths drifted. Pass
+  `apply_user_rules=False` for the unfiltered structural space.
+- **Cost of the rules, printed by `engine_report.py` rather than buried: 2320 -> 1600 outfits,
+  -720 (31%)** — 576 sneaker, 144 Keen. With outerwear 13420 -> 9250. **Nothing is stranded:**
+  every garment still appears in a suggestable outfit (sneakers and Keen drop 232 -> 88, losing
+  exactly their skirt/dress pairings; dresses 10 -> 5). `orphans()` still returns empty.
+- **`KEEN_SANDALS` is keyed by ID, not by `subcategory == "sandal"`** — her rule names that
+  specific shoe. It is the only sandal in the closet today, so the two are indistinguishable
+  now, but a future sandal must not silently inherit a rule she wrote about her Keens.
+- **The engine does NOT parse `style_rules.txt`.** Her prose stays the source of truth and
+  nothing regenerates it; the two executable rules are hand-translated into `USER_RULES` with
+  her sentence quoted verbatim above each, so drift between the two is visible on sight. This is
+  the D.1 lesson applied — round-tripping her words through a parser ate them twice.
+- **50 engine tests (was 41).** The +9 include: her rules must never reject an outfit she
+  actually WORE, the rules must strand no garment, a non-Keen sandal is not covered, and the
+  tiers must stay separate. `test_enumeration_matches_arithmetic` now asserts on the UNFILTERED
+  space; the filtered count is derived from slot arithmetic rather than pinned to 1600, so it
+  still means something after an ingest.
+- Verified on the real deployed payload: **7,200 precomputed suggestions across all six
+  occasions, 0 violations** (entries are index-encoded `[[23,1,50],[]]` — decode through
+  `payload["garments"]` or a scan silently passes on zero resolved ids).
+
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear
@@ -676,7 +720,8 @@ suggestions had paired them with skirts. She confirmed it as an explicit rule.
   (revert: `git checkout fitting-room-syve-v1 -- virtual-closet/app/`). Garment `meta.json` has a `brand` field (all five
   filled — Peachy Den / In This Era / Nin Studio / Musinsa Standard / Woodrose Deli),
   shown as the first line of the archive detail overlay; fill at ingest for new items.
-- Spend: **$10.24 of $25 cap** (`python3 scripts/genlog.py summary`). Big items: July
+- Spend: **$13.15 of $25 cap** (`python3 scripts/genlog.py summary`; fal $12.31 +
+  `claude-opus-5` $0.84 — one shared cap). Big items: July
   catalog batch $3.25 + $0.53 fix round + sundae fixes ~$0.18; Janice's own first live
   loop 07-14 ($0.118) validated the publish pipeline end-to-end.
 

@@ -47,11 +47,23 @@ def main():
     rule("1. ENUMERATION")
     n = {c: len([x for x in G if x["category"] == c])
          for c in ("top", "bottom", "dress", "outerwear", "shoes")}
+    structural_space = gaps.enumerate_outfits(G, apply_user_rules=False)
     base = gaps.enumerate_outfits(G)
     with_ow = gaps.enumerate_outfits(G, with_outerwear=True)
     print("closet: " + " · ".join("%s %d" % (k, v) for k, v in n.items()))
-    print("valid outfits           %5d   = (%d x %d + %d) x %d"
-          % (len(base), n["top"], n["bottom"], n["dress"], n["shoes"]))
+    print("structurally valid      %5d   = (%d x %d + %d) x %d"
+          % (len(structural_space), n["top"], n["bottom"], n["dress"], n["shoes"]))
+    # Her rules are a filter on what may be SUGGESTED, so the gap between these
+    # two lines is the price of style_rules.txt — printed rather than buried,
+    # because it is the number to look at if suggestions ever feel thin.
+    removed = len(structural_space) - len(base)
+    print("suggestable (her rules) %5d   -%d (%.0f%%) by %d user rule(s)"
+          % (len(base), removed, 100.0 * removed / max(len(structural_space), 1),
+             len(constraints.USER_RULES)))
+    for name, _ in constraints.USER_RULES:
+        n_hit = sum(1 for c in structural_space
+                    if name in constraints.user_rule_violations(c))
+        print("    %-40s -%d" % (name, n_hit))
     print("with outerwear          %5d" % len(with_ow))
 
     ranked = gaps.ranked_outfits(G)

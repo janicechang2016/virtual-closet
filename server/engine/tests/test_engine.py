@@ -136,6 +136,52 @@ class TestConstraints(unittest.TestCase):
         self.assertEqual(constraints.soft_notes(combo)[0], 0.0)
 
 
+class TestUserRules(unittest.TestCase):
+    """Her rules from style_rules.txt. Synthetic garments — these pin the rule,
+    not the closet."""
+
+    SNEAK = dict(category="shoes", subcategory="sneaker")
+    SKIRT = dict(category="bottom", subcategory="skirt")
+
+    def test_sneaker_with_skirt_rejected(self):
+        combo = [g("t", "top"), g("sk", **self.SKIRT), g("sn", **self.SNEAK)]
+        self.assertIn("sneaker with a skirt or dress",
+                      constraints.user_rule_violations(combo))
+
+    def test_sneaker_with_dress_rejected(self):
+        combo = [g("d", "dress"), g("sn", **self.SNEAK)]
+        self.assertFalse(constraints.allowed_by_user_rules(combo))
+
+    def test_sneaker_with_trousers_allowed(self):
+        """The rule is about skirts and dresses, not about sneakers."""
+        combo = [g("t", "top"), g("b", "bottom", subcategory="trousers"),
+                 g("sn", **self.SNEAK)]
+        self.assertTrue(constraints.allowed_by_user_rules(combo))
+
+    def test_keen_sandals_with_skirt_rejected(self):
+        combo = [g("t", "top"), g("sk", **self.SKIRT),
+                 g(constraints.KEEN_SANDALS, "shoes", subcategory="sandal")]
+        self.assertIn("keen sandals with a skirt or dress",
+                      constraints.user_rule_violations(combo))
+
+    def test_another_sandal_is_not_covered_by_the_keen_rule(self):
+        """Her rule names her Keens. A future sandal must not inherit it silently."""
+        combo = [g("t", "top"), g("sk", **self.SKIRT),
+                 g("99-other-sandals", "shoes", subcategory="sandal")]
+        self.assertTrue(constraints.allowed_by_user_rules(combo))
+
+    def test_user_rules_are_not_hard_rules(self):
+        """The tiers must stay separate.
+
+        A sneaker with a skirt is still structurally an outfit — it is one she
+        has told us not to SUGGEST. Collapsing this into hard_violations would
+        retroactively invalidate two of her own published looks.
+        """
+        combo = [g("t", "top"), g("sk", **self.SKIRT), g("sn", **self.SNEAK)]
+        self.assertTrue(constraints.is_valid(combo))
+        self.assertFalse(constraints.allowed_by_user_rules(combo))
+
+
 class TestGaps(unittest.TestCase):
     def setUp(self):
         self.closet = ([g("t%d" % i, "top") for i in range(3)]
@@ -257,7 +303,73 @@ class TestRealCloset(unittest.TestCase):
         n = {c: len([x for x in self.garments if fills(x, c)])
              for c in ("top", "bottom", "dress", "shoes")}
         expected = (n["top"] * n["bottom"] + n["dress"]) * n["shoes"]
-        self.assertEqual(len(gaps.enumerate_outfits(self.garments)), expected)
+        # Unfiltered: this asserts on the STRUCTURAL space, so her user rules are
+        # off. The filtered count is checked independently below.
+        self.assertEqual(
+            len(gaps.enumerate_outfits(self.garments, apply_user_rules=False)),
+            expected)
+
+    def test_user_rules_remove_exactly_the_skirt_and_dress_pairings(self):
+        """The rules' cost, derived independently rather than pinned to a number.
+
+        Her two executable rules both say the same thing about the same set of
+        shoes, so what they remove is arithmetic: every (skirt|dress) outfit
+        wearing a sneaker or the Keens. Computing it from slot counts rather than
+        hard-coding 1600 means this test still means something after an ingest.
+        """
+        def fills(g_, c):
+            return g_["category"] == c or c in (g_.get("alt_categories") or ())
+        tops = [x for x in self.garments if fills(x, "top")]
+        bottoms = [x for x in self.garments if fills(x, "bottom")]
+        dresses = [x for x in self.garments if fills(x, "dress")]
+        shoes = [x for x in self.garments if fills(x, "shoes")]
+
+        banned = [s for s in shoes
+                  if s.get("subcategory") == "sneaker"
+                  or s["id"] == constraints.KEEN_SANDALS]
+        skirts = [b for b in bottoms if b.get("subcategory") == "skirt"]
+        # bases that a banned shoe may no longer finish
+        lost = (len(tops) * len(skirts) + len(dresses)) * len(banned)
+
+        full = len(gaps.enumerate_outfits(self.garments, apply_user_rules=False))
+        filtered = len(gaps.enumerate_outfits(self.garments))
+        self.assertEqual(full - filtered, lost)
+        self.assertTrue(banned and skirts, "fixture lost its sneakers or skirts")
+
+    def test_user_rules_strand_no_garment(self):
+        """Filtering may shrink the space but must not remove anyone from it.
+
+        A garment that appears in zero suggestable outfits is invisible to the
+        stylist, the wildcard and the rediscovery leads at once — a rule that
+        does that has stopped filtering and started deleting.
+        """
+        space = gaps.enumerate_outfits(self.garments)
+        seen = {g_["id"] for combo in space for g_ in combo}
+        wearable = [g_["id"] for g_ in self.garments
+                    if g_["category"] in ("top", "bottom", "dress", "shoes")
+                    or (g_.get("alt_categories") or ())]
+        self.assertEqual([i for i in wearable if i not in seen], [])
+
+    def test_user_rules_do_not_invalidate_worn_outfits(self):
+        """The closet's own history is the check on any rule that filters.
+
+        Measured 07-28: zero worn outfits break either rule. Two PUBLISHED looks
+        do (both `32-personal-language-skirt` with the Keens) and neither was
+        ever worn — which is why these are a separate tier and are not in
+        `hard_violations`. If a future rule ever fails something she actually
+        WORE, the rule is what is wrong.
+        """
+        by_id = {g_["id"]: g_ for g_ in self.garments}
+        worn_ids = {o["id"] for o in self.outfits if o.get("source") == "worn"}
+        bad = []
+        for o in self.outfits:
+            if o["id"] not in worn_ids:
+                continue
+            combo = [by_id[i] for i in o["garment_ids"] if i in by_id]
+            v = constraints.user_rule_violations(combo)
+            if v:
+                bad.append((o["id"], v))
+        self.assertEqual(bad, [], "a rule rejects an outfit she actually wore: %s" % bad)
 
     def test_dual_role_garment_is_enumerated_in_its_alt_slot(self):
         """A garment with an alt role must actually reach the outfit space.

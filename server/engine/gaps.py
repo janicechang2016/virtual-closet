@@ -27,11 +27,18 @@ def _cat(garments, name):
             or name in (g.get("alt_categories") or ())]
 
 
-def enumerate_outfits(garments, with_outerwear=False):
+def enumerate_outfits(garments, with_outerwear=False, apply_user_rules=True):
     """Every structurally valid outfit shape: (top+bottom | dress) + shoes.
 
     Outerwear is off by default — including it multiplies the space by the
     number of coats and tells you little that the base outfit did not.
+
+    `apply_user_rules` is ON by default, so her rules from `style_rules.txt`
+    reach every consumer through this one funnel — suggestions, gap analysis and
+    the rediscovery leads alike. Recommending a garment on the strength of
+    outfits she has told us never to suggest would be a worse answer than not
+    recommending it at all. Pass False to see the unfiltered structural space,
+    which is what `engine_report.py` prints to show the rules' cost.
     """
     tops, bottoms = _cat(garments, "top"), _cat(garments, "bottom")
     dresses, shoes = _cat(garments, "dress"), _cat(garments, "shoes")
@@ -40,18 +47,23 @@ def enumerate_outfits(garments, with_outerwear=False):
     bases = [list(c) for c in itertools.product(tops, bottoms)]
     bases += [[d] for d in dresses]
 
+    def ok(combo):
+        if not constraints.is_valid(combo):
+            return False
+        return constraints.allowed_by_user_rules(combo) if apply_user_rules else True
+
     out = []
     for base in bases:
         for sh in shoes:
             combo = base + [sh]
-            if constraints.is_valid(combo):
+            if ok(combo):
                 out.append(combo)
             for ow in outers:
                 # a dual-role garment cannot be its own outer layer
                 if any(x["id"] == ow["id"] for x in combo):
                     continue
                 combo2 = base + [sh, ow]
-                if constraints.is_valid(combo2):
+                if ok(combo2):
                     out.append(combo2)
     return out
 

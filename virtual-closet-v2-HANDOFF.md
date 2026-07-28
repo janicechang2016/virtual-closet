@@ -82,16 +82,19 @@ page fetches, and `asset_urls()` walking that payload or its images 404.
 
 ## 3. What to do next
 
-0. **STRONGEST NEXT BUILD — wire her rules into the engine as hard constraints ($0).**
-   Two of her five rules in `style_rules.txt` are executable today: *"Never suggest a sneaker
-   with a skirt or dress"* and *"Keen sandals are for extremely casual and walking days only —
-   never with a skirt or dress."* `constraints.hard_violations()` can enforce both at
-   $0/suggestion. **This would be the first time anything she wrote changes what `/stylist`
-   actually suggests** — the profile itself changes nothing (see the Track D.1 section of
-   `CLAUDE.md`). It also validates the sneaker/skirt finding cheaply, ahead of the ~50-wear
-   Phase 6 measurement, since she has now confirmed it by rule rather than by inference.
-   Note the interaction: enforcing these SHRINKS the valid outfit space, so re-run
-   `engine_report.py` and the 41 tests afterwards — `TestRealCloset` asserts on space size.
+0. **HER RULES NOW RUN IN THE ENGINE — DONE 07-28, $0.** Both executable rules from
+   `style_rules.txt` filter every suggestion. **The first time anything she wrote changes what
+   `/stylist` suggests.** Built as a THIRD TIER (`constraints.user_rule_violations`), not as
+   hard rules — measured: zero worn outfits break them, but two published looks do, and neither
+   was ever worn, so folding them into `hard_violations()` would have retroactively invalidated
+   her own archive. One insertion point (`gaps.enumerate_outfits(apply_user_rules=True)`) means
+   both stylist paths inherited it without per-path edits. Space 2320 -> 1600 (-31%); nothing
+   stranded; 50 tests green; deployed payload verified at 0 violations in 7,200 suggestions.
+   See the "Her rules run in the engine" section of `CLAUDE.md`.
+   **Still unenforced, and correctly so:** her other three rules are context, not constraints —
+   dresses are event pieces (no events yet), weekday wears are work-from-home, and her
+   silhouette is deliberately split. None is a filter; the first two are arguments for
+   occasion/context modelling, which is candidate (3) below.
 
 1. **HER STATED NEXT STEP (07-27): evaluate where things stand, then tweak.** The wear track
    is DONE and deployed — 15 wears logged, snapshot refreshed, pages reading them. What the
@@ -153,6 +156,11 @@ strongest candidate, so raise it with her rather than treating it as closed.**
   Railway built from `2d-reboot` after it was deleted, while a *duplicate* service that was on
   `main` crash-looped for want of `DATABASE_URL`. Both now point at `main`. **If a deploy looks
   wrong, check the branch setting before reading the code.**
+- **`/api/manifest`'s build stamp reports `branch: master`, and that is COSMETIC.** The deploy
+  really is from `main`. `export_static.py` reads `git rev-parse --abbrev-ref HEAD` inside
+  Vercel's checkout, which does not carry the real ref name. **Trust the `commit` field only** —
+  it is the one that answers "which commit is live". Do not let the branch field send you down
+  the stale-branch path above; check the commit hash against `git log` first.
 - **`--virtual-time-budget` starves `/galaxy`'s rAF load-in** — headless `--screenshot` always
   captures an empty field. Drive it over CDP on a real clock with `--remote-allow-origins=*`.
 - **Chrome clamps `--window-size` to ~500px** — a true phone viewport needs
@@ -174,7 +182,9 @@ strongest candidate, so raise it with her rather than treating it as closed.**
 ## 6. Standing rules — re-read before touching anything
 
 - **Spending is gated.** fal only in approved batches, every call through `scripts/genlog.py`
-  ($11.78 of $25 used). Track A's paid half and Track F need approval *and* a top-up.
+  (**$13.15 of $25 used** — fal $12.31 + `claude-opus-5` $0.84, one shared cap; re-check with
+  the command rather than trusting this line). Track A's paid half and Track F need approval
+  *and* a top-up.
 - **She decides aesthetics.** Build it, show it, expect rejection sometimes. Rejected variants
   get tags or preview folders, never deletion.
 - **Logged outfits never reach the archive carousel** (07-27). Holds structurally — the

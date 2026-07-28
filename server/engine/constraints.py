@@ -1,9 +1,11 @@
 """Outfit validity rules. Pure functions, deterministic, no I/O, no API calls.
 
-Two tiers, kept strictly apart:
+Three tiers, kept strictly apart:
 
   HARD  — structural. An outfit that fails is not an outfit (no shoes; two
           bottoms; a dress worn with a skirt). These filter.
+  USER  — her own directives, from `server/scripts/style_rules.txt`. These
+          filter too, but only what the stylist SUGGESTS. See below.
   SOFT  — judgement. Formality spread, warmth coherence, proportion. These
           score, never filter, because they are exactly the calls the user
           overrules — and the standing rule is that she decides aesthetics.
@@ -65,6 +67,71 @@ def hard_violations(garments):
 
 def is_valid(garments):
     return not hard_violations(garments)
+
+
+# ---------------------------------------------------------------- user rules
+
+# Her rules live in prose in `server/scripts/style_rules.txt`, which is the
+# source of truth and which NOTHING regenerates. The two that are executable are
+# hand-translated here, with her sentence quoted verbatim so any drift between
+# the two is visible on sight. This file deliberately does NOT parse that one:
+# it is her authored document, and the D.1 lesson was that round-tripping a
+# user's words through a parser eats them.
+#
+# WHY THIS IS A SEPARATE TIER AND NOT A HARD RULE — measured 07-28, not assumed.
+# Checked against all 57 outfits in the closet: zero WORN outfits break either
+# rule, but TWO PUBLISHED LOOKS do (both `32-personal-language-skirt` with
+# `53-keen-sandals`), and neither of those two was ever worn. Folding these into
+# `hard_violations` would retroactively declare two of her own published looks
+# structurally invalid — the exact failure this module's header warns about, and
+# the one that already bit look-023. Published-but-never-worn is precisely the
+# gap the 07-27 pivot identified, so her rule is a correction to what gets
+# SUGGESTED, not a claim that those looks were never outfits.
+#
+# Consequence, stated so it is not read as an oversight: the affinity prior is
+# untouched. Those two looks still train `preference.affinity()` — they are real
+# evidence about tops and skirts, and the rule is about the shoe.
+
+# Keyed by ID, not by `subcategory == "sandal"`, because her rule names this
+# specific shoe. It is the only sandal in the closet today, so the two are
+# indistinguishable now — but a future sandal must not silently inherit a rule
+# she wrote about her Keens.
+KEEN_SANDALS = "53-keen-sandals"
+
+USER_RULES = (
+    # "Never suggest a sneaker with a skirt or dress."
+    ("sneaker with a skirt or dress",
+     lambda gs: (_any_sub(gs, "sneaker") and _any_skirt_or_dress(gs))),
+    # "Keen sandals are for extremely casual and walking days only. Never
+    #  suggest them with a skirt or dress."
+    ("keen sandals with a skirt or dress",
+     lambda gs: (any(g.get("id") == KEEN_SANDALS for g in gs)
+                 and _any_skirt_or_dress(gs))),
+)
+
+
+def _any_sub(garments, sub):
+    return any(g.get("subcategory") == sub for g in garments)
+
+
+def _any_skirt_or_dress(garments):
+    # A skirt is a `bottom` with subcategory "skirt"; a dress is its own
+    # category. Both halves are needed — neither field alone finds both.
+    return any(g.get("category") == "dress" or g.get("subcategory") == "skirt"
+               for g in garments)
+
+
+def user_rule_violations(garments):
+    """Her directives. Empty list means the stylist may suggest this outfit.
+
+    Filters suggestions only. Never call this to decide whether something IS an
+    outfit — that is `hard_violations`.
+    """
+    return [name for name, breaks in USER_RULES if breaks(garments)]
+
+
+def allowed_by_user_rules(garments):
+    return not user_rule_violations(garments)
 
 
 def _spread(values):
