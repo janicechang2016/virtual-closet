@@ -454,6 +454,51 @@ CDP-verified across a look with a render and one without — the mirror held 760
     Opens at the last month, so the page looks exactly as it did before the scrubber existed.
   - NOT built: LLM cluster labels (paid), the references' poetic text fragments (their
     conceit, would be costume here).
+## Track D — gap analysis (2026-07-27), D.4/D.5 built, D.1 not
+
+**THE FINDING that shaped it: D.4's purchase recommender has nothing true to say about this
+closet, and no amount of wear data will change that.** Three measurements:
+1. **The hypothetical's attributes cannot discriminate on validity.** `hard_violations` counts
+   slots and nothing else, so a bottom at formality 1 and one at formality 5 both unlock
+   exactly 220 outfits. D.4's "category + colour band + formality" collapses to category.
+2. **That count is pure arithmetic** — a new top unlocks bottoms×shoes, a new bottom
+   tops×shoes. It describes the closet's shape, not her.
+3. **Nothing is structurally stranded.** `orphans()` returns EMPTY, and all 13 never-worn
+   garments already sit in 60–2,220 valid outfits (the never-worn hoodie is in **2,220**).
+   The idle $1,456 is a WEARING problem, not a combinatorics one.
+**The blocker is structural, not sample size** — more wears shrink the never-worn set but can
+never create a structural orphan, so "wait for more data" does not unblock D.4.
+
+**What makes it discriminate: count GOOD outfits, not valid ones** — the same move
+`quality_participation` already made for stranded garments. Against a quality bar (the closet's
+own median, 0.847) formality and warmth separate cleanly: a bottom at f2–f3 unlocks 209, at f5
+only 39; warmth 5 unlocks 30.
+
+**COLOUR IS DELIBERATELY EXCLUDED from `HYPOTHETICAL_DIMS`, and this is the concrete proof of
+the standing colour rule.** Held otherwise equal: black bottom **101** good outfits, white
+**208**, red 188, green 158. The harmony scorer rewards lightness contrast and penalises the
+tonal black-on-black that is her signature — so a colour-aware recommender would confidently
+tell her to buy white and avoid black, on a signal measured at **0.360 (below chance)** against
+her real wears. A wrong answer delivered with a number attached.
+
+- `engine/gaps.py`: `hypothetical_unlocks()` (sweeps category × formality × warmth, never
+  colour) and `rediscovery()` (D.5's "default to unlock, not acquire" — the best outfit she
+  ALREADY OWNS for each never-worn garment, ranked by affinity). 41 engine tests.
+- **`rediscovery()` needs an outerwear fallback pass:** `enumerate_outfits` omits outerwear by
+  default, so a never-worn COAT appears in no outfit and silently drops out of the report —
+  the one kind of garment most likely to be sitting unworn. Caught because the never-worn
+  hoodie produced no row.
+- **`/insights` sections 08–09.** 08 "Bring one back" leads (unlock); 09 "If you were adding
+  one" is explicitly framed as *not* a need, and prints the reasoning on the page rather than
+  only in the code. **D.5's ≥8-new-outfits gate is NOT used — it is meaningless here**, since
+  any bottom clears it at 220.
+- **Section 09 shows the best per CATEGORY, not the top N overall.** The sweep's leaders are
+  all the same slot at adjacent formalities (209, 209, 209, 209, 201), which compares a garment
+  against itself; across slots the numbers actually differ — bottom 209, shoes 176, top 89,
+  dress 10.
+- **NOT built: D.1 style profile** (LLM-maintained, must be user-visible and user-editable per
+  invariant #10). Needs Anthropic calls; the $0 half shipped first per the conserve-credits rule.
+
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear

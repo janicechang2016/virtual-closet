@@ -173,6 +173,59 @@ class TestGaps(unittest.TestCase):
         closet = [g("a", "top"), g("b", "top")]
         self.assertEqual(gaps.unworn(closet, [{"garment_ids": ["a"]}]), ["b"])
 
+    def test_hypothetical_never_returns_the_ghost_as_a_garment(self):
+        """The stand-in must not leak into anything the caller could display."""
+        r = gaps.hypothetical_unlocks(self.closet, categories=("bottom",))
+        for row in r["rows"]:
+            self.assertNotIn("id", row)
+            self.assertEqual(row["category"], "bottom")
+
+    def test_hypothetical_valid_count_is_category_arithmetic(self):
+        """Structural validity is slot-counting, so a new bottom pairs with every
+        top and every shoe. If this ever stops holding, hard_violations changed."""
+        r = gaps.hypothetical_unlocks(self.closet, categories=("bottom",))
+        tops = sum(1 for x in self.closet if x["category"] == "top")
+        shoes = sum(1 for x in self.closet if x["category"] == "shoes")
+        for row in r["rows"]:
+            self.assertEqual(row["valid"], tops * shoes)
+
+    def test_hypothetical_discriminates_on_formality(self):
+        """The whole point of scoring against a quality bar: a garment that
+        suits nothing in the closet must not tie with one that suits everything."""
+        closet = ([g("t%d" % i, "top", formality=2) for i in range(3)]
+                  + [g("b", "bottom", formality=2), g("s", "shoes", formality=2)])
+        r = gaps.hypothetical_unlocks(closet, categories=("bottom",))
+        by_f = {}
+        for row in r["rows"]:
+            by_f.setdefault(row["formality"], 0)
+            by_f[row["formality"]] = max(by_f[row["formality"]], row["unlocked"])
+        self.assertGreater(by_f[2], by_f[5])
+
+    def test_hypothetical_excludes_colour(self):
+        """Colour is measured below chance against her wears; it must not be a
+        swept dimension, or the report recommends white and penalises black."""
+        self.assertNotIn("colour", gaps.HYPOTHETICAL_DIMS)
+        self.assertNotIn("color", gaps.HYPOTHETICAL_DIMS)
+
+    def test_rediscovery_covers_every_unworn_garment(self):
+        closet = [g("t", "top"), g("b", "bottom"), g("s", "shoes")]
+        rows = gaps.rediscovery(closet, [{"garment_ids": ["t", "b", "s"]}])
+        self.assertEqual(rows, [])                     # nothing unworn
+        rows = gaps.rediscovery(closet, [])
+        self.assertEqual({r["id"] for r in rows}, {"t", "b", "s"})
+        for r in rows:
+            self.assertNotIn(r["id"], r["partners"])   # never suggests itself
+
+    def test_rediscovery_reaches_a_never_worn_outerwear(self):
+        """A coat appears in no outfit while with_outerwear is off, so without
+        the fallback pass the one garment most likely to sit unworn gets no
+        suggestion at all."""
+        closet = [g("t", "top"), g("b", "bottom"), g("s", "shoes"),
+                  g("coat", "outerwear")]
+        rows = gaps.rediscovery(closet, [{"garment_ids": ["t", "b", "s"]}])
+        self.assertEqual([r["id"] for r in rows], ["coat"])
+        self.assertIn("coat", rows[0]["outfit"])
+
 
 @unittest.skipUnless(os.path.exists(SNAPSHOT), "closet snapshot not dumped")
 class TestRealCloset(unittest.TestCase):

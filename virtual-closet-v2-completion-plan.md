@@ -110,7 +110,9 @@ Three ways to resolve it:
   export bundles all 9 (`asset_urls()` is generic, so `stage_render` is collected without
   changes — assets 303 → 353 files, 93 MB). 35 engine tests pass.
 
-#### B. 23 garments appear in no published look — cheap, and the best visual return
+#### B. 23 garments appear in no published look — **DROPPED 07-27, her call. Do not re-propose.**
+
+Kept below as the record of what was measured, not as pending work.
 
 The carousel has been outfits-only since 07-19, so a garment in no published look **never
 appears in the archive at all**. 23 of 58 are in that state — and 10 of them have logged wears,
@@ -183,9 +185,11 @@ that never lit up becomes obvious"* — describes acquisition, not wear.
 
 **The wear axis is not lost** — revisit it as a second mode at ~50 wears, when it can carry one.
 
-### 4.3 Design decisions already queued — resolve, don't accumulate
+### 4.3 Design decisions already queued — **DROPPED 07-27, her call. Do not re-propose.**
 
-Each was raised, looked at, and tabled. Phase 4 is where they get a yes or a no:
+Galaxy title type, non-black galaxy ground and carousel glassmorphism were each raised, looked
+at, and tabled — and are now closed rather than pending. The previews already built stay on
+disk. Original notes kept below for context only:
 
 - **Galaxy title type** — six treatments already previewed in
   `design-inspo/galaxy-title-previews/`. Pick one or close the topic.
@@ -229,7 +233,26 @@ this closet is long past.
 
 **Acceptance (v2 §9):** 10 mixed photos → ≥80% correctly detected and tagged after one pass.
 
-### 5.2 Track D — style profile + the gap-analysis math
+### 5.2 Track D — **D.4/D.5 DONE 07-27 ($0). D.1 style profile still open.**
+
+Built: `hypothetical_unlocks()` + `rediscovery()` in `engine/gaps.py`, surfaced as `/insights`
+sections 08–09, 41 engine tests. See the Track D section of `CLAUDE.md` for the measurements.
+
+**The headline finding: D.4's purchase recommender has nothing true to say about this closet,
+and waiting for wear data will not change that** — `hard_violations` is slot-counting, so
+attributes cannot discriminate on validity; `orphans()` is empty; every never-worn garment
+already sits in 60–2,220 valid outfits. Fixed by counting GOOD outfits against the closet's own
+median instead of valid ones, which makes formality and warmth discriminate honestly.
+**Colour is excluded and this is the proof of the standing rule:** held equal, black unlocks
+101 good outfits to white's 208, so a colour-aware recommender would tell her to buy white and
+avoid black — her signature — on a signal measured below chance against her wears.
+
+**Still open: D.1 style profile** — LLM-maintained from `interaction_log`, and **invariant #10
+requires it be user-visible and user-editable**. Needs Anthropic calls, so it is a gated spend.
+
+*(Original scope note below.)*
+
+### 5.2b Track D as originally scoped
 
 The last fully untouched track, and materially better now that real wear data exists.
 

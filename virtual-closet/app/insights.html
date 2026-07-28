@@ -47,6 +47,19 @@
 
   .caveat { padding:12px 24px; border-bottom:1px solid var(--line);
     color:var(--dim); font-size:11px; }
+  /* inside a module the caveat carries no border of its own — the module's own
+     hairline already closes it */
+  .mod .caveat { padding:10px 0 0; border-bottom:0; }
+
+  /* rediscovery: a garment, then the outfit that would bring it back. The
+     partners are the point, so they get the ink and the garment gets the label. */
+  .redis { display:flex; flex-direction:column; }
+  .redis .r { display:flex; align-items:baseline; gap:14px; padding:9px 0;
+    border-bottom:1px solid var(--line); }
+  .redis .r:last-child { border-bottom:0; }
+  .redis .rn { flex:0 0 210px; }
+  .redis .rw { flex:1; color:var(--dim); font-size:12px; }
+  .redis .rw b { color:var(--ink); font-weight:normal; }
 
   /* ── modular field ──────────────────────────────────────────────────
      Modules occupy a 12-column grid and are divided by hairlines, not cards:
@@ -241,6 +254,20 @@
     <span class="sub">spend, and number of garments</span></div>
   <div class="cols" id="years"></div>
   <div class="collabs up" id="yearlabs"></div>
+</div>
+<!-- D.5 resolves the sustainability tension by leading with UNLOCK. On this
+     closet that is also the only half with a true answer, so it comes first and
+     the acquire half below is explicitly conditional. -->
+<div class="mod" data-span="12">
+  <div class="h"><span class="no">08</span><h2>Bring one back</h2>
+    <span class="sub">the best outfit you already own for each garment you have never worn</span></div>
+  <div class="redis" id="redis"></div>
+</div>
+<div class="mod" data-span="12">
+  <div class="h"><span class="no">09</span><h2>If you were adding one</h2>
+    <span class="sub">not a recommendation to buy — what would fit the closet, if</span></div>
+  <div class="bars" id="hypo"></div>
+  <div class="caveat" id="hypocav"></div>
 </div>
 </div>
 
@@ -442,6 +469,45 @@ function draw(d) {
     alert: true, nameOf: r => r.name, bigOf: r => money(r.price),
     subOf: r => 'never worn · ' + r.category,
     tipOf: r => r.name + ' · never worn'});
+
+  // ── 08/09 gap report (Track D) ────────────────────────────────────────────
+  // Unlock leads; acquire is conditional. See _gap_report() for why that order
+  // is not just the plan's preference but the only honest reading of this data.
+  if (d.gaps) {
+    const G = d.gaps;
+    const rh = $('#redis'); rh.innerHTML = '';
+    G.rediscovery.forEach(r => {
+      const row = document.createElement('div'); row.className = 'r';
+      const a = document.createElement('div'); a.className = 'rn'; a.textContent = r.name;
+      const b = document.createElement('div'); b.className = 'rw';
+      b.innerHTML = 'wear it with <b>' + r.partners.join('</b> + <b>') + '</b>';
+      row.append(a, b); rh.appendChild(row);
+    });
+
+    const hmax = Math.max(...G.hypothetical.map(h => h.unlocked), 1);
+    $('#hypo').innerHTML = '';
+    // one bar per slot — the label stays short so it holds a single line, and
+    // the formality/warmth that achieved it rides in the value text
+    G.hypothetical.forEach(h => barRow($('#hypo'), {
+      label: h.category, value: h.unlocked, max: hmax,
+      text: h.unlocked + ' · formality ' + h.formality + ', warmth ' + h.warmth,
+      tipLabel: 'best ' + h.category + ': formality ' + h.formality + ', warmth '
+        + h.warmth + ' — ' + h.unlocked + ' of ' + h.valid + ' new outfits clear the bar'}));
+
+    // The honest framing, stated on the page and not only in the code: nothing
+    // is stranded, so this answers "what would fit", never "what do I need".
+    const w = G.hypothetical_worst;
+    $('#hypocav').textContent =
+      'nothing in this closet is structurally stranded — ' + G.structural_orphans
+      + ' garments combine into almost nothing, and every never-worn piece already '
+      + 'sits in dozens of valid outfits. so this is not a need. counted as outfits '
+      + 'scoring at or above the closet’s own median (' + G.min_score + '), '
+      + 'since on structure alone every bottom ties at ' + G.hypothetical[0].valid
+      + '. colour is deliberately excluded: it ranks black last and white first, '
+      + 'against a signal measured below chance on your actual wears.'
+      + (w ? ' worst fit: ' + w.category + ' at formality ' + w.formality
+             + ', warmth ' + w.warmth + ' — ' + w.unlocked + ' good outfits.' : '');
+  }
 
   // Table view — every value above is reachable without hovering anything.
   const cols = ['garment', 'category', 'price', 'wears', 'cost / wear', 'bought'];

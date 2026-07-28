@@ -969,6 +969,58 @@ def insights_data():
         # ordered so the unworn block reads as a block
         "units": sorted(rows, key=lambda r: (r["wears"], r["category"] or "", r["id"])),
         "all_rows": sorted(rows, key=lambda r: (r["wears"], -(r["price"] or 0))),
+        "gaps": _gap_report(data, garments, looks, names),
+    }
+
+
+def _gap_report(data, garments, looks, names):
+    """Track D.4/D.5. Leads with UNLOCK and treats acquire as conditional.
+
+    The ordering is the plan's own resolution of the sustainability tension
+    (D.5) and, on this closet, it is also the only honest one: `orphans()`
+    returns EMPTY and every never-worn garment already sits in 60 to 2,220 valid
+    outfits, so nothing is structurally stranded and no purchase would unlock
+    anything that is stuck. The idle value is a wearing problem.
+
+    So the acquire half ships as "if you were adding one, this is what fits the
+    closet" — never as a need — and D.5's >=8-new-outfits gate is not used,
+    because it is meaningless here: any bottom trivially clears it at 220.
+    """
+    if str(ENGINE_DIR) not in sys.path:
+        sys.path.insert(0, str(ENGINE_DIR))
+    from engine import gaps as G, preference
+
+    worn_outfits = looks + [o for o in data["outfits"] if o.get("source") == "worn"]
+    aff = preference.affinity(garments, looks, [])
+    rediscover = G.rediscovery(garments, worn_outfits, affinity=aff)
+    hypo = G.hypothetical_unlocks(garments)
+
+    def nm(gid):
+        return names.get(gid, gid)
+
+    # BEST PER CATEGORY, not the top N overall. The sweep's leaders are all the
+    # same slot at adjacent formalities — five bars reading 209, 209, 209, 209,
+    # 201, which compares a garment against itself. The comparison worth drawing
+    # is across slots, where the numbers genuinely differ and say something about
+    # the closet's shape.
+    best_by_cat = {}
+    for row in hypo["rows"]:
+        cur = best_by_cat.get(row["category"])
+        if cur is None or row["unlocked"] > cur["unlocked"]:
+            best_by_cat[row["category"]] = row
+
+    return {
+        "rediscovery": [{
+            "id": r["id"], "name": nm(r["id"]),
+            "partners": [nm(p) for p in r["partners"]],
+            "score": r["score"],
+        } for r in rediscover[:8]],
+        "rediscovery_total": len(rediscover),
+        "hypothetical": sorted(best_by_cat.values(),
+                               key=lambda r: -r["unlocked"]),
+        "hypothetical_worst": hypo["rows"][-1] if hypo["rows"] else None,
+        "min_score": hypo["min_score"],
+        "structural_orphans": len(G.orphans(garments)),
     }
 
 
