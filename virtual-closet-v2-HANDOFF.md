@@ -105,10 +105,13 @@ page fetches, and `asset_urls()` walking that payload or its images 404.
    API + site deployed at `e282c58` · acceptance run passed against production (reversed swap
    and unknown occasion both 400; valid wear round-trips; undo removes wear + created outfit;
    restored to 15 wears / 57 outfits / 0 orphans).
-   **THE ONE THING OUTSTANDING IS HERS:** occasion on the 15 existing wears, which only she can
-   supply. `server/scripts/wear_form.html` is generated and waiting —
-   fill it, DOWNLOAD JSON, then `apply_wear_context.py <file>` and run the SQL it prints.
-   Until then `with_occasion` is 0 and the context work has no signal in it yet.
+   **BACKFILL DONE 07-28 — 15/15 wears carry occasion and weather.** She filled the form; all
+   15 applied by `wear_id`. Mix: dinner 6, day_out 4, work_home 3, work_out 2.
+   **First finding: occasion removes 59% of the uncertainty about footwear** (yello-heels
+   worn 5×, all dinner; sneakers 5×, never dinner) — the first real account of the rotation
+   shortcut. Descriptive only at n=15. It also partly contradicts her weekday/WFH rule; see
+   the "Wear CONTEXT" section of `CLAUDE.md`. **From here the swap is the field that moves the
+   number, and it only accrues from the next wear onward.**
 
 1. **HER STATED NEXT STEP (07-27): evaluate where things stand, then tweak.** The wear track
    is DONE and deployed — 15 wears logged, snapshot refreshed, pages reading them. What the
@@ -189,6 +192,20 @@ strongest candidate, so raise it with her rather than treating it as closed.**
 - **A stale `closet_snapshot.json` looks exactly like unbuilt features.** Phase 3c appeared
   "not done" for a day; the code had always been there and the snapshot was old. When new data
   "changes nothing downstream", re-dump before reading code.
+- **THE 07-27 MEASUREMENT SCRIPTS ARE GONE (confirmed 07-28).** `heldout_wear_test.py` and
+  `loo_wear_test.py` lived in an untracked `scratchpad/` that no longer exists. The headline
+  numbers (0.660 / 0.555, the leave-one-out table) **cannot be reproduced today**, and Phase 6
+  has no harness to re-measure with. Anything worth quoting later belongs in `server/scripts/`
+  and in git, not in scratchpad.
+- **`dump_closet.py` FLATTENS ITS QUERY TO ONE LINE** before handing it to psql, so a `--`
+  comment inside `QUERY` silently swallows the rest of the statement. Use no line comments
+  there. Cost a broken dump on 07-28.
+- **`IS DISTINCT FROM` treats two NULLs as NOT distinct**, so a CHECK written that way rejects
+  every row where both columns are null. Broke migration 0006's first run against all 15
+  existing wears; written as "null, or different" instead.
+- **asyncpg returns jsonb as TEXT unless a codec is registered.** `GET /wear` returned the
+  string `"{}"` — which is truthy, so an empty weather read as a present one. Caught only by
+  the acceptance run, never by the tests.
 - **Run the engine tests AFTER re-dumping the snapshot, not before.** `TestRealCloset` reads
   it, so a suite that passes pre-dump can fail post-dump — this shipped a red test to `main`
   on 07-27.

@@ -170,7 +170,14 @@ is consistent across all four cells; the magnitude is not established. Revisit a
   for the blame data), or context (occasion/season/weather — a Tuesday is a context, and
   `outfit.context` already exists), or frequency-NORMALISED affinity that down-weights
   repeats. Those are the candidates; none is built.
-- Repro: `scratchpad/heldout_wear_test.py`, `scratchpad/loo_wear_test.py` (session 07-27).
+- **REPRO IS LOST (confirmed 07-28).** These numbers were produced by
+  `scratchpad/heldout_wear_test.py` and `scratchpad/loo_wear_test.py`, which were never
+  tracked — there is no `scratchpad/` directory and nothing in git history. **So 0.660 / 0.555
+  and the whole leave-one-out table cannot currently be reproduced or extended**, and Phase 6's
+  "re-measure at ~50 wears" has no harness: a rebuild risks not matching the original method,
+  which would make the before/after comparison meaningless. Rebuilding this as TRACKED code,
+  reproducing the 07-27 figures as its acceptance test, is the highest-value $0 work available
+  while wear data accumulates. Do not let the next measurement be the thing that discovers this.
 
 **THE ENGINE CANNOT SUGGEST 4 OF HER 15 REAL OUTFITS — and it is not a constraints
 failure.** All four return `is_valid: True` with zero hard violations. Three are the same
@@ -615,6 +622,37 @@ so nothing here changes a ranking. It changes what the next measurement has to w
   each `meta.json`, not the snapshot, which carries attributes only.
 - The generated form addresses rows by `wear_id` where available, else `(outfit_id, worn_on)` —
   unique in practice at one wear a day, and the generated SQL RAISEs rather than trusting it.
+
+**LIVE AND BACKFILLED 07-28. 15/15 wears carry occasion AND weather.** Mix: dinner 6, day_out 4,
+work_home 3, work_out 2. Applied by `wear_id`, all 15, no fallback matching needed.
+
+**THE FIRST FINDING FROM OCCASION, and it is the best explanation yet for why nothing predicts
+her wears: OCCASION REMOVES 59% OF THE UNCERTAINTY ABOUT FOOTWEAR.** H(shoe) 2.68 bits ->
+H(shoe|occasion) 1.11, over 8 distinct shoes in 15 wears.
+
+| occasion | n | shoes |
+|---|---|---|
+| dinner | 6 | **yello-heels ×5**, flats ×1 |
+| work_home | 3 | **sneakers ×3** (three different pairs) |
+| day_out | 4 | flats ×2, boots, sneakers |
+| work_out | 2 | salomon, loafers |
+
+- **`50-yello-heels` is worn 5 times and ALL FIVE are dinner. Sneakers are worn 5 times and
+  NEVER to dinner.** This is D.1's "footwear decides everything" (29 of 44 rejections blame a
+  shoe) with the missing variable supplied, and it is the first concrete account of the
+  ROTATION SHORTCUT: affinity read yello-heels as a favourite because they are frequent. They
+  are not a favourite, they are a DINNER SHOE. Frequency was standing in for context.
+- **DESCRIPTIVE, NOT INFERENTIAL — n=15, at most 6 per occasion.** Do NOT build an
+  occasion-conditioned ranker on this. It is a reason to keep collecting, not a result.
+- **IT ALSO CORRECTS A STANDING RULE, and the correction matters.** `style_rules.txt` says
+  "weekday wears are work-from-home ... anything logged Mon–Fri tends to be comfort-first".
+  Of 11 weekday wears: **3 work_home, 2 work_out, 3 dinner, 3 day_out** — and of the 5 days
+  that were work at all, 3 were from home. The rule holds for HOW SHE WORKS, not for what a
+  weekday IS; 6 of 11 weekdays were not work. **D.1's profile leaned on the stronger reading**
+  to reinterpret her sneaker wears as comfort rather than taste, and that reading is now
+  supported for about a quarter of weekdays. Her file, her call to amend — recorded, not edited.
+- Weather landed but says nothing yet: 15 wears, **2 distinct conditions** (rain/cloud) across
+  one humid NYC fortnight. Its value is that it now accrues for free.
 
 ## Her rules run in the engine (2026-07-28, $0) — the FIRST time her words change `/stylist`
 
