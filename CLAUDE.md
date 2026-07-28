@@ -431,8 +431,29 @@ CDP-verified across a look with a render and one without — the mirror held 760
     supplied references were monochrome. Palette unchanged.
   - Worn edges from look co-occurrence; could-pair edges from the constraint engine capped at
     3/node (uncapped is ~520 edges — the hairball the plan warns about).
-  - NOT built: time scrubber (wear_log empty), LLM cluster labels (paid), the references'
-    poetic text fragments (their conceit, would be costume here).
+  - **TIME SCRUBBER BUILT 07-27 (E.4) — and it runs on ACQUISITION, not wear.** The plan
+    specs "replaying 12 months of wear history", but the wear log is 15 rows, exactly one per
+    day across 2026-07-13..27: replaying it is a ticker, not a constellation. Purchase dates
+    span **2018-10 → 2026-07, 27 distinct months**, and carry the real shape — 27 garments
+    over seven years, then **31 in 2026 alone** (+14 in April). E.4's own stated payoff, "a
+    March purchase that never lit up becomes obvious", is a claim about acquisition. Node
+    `acquired` + a `months` list ship in `/api/galaxy`.
+    **Presence COMPOSES with the load-in reveal rather than replacing it** — folded into the
+    single `rv` value both loops already multiply by, so nodes, edges, halos and plates gate
+    at once and edges needed no special case (they were already `min()` across both endpoints).
+    **Positions are NOT recomputed while scrubbing:** absent nodes stay in the force sim, so
+    garments arrive into the place they will finally occupy and the field fills in instead of
+    reflowing under the cursor. Playback advances on the clamped frame delta (~230ms/month,
+    ~6s total), so it runs at the same speed at 120Hz as at 60Hz.
+    **Two honesty constraints, both load-bearing:** the oxblood ring is TODAY's wear state, not
+    that month's — wear history at a past date is unknown, and the page says so in a standing
+    caveat line; and the never-worn panel is scoped to garments owned at the cutoff, since
+    listing something she had not bought yet answers for a closet that did not exist. An empty
+    panel says "none owned at this point" — a header with nothing under it reads as a failed
+    load rather than an empty set (E.6's "empty graph reads as broken", in miniature).
+    Opens at the last month, so the page looks exactly as it did before the scrubber existed.
+  - NOT built: LLM cluster labels (paid), the references' poetic text fragments (their
+    conceit, would be costume here).
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear

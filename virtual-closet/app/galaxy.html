@@ -48,6 +48,17 @@
   .chip { border:1px solid var(--graphite); color:var(--dim); background:none;
     padding:5px 10px; cursor:pointer; font:inherit; }
   .chip.on { border-color:var(--paper); color:var(--paper); }
+  /* time scrubber — instrumentation, same weight as the other controls. The
+     readout is fixed-width so counting up does not shift the row; the note is a
+     standing caveat, not a transient message, so it holds its line always. */
+  #timectl input[type=range] { width:190px; }
+  #timectl .treadout { color:var(--paper); white-space:nowrap;
+    font-variant-numeric:tabular-nums; min-width:150px; }
+  #timectl.scrubbing .treadout { text-shadow:0 0 9px rgba(245,243,239,.5); }
+  .tnote { color:var(--graphite); letter-spacing:.12em; text-transform:none;
+    white-space:nowrap; }
+  #panel .orow.empty { color:var(--graphite); cursor:default; }
+  #panel .orow.empty:hover { color:var(--graphite); text-shadow:none; }
 
   /* the glass panel — this is the one surface on the site with a dark field
      behind it, which is the whole reason glassmorphism was re-homed here */
@@ -133,6 +144,15 @@
   <div class="ctl mono"><label for="lines">Line weight</label>
     <input id="lines" type="range" min="0" max="100" value="60"></div>
   <div class="chips mono" id="chips"></div>
+  <!-- TIME SCRUBBER (plan E.4). Runs on ACQUISITION, not wear — see the note in
+       galaxy_data(). Defaults to the last month so the page opens exactly as it
+       did before: the scrub is something you reach for, not a state you land in. -->
+  <div class="ctl mono" id="timectl">
+    <button class="chip" id="tplay" title="replay the closet accumulating">play</button>
+    <input id="time" type="range" min="0" max="0" value="0">
+    <span id="tread" class="treadout"></span>
+  </div>
+  <div class="mono tnote" id="tnote">rings mark never-worn today, not that month</div>
 </div>
 
 <div id="panel" class="mono">
@@ -177,7 +197,19 @@ addEventListener('resize', resize); resize();
 function buildOrphans() {
   const host = document.getElementById('orphans');
   host.innerHTML = '';
-  NODES.filter(n => n.orphan)
+  // scoped to what is on screen: while scrubbed back, listing a garment she had
+  // not bought yet would answer for a closet that did not exist
+  const rows = NODES.filter(n => n.orphan && presentAt(n));
+  if (!rows.length) {
+    // a header with nothing under it reads as a failure to load rather than as
+    // an empty set — say so, in the panel's own voice
+    const e = document.createElement('div');
+    e.className = 'orow empty';
+    e.textContent = NODES.length ? 'none owned at this point' : '—';
+    host.appendChild(e);
+    return;
+  }
+  rows
     .sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, 8)
     .forEach(n => {
       const row = document.createElement('div'); row.className = 'orow';
@@ -241,6 +273,25 @@ fetch('/api/galaxy').then(r => r.json()).then(d => {
     if (selected) select(selected);
   });
   MoneyLock.mount(document.getElementById('lockhost'));
+
+  // time scrubber over acquisition months; opens at the last one, so the page
+  // looks exactly as it did before the scrubber existed
+  MONTHS = d.months || [];
+  const slider = document.getElementById('time');
+  if (MONTHS.length > 1) {
+    slider.max = MONTHS.length - 1;
+    slider.value = MONTHS.length - 1;
+    slider.addEventListener('input', () => { setPlaying(false); setTime(+slider.value); });
+    document.getElementById('tplay').onclick = () => {
+      if (playing) { setPlaying(false); return; }
+      if (atEnd()) setTime(0);        // replay from the beginning
+      setPlaying(true);
+    };
+    setTime(MONTHS.length - 1);
+  } else {
+    document.getElementById('timectl').style.display = 'none';
+    document.getElementById('tnote').style.display = 'none';
+  }
 
   // plain panel: the orphans, listed — the graph explores, this answers
   buildOrphans();
@@ -324,6 +375,63 @@ function revealOf(n, now) {
   return e / REVEAL_MS;
 }
 
+// ── time scrubber: the closet accumulating (plan E.4) ───────────────────────
+// Runs on ACQUISITION. The wear log holds 15 rows, one per day across a single
+// fortnight — replaying that is a ticker. Purchase dates span 2018-10..2026-07
+// and carry the shape worth watching: 27 garments over seven years, then 31 in
+// 2026 alone. E.4's own promise, "a March purchase that never lit up", is a
+// claim about acquisition.
+//
+// Presence COMPOSES with the load-in reveal instead of replacing it: everything
+// downstream already multiplies by `rv`, so folding the gate into that one value
+// gates nodes, edges, halos and plates at once. Edges need no special case —
+// they take min() across both endpoints, and an edge cannot precede its garments.
+//
+// Positions are NOT recomputed while scrubbing. Absent nodes stay in the force
+// sim, so garments arrive into the place they will finally occupy and the
+// constellation fills in rather than reflowing under the cursor.
+let MONTHS = [], timeIdx = 0, playing = false, playAcc = 0;
+const ARRIVE_MS = 520, PLAY_MS_PER_MONTH = 230;
+
+const cutoff = () => (MONTHS.length ? MONTHS[timeIdx] : null);
+const atEnd = () => timeIdx >= MONTHS.length - 1;
+
+function presentAt(n) {
+  const c = cutoff();
+  if (!c || !n.acquired) return true;   // no timeline, or an undated garment
+  return n.acquired <= c;               // 'YYYY-MM' compares lexicographically
+}
+
+function timeGate(n, now) {
+  if (!presentAt(n)) return 0;
+  if (!n.arrivedT) return 1;
+  const e = now - n.arrivedT;
+  return e >= ARRIVE_MS ? 1 : e / ARRIVE_MS;
+}
+
+function setTime(i, now) {
+  const before = new Set(NODES.filter(presentAt).map(n => n.id));
+  timeIdx = Math.max(0, Math.min(MONTHS.length - 1, i));
+  now = now || performance.now();
+  // only newly-arrived garments ease in; the ones already there must not re-ignite
+  for (const n of NODES) if (presentAt(n) && !before.has(n.id)) n.arrivedT = now;
+  const slider = document.getElementById('time');
+  if (slider && +slider.value !== timeIdx) slider.value = timeIdx;
+  const owned = NODES.filter(presentAt).length;
+  document.getElementById('tread').textContent =
+    `${cutoff() || '—'} · ${owned} of ${NODES.length}`;
+  document.getElementById('timectl')
+    .classList.toggle('scrubbing', !atEnd());
+  buildOrphans();     // the panel answers for the moment on screen
+}
+
+function setPlaying(on) {
+  playing = on;
+  playAcc = 0;
+  document.getElementById('tplay').textContent = on ? 'pause' : 'play';
+  document.getElementById('tplay').classList.toggle('on', on);
+}
+
 function draw(now) {
   now = now || performance.now();
   ctx.save();
@@ -343,7 +451,8 @@ function draw(now) {
   // emit any.
   ctx.globalCompositeOperation = 'lighter';
   for (const e of EDGES) {
-    const rv = Math.min(revealOf(e.s, now), revealOf(e.t, now));
+    const rv = Math.min(revealOf(e.s, now), revealOf(e.t, now),
+                        timeGate(e.s, now), timeGate(e.t, now));
     if (rv <= 0) continue;                     // an edge cannot precede its nodes
     const off = dimmed(e.a) || dimmed(e.b);
     const worn = e.kind === 'worn';
@@ -372,7 +481,7 @@ function draw(now) {
   ctx.globalCompositeOperation = 'source-over';
 
   for (const n of NODES) {
-    const rv = revealOf(n, now);
+    const rv = Math.min(revealOf(n, now), timeGate(n, now));
     if (rv <= 0) continue;
     const r = radius(n), off = dimmed(n.id);
     // ease the plate up out of the ground, not in from white
@@ -862,6 +971,16 @@ function tick(now) {
   motion += (motionTarget - motion) * 0.06;
   if (settle > 0) { settle--; step(); }
   else { drift(); step(); }
+  // playback advances on the clamped delta, not per frame, so the replay runs at
+  // the same speed on a 120Hz screen as on a 60Hz one
+  if (playing) {
+    playAcc += dt;
+    while (playAcc >= PLAY_MS_PER_MONTH) {
+      playAcc -= PLAY_MS_PER_MONTH;
+      if (atEnd()) { setPlaying(false); break; }
+      setTime(timeIdx + 1, now);
+    }
+  }
   draw(now);
   if (GLASS_GL) GLASS_GL.render(now);   // strictly after the field is complete
   requestAnimationFrame(tick);
@@ -875,6 +994,7 @@ function hit(px, py) {
   const p = toWorld(px, py);
   for (let i = NODES.length - 1; i >= 0; i--) {
     const n = NODES[i], r = radius(n);
+    if (!presentAt(n)) continue;      // a garment she did not own yet is not there to click
     if (Math.abs(p.x - n.x) <= r && Math.abs(p.y - n.y) <= r) return n;
   }
   return null;

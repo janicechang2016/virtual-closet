@@ -792,6 +792,13 @@ def galaxy_data(potential_per_node=3):
             "lab": (cols[0]["lab"] if cols else [50, 0, 0]),
             "wears": wears.get(g["id"], 0),
             "price": (g.get("purchase") or {}).get("price_usd"),
+            # acquisition month (YYYY-MM) drives the time scrubber (plan E.4).
+            # The WEAR log cannot: it holds 15 rows, one per day across a single
+            # fortnight, so replaying it is a ticker, not a constellation. The
+            # purchase dates span 2018-10 -> 2026-07 and carry the real shape —
+            # and E.4's own stated payoff ("a March purchase that never lit up")
+            # is a statement about acquisition, not about wear.
+            "acquired": (g.get("purchase") or {}).get("date"),
             "img": _stylist_thumb(g["id"])[0],
         })
 
@@ -843,6 +850,7 @@ def galaxy_data(potential_per_node=3):
     return {
         "nodes": nodes,
         "edges": edges,
+        "months": sorted({n["acquired"] for n in nodes if n.get("acquired")}),
         "stats": {
             "garments": len(nodes),
             "orphans": sum(1 for n in nodes if n["orphan"]),
@@ -851,6 +859,7 @@ def galaxy_data(potential_per_node=3):
             "looks": len(looks),
             "logged_wears": _logged_wears(data),
             "dark_nodes": sum(1 for n in nodes if n["lab"][0] < 25),
+            "undated": sum(1 for n in nodes if not n.get("acquired")),
         },
     }
 

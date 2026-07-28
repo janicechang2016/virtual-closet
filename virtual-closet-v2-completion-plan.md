@@ -103,9 +103,9 @@ Three ways to resolve it:
   cap $25. All 9 QA'd on a paired contact sheet against their published counterparts; fidelity
   holds — same garments, colours and construction in every pair, including the difficulty-5
   draped maxi (look 012) and the 4-item stack (look 015).
-- **OPEN, her call:** look 018's published render is a deliberate **hood-up** variant; the new
-  front twin has the hood **down**. Faithful to the garment, but archive and fitting room now
-  differ on that one look. $0.059 to redo with a hood-up note.
+- **CLOSED 07-27 (her call): the hood stays DOWN.** Look 018's published render is a deliberate
+  hood-up variant and the fitting-room twin is hood-down; the two differ on purpose. Do not
+  re-render it to match.
 - Verified through the real door (CDP, localStorage handoff → `/fitting-room`), and the static
   export bundles all 9 (`asset_urls()` is generic, so `stage_render` is collected without
   changes — assets 303 → 353 files, 93 MB). 35 engine tests pass.
@@ -163,14 +163,25 @@ stay on the front pose — which catches **40-realisation-sheer-top (4)** and
 **Sequence:** pilot one look → she judges → approved batch → QA on contact sheets → commit.
 Same loop as the 58-garment batch; the pilot is what caught the 10 prompt failures there.
 
-### 4.2 Galaxy time scrubber (plan E.4) — $0
+### 4.2 Galaxy time scrubber (plan E.4) — **DONE 07-27, $0**
 
-Previously impossible because `wear_log` was empty; it now carries 15 dated rows. Replaying
-wear history is what turns `/galaxy` from decoration into the "second brain" the plan
-describes, and it is the last acceptance item E never met.
+**Built on ACQUISITION, not wear — her call, after the data was checked.** The wear log turned
+out to be 15 rows, exactly one per day across a single fortnight; replaying that is a ticker.
+Purchase dates span 2018-10 → 2026-07 across 27 months and carry the shape worth watching:
+27 garments over seven years, then **31 in 2026 alone**. E.4's own promise — *"a March purchase
+that never lit up becomes obvious"* — describes acquisition, not wear.
 
-Small caveat worth stating in the UI: 15 wears over a short window is a thin scrub. Design it
-to read honestly at low density rather than implying twelve months of history.
+- Presence composes into the existing `rv` reveal value, so nodes, edges, halos and plates gate
+  together; edges needed no special case. Positions are not recomputed while scrubbing, so the
+  field fills in rather than reflowing. Playback ~230ms/month (~6s), on the clamped delta.
+- **Honesty constraints:** the oxblood ring is today's state, not that month's (said in a
+  standing caveat line); the never-worn panel is scoped to garments owned at the cutoff; an
+  empty panel says so rather than showing a bare header.
+- Verified over CDP on a real clock (never `--virtual-time-budget`): monotonic 1 → 33 → 58,
+  edges 0 → 26 → 102, future garments unclickable, playback terminates and resets its button.
+  35 engine tests pass; the deployed payload carries all 27 months.
+
+**The wear axis is not lost** — revisit it as a second mode at ~50 wears, when it can carry one.
 
 ### 4.3 Design decisions already queued — resolve, don't accumulate
 
