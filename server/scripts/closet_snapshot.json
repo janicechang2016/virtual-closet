@@ -3842,8 +3842,17 @@
    "id": "b7315df7-9b8f-4e58-a64f-80b40e7c9a60",
    "outfit_id": "2eebb0b8-6591-4a0a-8e30-4eeb285e8141",
    "worn_on": "2026-07-13",
-   "occasion": null,
-   "weather": {},
+   "occasion": "work_out",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 51,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.3,
+    "conditions": "rain",
+    "temp_max_c": 29.9,
+    "temp_min_c": 19.6
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3851,8 +3860,17 @@
    "id": "0cf6b986-d872-4b58-bfab-ff71646b83d5",
    "outfit_id": "37acd301-722c-49c8-b878-bc5081f33156",
    "worn_on": "2026-07-14",
-   "occasion": null,
-   "weather": {},
+   "occasion": "work_home",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 3,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.0,
+    "conditions": "cloud",
+    "temp_max_c": 34.2,
+    "temp_min_c": 21.4
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3860,8 +3878,17 @@
    "id": "f395f66b-8036-4a1b-8953-d23b25d4dfc3",
    "outfit_id": "a25a8539-214a-434d-b628-62e2cc01334d",
    "worn_on": "2026-07-15",
-   "occasion": null,
-   "weather": {},
+   "occasion": "work_home",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 53,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.7,
+    "conditions": "rain",
+    "temp_max_c": 36.9,
+    "temp_min_c": 25.5
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3869,8 +3896,17 @@
    "id": "4b9425fc-5c31-40f8-938c-3be4ca99b2c7",
    "outfit_id": "858ce733-06be-4c00-8618-695b7b663a12",
    "worn_on": "2026-07-16",
-   "occasion": null,
-   "weather": {},
+   "occasion": "dinner",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 51,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.4,
+    "conditions": "rain",
+    "temp_max_c": 33.2,
+    "temp_min_c": 23.5
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3878,8 +3914,17 @@
    "id": "5c822f66-dbaa-48c2-a6a9-fe2bd4699446",
    "outfit_id": "a7a667cc-acf9-474d-9621-ce1bac27d0e4",
    "worn_on": "2026-07-17",
-   "occasion": null,
-   "weather": {},
+   "occasion": "dinner",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 3,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.0,
+    "conditions": "cloud",
+    "temp_max_c": 31.3,
+    "temp_min_c": 21.7
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3887,8 +3932,17 @@
    "id": "eaf0863e-2f88-4f29-9bdf-3e6b6883fe97",
    "outfit_id": "a91bc510-5577-4f42-81aa-0c7bc2c14297",
    "worn_on": "2026-07-18",
-   "occasion": null,
-   "weather": {},
+   "occasion": "dinner",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 63,
+    "source": "open-meteo/archive",
+    "precip_mm": 29.5,
+    "conditions": "rain",
+    "temp_max_c": 27.0,
+    "temp_min_c": 21.8
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3896,8 +3950,17 @@
    "id": "c504b743-f3f4-4d30-927d-559d6f7021d5",
    "outfit_id": "9de4fee9-d3c8-450f-a478-f9ee7c08fab5",
    "worn_on": "2026-07-19",
-   "occasion": null,
-   "weather": {},
+   "occasion": "day_out",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 61,
+    "source": "open-meteo/archive",
+    "precip_mm": 1.9,
+    "conditions": "rain",
+    "temp_max_c": 26.9,
+    "temp_min_c": 21.8
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3905,8 +3968,17 @@
    "id": "f796f729-ab0c-4eea-a45a-60090a06f212",
    "outfit_id": "dd67b4b8-4551-43fe-ba02-fb273c177850",
    "worn_on": "2026-07-20",
-   "occasion": null,
-   "weather": {},
+   "occasion": "day_out",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 2,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.0,
+    "conditions": "cloud",
+    "temp_max_c": 29.1,
+    "temp_min_c": 16.8
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3914,8 +3986,17 @@
    "id": "8c2fdcd2-4085-445e-a76e-7341dfa42232",
    "outfit_id": "409c2d60-105d-4435-97b9-45c4ab194663",
    "worn_on": "2026-07-21",
-   "occasion": null,
-   "weather": {},
+   "occasion": "day_out",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 65,
+    "source": "open-meteo/archive",
+    "precip_mm": 20.9,
+    "conditions": "rain",
+    "temp_max_c": 28.2,
+    "temp_min_c": 21.5
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3923,8 +4004,17 @@
    "id": "10f674d2-ebaf-4427-a6d2-377e46bc3b14",
    "outfit_id": "d2663e4e-3130-4d30-acc3-2fcca1813d99",
    "worn_on": "2026-07-22",
-   "occasion": null,
-   "weather": {},
+   "occasion": "dinner",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 51,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.4,
+    "conditions": "rain",
+    "temp_max_c": 30.0,
+    "temp_min_c": 22.1
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3932,8 +4022,17 @@
    "id": "3fa9d937-0a89-4831-82dd-8f857b11ada0",
    "outfit_id": "d8b086b4-d9f5-49a5-87d3-37fff34171c6",
    "worn_on": "2026-07-23",
-   "occasion": null,
-   "weather": {},
+   "occasion": "work_out",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 3,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.0,
+    "conditions": "cloud",
+    "temp_max_c": 27.9,
+    "temp_min_c": 17.6
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3941,8 +4040,17 @@
    "id": "09ebd301-b405-40f7-b2ba-c41e69a8654a",
    "outfit_id": "d2b1c21c-417b-41c7-8d9b-9916bdf3e8a5",
    "worn_on": "2026-07-24",
-   "occasion": null,
-   "weather": {},
+   "occasion": "day_out",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 3,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.0,
+    "conditions": "cloud",
+    "temp_max_c": 28.0,
+    "temp_min_c": 17.5
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3950,8 +4058,17 @@
    "id": "5b7ca32c-e16f-4c29-90b6-7cc9eb8b741d",
    "outfit_id": "1a290369-9de6-4363-bfb8-ffc06cda7285",
    "worn_on": "2026-07-25",
-   "occasion": null,
-   "weather": {},
+   "occasion": "dinner",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 3,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.0,
+    "conditions": "cloud",
+    "temp_max_c": 27.6,
+    "temp_min_c": 17.8
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3959,8 +4076,17 @@
    "id": "0a1ff94a-1ac4-439a-a182-ecff3de84c4a",
    "outfit_id": "ee8e0c67-7cc2-4302-8e4c-1b9c29bd07ce",
    "worn_on": "2026-07-26",
-   "occasion": null,
-   "weather": {},
+   "occasion": "dinner",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 51,
+    "source": "open-meteo/archive",
+    "precip_mm": 0.4,
+    "conditions": "rain",
+    "temp_max_c": 29.7,
+    "temp_min_c": 17.2
+   },
    "nearly_wore": null,
    "instead_of": null
   },
@@ -3968,8 +4094,17 @@
    "id": "2ed96952-eea8-49c4-ac9e-315005b0a35e",
    "outfit_id": "37d15d7e-01e3-4f5f-bc37-d295e457c837",
    "worn_on": "2026-07-27",
-   "occasion": null,
-   "weather": {},
+   "occasion": "work_home",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 55,
+    "source": "open-meteo/archive",
+    "precip_mm": 3.6,
+    "conditions": "rain",
+    "temp_max_c": 30.3,
+    "temp_min_c": 20.6
+   },
    "nearly_wore": null,
    "instead_of": null
   }
