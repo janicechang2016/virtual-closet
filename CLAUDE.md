@@ -654,10 +654,17 @@ H(shoe|occasion) 1.11, over 8 distinct shoes in 15 wears.
 - Weather landed but says nothing yet: 15 wears, **2 distinct conditions** (rain/cloud) across
   one humid NYC fortnight. Its value is that it now accrues for free.
 
-## GALAXY LIGHT-GROUND PREVIEW (`?ground=light`, 2026-07-29, $0) — PREVIEW, NOT A DECISION
+## GALAXY IS NOW A LIGHT GROUND (2026-07-29, $0) — HER CALL, SHIPPED
 
-Her question: what does it look like inverted — white ground, black nodes, consistent with the
-site's white void and black hairlines. **The default is untouched**; this is one query param.
+**`/galaxy` renders black-on-paper by default.** The near-black Ink field is kept, not
+deleted — **`?ground=dark` restores it** — per the standing rule that rejected variants keep a
+way back. Note this supersedes the page's own opening comment about an "Ink ground"; the
+tokens are now inverted at the root.
+
+**THE THEME IS SET IN A BLOCKING `<head>` SCRIPT, and that is load-bearing.** The header,
+legend and panel are markup above the main script, so applying the class down there rendered
+the dark chrome and then flipped it. One decision point: the head script sets
+`ground-light`, and the main script READS that class rather than re-deriving it from the URL.
 
 - **THE DITHER NEEDS NO NEW MATHS, AND THAT IS THE ARGUMENT FOR IT.** Coverage is already
   `0.30 + 0.70 * (1 - lum)` — dense for dark. On the ink ground those dense dots must be drawn
@@ -675,11 +682,23 @@ site's white void and black hairlines. **The default is untouched**; this is one
   bend; the empty-strip problem the gathering fix solved is polarity-independent. It renders as
   flutes of INK rather than flutes of light, arguably with more tonal range, because ink on
   paper spans 0–100% while light on ink is capped by the field's own brightness.
-- **What is genuinely lost: the emitted-light quality.** Dark reads as an instrument, light
-  reads as an engraved plate. The never-worn row hover had to become ink WEIGHT instead of a
-  glow, because paper cannot emit. That is the actual aesthetic decision, not a bug.
-  **Oxblood never-worn rings read better on white** and match /insights, where oxblood already
-  sits on white as the alert token.
+- **What was traded, knowingly: the emitted-light quality.** Dark read as an instrument, light
+  reads as an engraved plate. The never-worn row hover became ink WEIGHT instead of a glow,
+  because paper cannot emit. **Oxblood never-worn rings read better on white** and match
+  /insights, where oxblood already sits on white as the alert token.
+- **THE RIGHT-HAND COLUMN CAME IN TWO NOTCHES: 334 -> 254px** (23.9% of a 1400px viewport down
+  to 18.1%). The width is **DERIVED, not chosen** — it is `PANEL_W + GLASS_INSET * 2`, so
+  narrowing the glass alone would leave `#panel` and `#detail` hanging off the surface they sit
+  on. Change either constant and the glass follows; the panels read them back as CSS custom
+  properties. This was the answer to "is the glass good UX practice" — measured, the column was
+  23.9% of the viewport with a panel on only 22.7% of it, so ~77% was bare refraction carrying
+  no information. Narrowing kept the signature and the compositional job (the panels get a
+  ground) without the waste, and did not reverse the deliberate standing-column decision.
+- **At 230px the panel no longer fitted `.mono`'s .16em tracking** — three of eight never-worn
+  rows wrapped, plus the header. Tracking is the cheapest width to give back on short labels,
+  so the panel is set at .07em and long names now TRUNCATE with an ellipsis rather than
+  wrapping. That is a real trade on the field she scans to locate a garment, made explicitly
+  and reversible in one line.
 - **A HALF-TOKENISED PALETTE CANNOT BE THEMED, and it failed twice the same way.** The chrome
   was already in `--ink`/`--paper` but every canvas colour was a literal. Two hardcoded
   `rgba(245,243,239,…)` survived the first pass — the edge CORE (white lines on a white ground,

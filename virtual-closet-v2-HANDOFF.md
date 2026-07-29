@@ -143,12 +143,45 @@ page fetches, and `asset_urls()` walking that payload or its images 404.
 6. **Track D — style learning + gap analysis.** The last unbuilt track, materially better once
    real wear data exists. Do it after (1).
 
+## 3b. Session of 2026-07-28/29 — what changed
+
+Read the matching sections of `CLAUDE.md` before touching any of it.
+
+- **Measurement harness REBUILT and tracked** (`server/scripts/wear_model_report.py`). The
+  07-27 figures had become unreproducible; this reproduces them and fails on drift. **Run
+  `--check` before quoting any number against 07-27**, and always with `apply_user_rules=False`.
+- **One definition of "worn"** — `gaps.worn_outfits()` (published + logged). `engine_report`
+  had been counting stylist SUGGESTIONS as wears: 9 never-worn against /insights' 13.
+- **Her rules run in the engine**, occasion-aware. Third rule added from behaviour, not speech:
+  no sneakers for dinner. `occasion=None` cannot violate an occasion rule.
+- **Wear context is live** (migration 0006): occasion, weather, and the swap. **15/15 wears
+  carry occasion and weather; the swap is still 0 and only accrues forward.**
+- **Mobile is done, layout and touch.** Sticky hover and 16–35px tap targets were the real
+  faults, both fixed in `nav.js` (the one file every page loads). `/galaxy` gained
+  `touch-action` and pinch-zoom.
+- **`/galaxy` is now a LIGHT ground** (her call). `?ground=dark` restores the old field.
+- **Find-a-better-photo -> grid pre-fill: $0 skeleton built, never run paid.** One approved
+  batch of 3 garments (~18c) is the next step; see the CLAUDE.md section.
+- **`scripts/cdp.py` is new and is how any of this gets checked.** `--touch` for real
+  touchscreen emulation, `--gpu` for software WebGL. **Without `--gpu` every /galaxy
+  screenshot is the 2D fallback, not the shader.**
+
 ## 4. Queued and discussed, NOT started
 
 - **Galaxy title type** — six treatments built, previews in
-  `virtual-closet/design-inspo/galaxy-title-previews/`. She looked and tabled it.
-- **Non-black galaxy ground** — her idea; the glass effect is limited by what sits behind it.
-  Touches the locked Ink-palette decision, so discuss before building.
+  `virtual-closet/design-inspo/galaxy-title-previews/`. She looked and tabled it. **Explicitly
+  set aside again 07-29** ("ignore the galaxy title and glassmorphism points").
+- **Non-black galaxy ground — DONE 07-29.** Shipped as a light ground; see `CLAUDE.md`.
+- **Runway motion in the carousel** (her idea 07-28) — avatars appearing to walk as the
+  carousel scrolls, possibly via her existing **Kling** subscription, which changes the
+  economics completely from 4.4's $3.20/look fal quote. **Do not re-quote fal without checking
+  Kling first.** The fitting room's missing hands-reaching frame on swap belongs to this
+  conversation too: it is gated to the base-avatar state by design (`baseHover()` bails when
+  `currentRender` is set) because `front-receive.png` is an edit of the BASE avatar and no
+  render has a receiving twin. Per-render variants were rejected 07-17 for cost and face risk.
+- **Multi-item try-on ALREADY EXISTS** — the fitting room's outfit slots + **Render outfit**
+  ($0.059, ~1 min). She did not know; the open question is discoverability, not capability.
+  On a phone it needs a drag onto a slot, which has no tap path — a design question, not a bug.
 - **Find-a-better-photo search** — reverse image search is blocked (Lens has no API, Bing
   Visual Search retired, TinEye matches exact reuse). Workable route is
   identify-then-text-search, reusing `ingest_fetch.py` and the `/sourcing` grid.

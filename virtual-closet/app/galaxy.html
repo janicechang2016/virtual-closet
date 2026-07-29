@@ -2,6 +2,18 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>the archive — galaxy</title>
+<script>
+  // LIGHT GROUND IS THE DEFAULT (her call 07-29). Set here rather than in the
+  // main script at the bottom of the body: the header, panel and legend are
+  // markup above it, so applying the theme late renders the dark chrome and
+  // then flips it. A blocking head script lands before first paint.
+  // The previous dark field is kept, not deleted — `?ground=dark` restores it,
+  // per the standing rule that rejected variants keep a way back.
+  (function () {
+    var dark = new URLSearchParams(location.search).get('ground') === 'dark';
+    if (!dark) document.documentElement.classList.add('ground-light');
+  })();
+</script>
 <style>
   /* The Analytics Wall / Second Brain, per the design tokens: topological map on
      near-black, Ink ground, thumbnail nodes, thin translucent-white edges,
@@ -279,7 +291,8 @@ const OX = '#6F2B2B', AMBER = '#CC8A3A', PAPER = '#F5F3EF';
 const PANEL_W = 230, GLASS_INSET = 12;
 document.documentElement.style.setProperty('--panel-w', PANEL_W + 'px');
 document.documentElement.style.setProperty('--panel-inset', GLASS_INSET + 'px');
-const LIGHT_GROUND = new URLSearchParams(location.search).get('ground') === 'light';
+// Read the class the head script already set, so there is ONE decision point.
+const LIGHT_GROUND = document.documentElement.classList.contains('ground-light');
 const T = LIGHT_GROUND ? {
   ground: '#F5F3EF', dot: '#0E0E10', edgeRGB: '14,14,16', blend: 'multiply',
   edgeGain: 1.9,
@@ -291,7 +304,6 @@ const T = LIGHT_GROUND ? {
   hudBg: 'rgba(14,14,16,.82)', hudInk: 'rgba(245,243,239,.92)', ruleRGB: '245,243,239',
   plate: 'rgba(14,14,16,.55)',
 };
-if (LIGHT_GROUND) document.documentElement.classList.add('ground-light');
 
 function resize() {
   const dpr = Math.min(devicePixelRatio || 1, 2);
