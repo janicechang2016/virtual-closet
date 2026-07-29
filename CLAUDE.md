@@ -947,6 +947,56 @@ actually look at the PNG.
   `git checkout inline-nav-v1 -- virtual-closet/app/carousel.html`). In-page controls stay
   put — the carousel's Carousel/Index viewtabs are a lens toggle, not navigation.
 
+## Find-a-better-photo → grid pre-fill (2026-07-28) — $0 SKELETON BUILT, NOT YET RUN PAID
+
+**Her call 07-28, and it re-scopes Track A.** The queued note treated
+find-a-better-photo and vision tagging as two separate stretch items; she asked for the
+combination, and it is better than either half. **THE WIN IS THE PRODUCT PAGE, NOT THE
+BETTER PHOTO** — a photo cannot supply a brand or a fabric composition, a product page states
+both in text, and `fabric` is the one field her own ingest form gives up on ("models guess
+badly at this — yours is better"). The better image is a bonus for the render tier.
+
+- **ONE CALL, NOT THREE.** Anthropic's web search is a SERVER tool, so the model searches
+  during the request: photo -> identify -> search -> read the page -> structured JSON.
+  No search API, no key. `ingest_fetch.py` keeps its existing job of ranking candidate images
+  on whatever page this finds.
+- **SAM DETECTION DROPS OUT, SO THIS NEEDS NO FAL TOP-UP.** She photographs one item at a
+  time; multi-garment detection was never the slow part. Track A's paid half is now
+  Anthropic + local code only. **The fal top-up is off the critical path entirely** (the
+  hero-video half was tabled the same day).
+- **COST, CHECKED NOT GUESSED: ~$0.059/garment.** Web search is **$10 per 1,000 searches**
+  ($0.01 each, capped at 3), plus tokens on **`claude-sonnet-5`** — classification, not
+  reasoning, and on introductory pricing ($2/$10 per MTok) through 2026-08-31. `--generate`
+  bills; everything else is $0. Spend goes through genlog BEFORE the outcome checks
+  (standing rule #1, the D.1 lesson).
+- **`effort: "low"` is pinned, not left implicit. THINKING IS ON BY DEFAULT on Sonnet 5 AND
+  Opus 5** — that default, more than "thinking bills as output", is why D.1 cost 20x its
+  estimate. Correct the older note when re-reading it.
+- **FOUR THINGS THE MODEL MAY NEVER SUPPLY**, enforced by a closed schema and pinned by
+  tests: **colour** (measured by `extract_colors.py`, invariant #6 — the model may NAME a
+  colour, never MEASURE one), **purchase price** (a listing price is NOT what she paid;
+  closet value $6,298 and every cost-per-wear in /insights rest on her real data), **purchase
+  date**, and **size_owned**.
+- **CONFIRM BEFORE PRE-FILL — the safety property.** `identification` is returned SEPARATELY
+  from `attributes` and nothing touches the form until she confirms. A confident
+  MISidentification is worse than a blank grid: every cell comes back plausible and wrong,
+  and she is reviewing rather than composing, so it would pass. `evidence` must cite what is
+  IN THE IMAGE, never the search result as its own justification.
+- **PER-FIELD PROVENANCE** (`page` / `image` / `inferred`), shown as tags in the UI — page in
+  black, image in grey, inferred in the oxblood alert ink. A fabric read off a page is
+  trustworthy; a formality inferred from a photo is a guess wearing the same typeface.
+- **FAILURE IS THE COMMON CASE AND IS GRACEFUL.** A plain dark garment with no label is
+  unidentifiable, and ~60% of this closet is below L*25. Then `identified: false`, no brand,
+  no URL, image-only attributes — a worse pre-fill but an honest one.
+- Files: `server/scripts/identify_garment.py` (`--stub easy|hard` emits canned payloads of the
+  exact API shape, which is what let the whole UI be built and reviewed for $0),
+  `POST /api/ingest/identify` in `closet_server.py` (**$0 unless `generate` is explicitly
+  true** — billing is never a button press), the identify card in `app/ingest.html`, and
+  `server/tests/test_identify_garment.py` (19 tests; **87 total**).
+- **NOT YET RUN PAID.** Next step is one approved batch of 3 garments (~18c): one branded and
+  distinctive, one plain and dark, one expected to fail — then judge the edit-count reduction
+  against that before building further.
+
 ## Queued next (do not build until asked)
 
 - **RUNWAY MOTION IN THE CAROUSEL (her idea 07-28, NOT started, discuss cost/feasibility

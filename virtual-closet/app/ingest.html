@@ -61,6 +61,30 @@
 
   #msg { padding:10px 0; color:var(--alert); }
   .note { color:var(--dim); font-size:11px; margin-top:10px; }
+
+  /* identify + pre-fill */
+  #idbox { border:1px solid var(--rule, #e6e6e6); padding:14px; margin-bottom:18px; }
+  .idnote { color:var(--dim); font-size:11px; margin-left:12px; }
+  #idcard { margin-top:14px; border-top:1px solid var(--rule, #e6e6e6); padding-top:14px; }
+  #idcard .hd { text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+  #idcard .hd.yes { color:#000; }
+  /* The unidentified case is the COMMON one here — ~60% of this closet is below
+     L*25, and a plain dark garment has nothing to identify. It is marked in the
+     alert ink because it changes what she should trust, not because it failed. */
+  #idcard .hd.no { color:var(--alert, #6F2B2B); }
+  #idcard .ev { color:var(--dim); font-size:11px; margin:6px 0 12px; max-width:70ch; }
+  #idcard .prod { font-size:13px; }
+  #idcard .prod a { color:inherit; }
+  #idcard .acts { margin-top:12px; display:flex; gap:8px; }
+  /* Provenance. Page-sourced values are the ones worth trusting; inferred ones
+     are a guess wearing the same typeface, which is exactly what makes a wrong
+     pre-fill survive review. */
+  .prov { text-transform:uppercase; letter-spacing:.12em; font-size:8.5px;
+    border:1px solid currentColor; padding:1px 4px; margin-left:6px;
+    vertical-align:1px; }
+  .prov.page { color:#000; }
+  .prov.image { color:#777; }
+  .prov.inferred { color:var(--alert, #6F2B2B); }
   table.log { width:100%; border-collapse:collapse; margin-top:10px; }
   table.log td { border-top:1px solid var(--rule); padding:7px 0; }
   table.log td.n { color:var(--dim); text-transform:uppercase; letter-spacing:.1em;
@@ -120,6 +144,16 @@
   <div class="step" id="step3" hidden>
     <h2>3 · attributes</h2>
     <div class="body">
+      <!-- IDENTIFY. Nothing here writes to the form until she confirms: a
+           confident misidentification fills every cell with a plausible wrong
+           value, and she is reviewing rather than composing, so it would pass. -->
+      <div id="idbox">
+        <button class="ghost" id="identify">identify from photo &amp; pre-fill</button>
+        <span class="idnote">finds the product page, then fills what the page
+          and the photo can actually answer. never fills colour, price or size.</span>
+        <div id="idcard" hidden></div>
+      </div>
+
       <div class="row">
         <div class="f"><label for="subcategory">Subcategory</label>
           <input id="subcategory" placeholder="e.g. wide-leg trousers"></div>
@@ -294,7 +328,99 @@ $('#discard').addEventListener('click', async () => {
   reset('discarded');
 });
 
+// ── identify & pre-fill ──────────────────────────────────────────────────────
+// The result is held here and applied only on confirm. Splitting "what did you
+// find" from "fill the form" is the whole safety property: a misidentification
+// otherwise arrives as twelve plausible values in a grid she is skimming.
+let FOUND = null;
+
+const PREFILL = ['subcategory', 'formality', 'warmth', 'volume',
+                 'pattern', 'fabric', 'fit', 'seasons'];
+
+function provTag(kind) {
+  return `<span class="prov ${kind}">${kind}</span>`;
+}
+
+$('#identify').addEventListener('click', async () => {
+  if (!STAGED) return;
+  const btn = $('#identify');
+  btn.disabled = true; btn.textContent = 'looking…';
+  try {
+    // No `generate` flag: the server returns a stub. Billing is opt-in and
+    // happens in an approved batch, never from a button press.
+    const r = await fetch('/api/ingest/identify', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({id: STAGED.id}),
+    }).then(r => r.json());
+    if (r.error) throw new Error(r.error);
+    FOUND = r;
+    showFound(r);
+  } catch (e) {
+    $('#idcard').hidden = false;
+    $('#idcard').innerHTML = `<div class="hd no">could not identify</div>
+      <div class="ev">${e.message}</div>`;
+  }
+  btn.disabled = false; btn.textContent = 'identify from photo & pre-fill';
+});
+
+function showFound(r) {
+  const id = r.identification || {}, a = r.attributes || {};
+  const prov = a.provenance || {};
+  const rows = PREFILL.map(k => {
+    let v = a[k];
+    if (Array.isArray(v)) v = v.join(', ');
+    if (v === '' || v == null) v = '<span style="color:#aaa">—</span>';
+    return `<tr><td style="color:#8a8a8a;padding:2px 14px 2px 0">${k}</td>
+      <td>${v}${provTag(prov[k] || 'inferred')}</td></tr>`;
+  }).join('');
+
+  const head = id.identified
+    ? `<div class="hd yes">identified · ${id.confidence} confidence</div>
+       <div class="prod">${id.brand || '?'} — ${id.product_name || '?'}
+         ${id.product_url ? `· <a href="${id.product_url}" target="_blank"
+           rel="noopener">product page</a>` : ''}</div>`
+    : `<div class="hd no">not identified — from the photo alone</div>`;
+
+  $('#idcard').hidden = false;
+  $('#idcard').innerHTML = `${head}
+    <div class="ev">${id.evidence || ''}</div>
+    <table style="font-size:12px;border-collapse:collapse">${rows}</table>
+    <div class="ev" style="margin-top:12px">Colour is measured from your photo,
+      not read here. Price, purchase date and size stay yours — no page can
+      answer them.</div>
+    <div class="acts">
+      <button class="primary" id="applyfill">${id.identified
+        ? 'yes, that\'s it — fill the form' : 'fill the form anyway'}</button>
+      <button class="ghost" id="rejectfill">no — leave it blank</button>
+    </div>`;
+
+  $('#applyfill').addEventListener('click', () => applyFound(r));
+  $('#rejectfill').addEventListener('click', () => {
+    FOUND = null; $('#idcard').hidden = true;
+  });
+}
+
+function applyFound(r) {
+  const a = r.attributes || {}, id = r.identification || {};
+  for (const k of PREFILL) {
+    let v = a[k];
+    if (Array.isArray(v)) v = v.join(', ');
+    if (v === '' || v == null) continue;
+    const el = $('#' + k);
+    if (el) el.value = v;
+  }
+  // Brand only when a page actually named it — never from a guess.
+  if (id.identified && id.brand && $('#brand') && !$('#brand').value) {
+    $('#brand').value = id.brand;
+  }
+  if (a.category && $('#category')) $('#category').value = a.category;
+  $('#idcard').hidden = true;
+  check();
+}
+
 function reset(message) {
+  FOUND = null;
+  if ($('#idcard')) { $('#idcard').hidden = true; $('#idcard').innerHTML = ''; }
   STAGED = null; IMAGE = null;
   $('#step2').hidden = true; $('#step3').hidden = true;
   $('#drop').textContent = 'drop a photo here, or click to choose';

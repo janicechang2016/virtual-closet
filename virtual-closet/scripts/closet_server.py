@@ -645,6 +645,50 @@ def ingest_stage(data):
     }
 
 
+def ingest_identify(data):
+    """Identify a staged garment from its own photo and pre-fill the grid.
+
+    LOCAL ONLY and **$0 unless `generate` is explicitly true** — the standing
+    rule is that paid calls happen in approved batches, so the default path here
+    returns a stub of exactly the shape the API sends. That is what lets the
+    confirm step, the provenance markers and the not-identified fallback be
+    built and reviewed without spending anything.
+
+    The route returns the identification SEPARATELY from the attributes and does
+    not apply anything: a confident misidentification fills every cell with a
+    plausible wrong value, and she is reviewing rather than composing, so the
+    confirmation has to be hers.
+    """
+    gid = (data.get("id") or "").strip()
+    folder = (ROOT / "garments" / gid).resolve()
+    if ROOT / "garments" not in folder.parents or not folder.is_dir():
+        return {"error": "unknown garment"}
+
+    if str(ENGINE_DIR / "scripts") not in sys.path:
+        sys.path.insert(0, str(ENGINE_DIR / "scripts"))
+    try:
+        import identify_garment as ident
+    except ImportError as exc:
+        return {"error": "identifier unavailable: %s" % exc}
+
+    stub = data.get("stub") or ("easy" if not data.get("generate") else None)
+    if stub:
+        if stub not in ident.STUBS:
+            return {"error": "unknown stub"}
+        out = json.loads(json.dumps(ident.STUBS[stub]))
+        out["_meta"] = {"model": "stub", "spent_usd": 0.0, "web_searches": 0}
+        return {"ok": True, **out}
+
+    try:
+        photo = ident.find_image(gid)
+        return {"ok": True, **ident.call(ident.build_request(
+            photo, data.get("hint") or ""), gid)}
+    except SystemExit as exc:
+        return {"error": str(exc)}
+    except Exception as exc:                                   # noqa: BLE001
+        return {"error": "identify failed: %s" % exc}
+
+
 def ingest_discard(gid):
     folder = (ROOT / "garments" / gid).resolve()
     if ROOT / "garments" not in folder.parents or not folder.is_dir():
@@ -1303,6 +1347,8 @@ class Handler(SimpleHTTPRequestHandler):
         data = json.loads(self.rfile.read(length) or b"{}")
         if url.path == "/api/ingest/stage":
             return self._json(ingest_stage(data))
+        if url.path == "/api/ingest/identify":
+            return self._json(ingest_identify(data))
         if url.path == "/api/ingest/commit":
             return self._json(ingest_commit(data))
         if url.path == "/api/ingest/discard":
