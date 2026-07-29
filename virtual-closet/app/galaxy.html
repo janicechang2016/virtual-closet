@@ -98,7 +98,8 @@
   /* The glass itself is drawn on the canvas (drawReededGlass) so it can really
      refract the field behind it; this element only carries the content and lets
      that show through. */
-  #detail { position:fixed; top:64px; right:22px; width:290px; z-index:25;
+  #detail { position:fixed; top:64px; right:var(--panel-inset,12px);
+    width:var(--panel-w,230px); z-index:25;
     background:rgba(14,14,16,.74); border:0; padding:16px; display:none; }
   #detail.open { display:block; }
   #detail .fig { height:150px; display:flex; align-items:center; justify-content:center;
@@ -121,10 +122,19 @@
      the refraction behind it is the surface. The ground was .34 while the glass
      was imaging empty ink; now that it gathers the field, streaks ran straight
      through the type, so it carries enough to read against and no more. */
-  #panel { position:fixed; right:22px; bottom:22px; z-index:20; width:290px;
+  #panel { position:fixed; right:var(--panel-inset,12px); bottom:22px;
+    z-index:20; width:var(--panel-w,230px);
     border:1px solid rgba(245,243,239,.18); background:rgba(14,14,16,.74);
     padding:14px 16px; }
   #panel h4 { margin:0 0 10px; font-weight:normal; color:var(--dim); }
+  /* The column came in two notches on 07-29, and .mono's .16em tracking is
+     expensive at 230px — three of eight rows wrapped, plus the header. Tracking
+     is the cheapest width to give back: it recovers the line without truncating
+     a garment name or shrinking the type, and these rows are short labels, not
+     running text, so they lose little by being set tighter. */
+  #panel h4, #panel .orow { letter-spacing:.07em; }
+  #panel .orow span:first-child { min-width:0; overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap; }
   #panel .orow { display:flex; justify-content:space-between; gap:10px;
     padding:4px 0; cursor:pointer; }
   /* Hover lights the row rather than recolouring it. Amber was wrong twice over:
@@ -265,6 +275,10 @@ const OX = '#6F2B2B', AMBER = '#CC8A3A', PAPER = '#F5F3EF';
 // bloom and convergence reads as light; on white it adds toward white and the
 // edges vanish. 'multiply' is its mirror — overlapping strokes get darker — so
 // the nebula behaviour survives in ink rather than being lost.
+// The right-hand column: the panels and the glass they sit on are one object.
+const PANEL_W = 230, GLASS_INSET = 12;
+document.documentElement.style.setProperty('--panel-w', PANEL_W + 'px');
+document.documentElement.style.setProperty('--panel-inset', GLASS_INSET + 'px');
 const LIGHT_GROUND = new URLSearchParams(location.search).get('ground') === 'light';
 const T = LIGHT_GROUND ? {
   ground: '#F5F3EF', dot: '#0E0E10', edgeRGB: '14,14,16', blend: 'multiply',
@@ -658,7 +672,12 @@ function glassRect() {
   if (innerWidth <= 640) {
     return { left: innerWidth, top: 0, width: 0, height: innerHeight };
   }
-  const w = Math.min(334, innerWidth * 0.34);
+  // Width came down two notches on 07-29 (334 -> 292 -> 254, ~13% each).
+  // It is DERIVED, not chosen: the column is the panel plus its inset on
+  // both sides, so narrowing the glass alone would leave #panel and
+  // #detail hanging off the surface they are supposed to sit on. Change
+  // GLASS_INSET or the panel width and this follows.
+  const w = Math.min(PANEL_W + GLASS_INSET * 2, innerWidth * 0.26);
   return { left: innerWidth - w, top: 0, width: w, height: innerHeight };
 }
 
