@@ -136,6 +136,29 @@
         // others; pinning the previous item keeps them exactly where they were.
         if (last && cs.justifyContent === 'space-between') last.style.marginLeft = 'auto';
         mounted = true;
+
+        // A WRAPPING row is the third failure mode, and the declared-style
+        // checks above cannot see it: the mount is a legitimate row, the burger
+        // is appended legitimately, and then at a narrow viewport the header
+        // wraps and the burger ends up on a lower line — orphaned under the
+        // controls instead of aligned with them. Observed at 390px on /stylist
+        // and /insights on 07-28, the first time anyone could actually render a
+        // 390px viewport (see scripts/cdp.py).
+        //
+        // Compared against the FIRST child, not the previous last one: on
+        // /stylist the header wraps to three rows and the burger shares its row
+        // with a button that wrapped too, so "is the burger below the thing
+        // before it" reads as false while the burger is plainly in the wrong
+        // place. "Is the burger below the first row" is the question that
+        // actually matches the failure. Measured, not declared — whether a
+        // header wraps depends on the page's own content.
+        var first = mount.firstElementChild;
+        if (first && first !== burger &&
+            burger.offsetTop > first.offsetTop + (first.offsetHeight / 2)) {
+          mount.removeChild(burger);
+          if (last) last.style.marginLeft = '';
+          mounted = false;
+        }
       }
     }
     if (!mounted) {

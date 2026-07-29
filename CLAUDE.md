@@ -654,6 +654,40 @@ H(shoe|occasion) 1.11, over 8 distinct shoes in 15 wears.
 - Weather landed but says nothing yet: 15 wears, **2 distinct conditions** (rain/cloud) across
   one humid NYC fortnight. Its value is that it now accrues for free.
 
+## PHONE LAYOUT — the first REAL 390px audit (2026-07-28, $0)
+
+**EVERY EARLIER "TESTED AT 390px" CLAIM WAS A TEST AT 500px.** Chrome clamps
+`--window-size`, verified in BOTH `--headless=new` and `--headless=old`: ask for 390, get a
+390-wide image of a 500px viewport. So `carousel.html`'s own 400px breakpoint never fired in
+any check ever run here. **`virtual-closet/scripts/cdp.py`** (new, pure stdlib, ~90 lines of
+RFC 6455) drives Chrome over DevTools and uses `Emulation.setDeviceMetricsOverride`, which is
+the only way to get a true phone viewport. It also drives on a real clock — the documented
+workaround for `--virtual-time-budget` starving `/galaxy`'s rAF load-in.
+
+Audit result at a real 390px: **`/`, `/fitting-room` and `/wear` passed** (the fitting room
+has no media queries at all and is simply fluid — the 07-26 note claiming it was "fixed" was
+right about the outcome, wrong about the mechanism). Three faults found and fixed:
+
+- **`/galaxy` was the real failure.** The reeded glass still rendered as a band across a third
+  of the field with nothing layered on it — `#panel`/`#legend` hide below 860px but the glass
+  did not. **Fixed in `glassRect()`, NOT in CSS, because there are TWO render paths:** WebGL
+  draws onto `#glass`, but when WebGL is unavailable `drawReededGlass()` paints onto the MAIN
+  field canvas, which no rule on `#glass` can reach. Both paths already bail on a sub-4px
+  rect, so an empty rect disables both from one place and stops the shader running rather than
+  merely hiding it. Also: `#controls` and `#hint` were both `bottom:22px`, printing sliders,
+  chips, caveat and hint on top of each other; controls are now a bottom bar with a ground,
+  `#hint` is dropped on phones (it said "drag to pan · scroll to zoom" on a touch device), and
+  `.tnote`'s `white-space:nowrap` no longer pushes the caveat off-screen.
+- **The shared nav orphaned its hamburger** on `/stylist` and `/insights`. `nav.js` guarded
+  against a column mount but not a WRAPPING row. **The check compares against the mount's
+  FIRST child, not the previous last one** — on `/stylist` the header wraps to three rows and
+  the burger shares its row with a button that also wrapped, so "is it below the thing before
+  it" reads false while the burger is plainly misplaced. **Desktop behaviour verified
+  unchanged against the live site on all five pages** (carousel/galaxy floating,
+  stylist/insights/wear mounted, before and after).
+- Copy, only visible narrow: `/stylist` read **"1 SUGGESTIONS"** when the grid collapses to one
+  column; `/insights` said "hover any of them" on a touch device.
+
 ## Measurement harness + four foundation fixes (2026-07-28, $0)
 
 - **`server/scripts/wear_model_report.py` — THE MEASUREMENT HARNESS, TRACKED.** Replaces the
@@ -914,6 +948,24 @@ actually look at the PNG.
   put — the carousel's Carousel/Index viewtabs are a lens toggle, not navigation.
 
 ## Queued next (do not build until asked)
+
+- **RUNWAY MOTION IN THE CAROUSEL (her idea 07-28, NOT started, discuss cost/feasibility
+  first).** As the carousel scrolls, each avatar should appear to MOVE IN REAL TIME — the
+  models walking as if on a runway, rather than the stills sliding past. This supersedes the
+  motivation behind 4.4's hero-look video, which she TABLED the same day.
+  - **She has a KLING subscription, and that is the point.** 4.4 priced video through fal at
+    $0.40/segment = $3.20/look, which is what made it hard to justify for a page that produces
+    no data. On an existing subscription the marginal cost is roughly zero, so the economics
+    are completely different from the ones the completion plan reasoned about. **Do not
+    re-quote fal for this without checking Kling first.**
+  - Consequence worth noting: with 4.4 tabled, **the fal top-up is no longer on the critical
+    path for Phase 4** — it is now needed only for Track A's detection half.
+  - Open questions for that discussion, none answered: per-look clips vs one loop; how motion
+    interacts with the existing 80px snap/dwell and the slot interpolation; whether it survives
+    `prefers-reduced-motion` (it must); payload size on a page already shipping ~93MB of
+    assets; and whether Kling output can hold avatar-v3's face across a walk cycle, given the
+    standing rule that every visible face gets a face-swap finish (rule #2) and that chained
+    edits compound face drift.
 
 - **HER NEXT SESSION, stated 07-27:** (a) evaluate where things stand and what needs
   tweaking — start from `virtual-closet-v2-HANDOFF.md` §3, which was rewritten for exactly

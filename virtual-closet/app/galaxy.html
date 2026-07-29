@@ -109,6 +109,32 @@
   #hint { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
     color:var(--dim); z-index:20; }
   @media (max-width:860px) { #panel, #legend { display:none; } }
+  /* PHONE. Written 07-28 after the first render at a REAL 390px viewport
+     (scripts/cdp.py — Chrome clamps --window-size to 500, so every earlier
+     "390px" check was a 500px check and none of this was visible).
+     Three separate faults, all only reachable on a phone: */
+  @media (max-width:640px) {
+    /* 1. The reeded glass is switched off in glassRect() — see the note there
+       for why CSS alone could not do it (two render paths, one of which paints
+       onto the main field canvas). This only hides the now-empty layer. */
+    #glass { display:none; }
+    /* 2. #controls and #hint were both bottom:22px, so the sliders, the chips,
+       the caveat and the hint printed on top of one another. Controls become a
+       real bottom bar with a ground behind them; they must stay legible over
+       whatever node happens to drift underneath. */
+    #controls { left:0; right:0; bottom:0; padding:14px 14px
+      calc(14px + env(safe-area-inset-bottom)); gap:10px;
+      background:linear-gradient(to top, rgba(14,14,16,.97) 72%, rgba(14,14,16,0)); }
+    .ctl { gap:8px; }
+    .ctl input[type=range] { width:100%; flex:1; min-width:0; }
+    .chips { max-width:none; }
+    /* 3. "drag to pan · scroll to zoom" is mouse language on a touch device,
+       and it was the third thing stacked at the bottom. The gestures work
+       either way; the sentence does not. */
+    #hint { display:none; }
+    /* nowrap forced the caveat off the right edge at 390px */
+    .tnote { white-space:normal; }
+  }
   /* money lock — the figures are encrypted in the deployed payload */
   .moneylock { display: inline-flex; align-items: center; gap: 8px; margin-left: 14px; }
   .moneylock button { font-family: 'IBM Plex Mono','Spline Sans Mono',ui-monospace,Menlo,monospace;
@@ -543,6 +569,23 @@ function glassRect() {
   // A standing column down the right edge rather than a panel that appears with
   // the detail view: the glass is a LAYER of the page, and the never-worn box
   // and detail card sit on top of it.
+  //
+  // PHONE: no glass at all. The column exists to sit UNDER #panel and #detail,
+  // both of which are already hidden below 860px — so on a phone it was a band
+  // of refracted light across a third of the field with nothing layered on it,
+  // occluding the data it exists to frame. Observed at a real 390px viewport on
+  // 07-28 (scripts/cdp.py; Chrome clamps --window-size to 500, so no earlier
+  // "390px" check could see it).
+  //
+  // Disabled HERE rather than by hiding #glass in CSS, because there are TWO
+  // render paths and that only stopped one: WebGL draws onto #glass, but when
+  // WebGL is unavailable drawReededGlass() paints onto the MAIN field canvas,
+  // which no rule on #glass can touch. Both paths already bail on a sub-4px
+  // rect, so an empty rect turns off both from one place — and the shader stops
+  // running rather than merely being invisible, which matters on a phone.
+  if (innerWidth <= 640) {
+    return { left: innerWidth, top: 0, width: 0, height: innerHeight };
+  }
   const w = Math.min(334, innerWidth * 0.34);
   return { left: innerWidth - w, top: 0, width: w, height: innerHeight };
 }

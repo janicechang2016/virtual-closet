@@ -261,7 +261,11 @@ function render() {
   if (DATA.wildcard) SHOWN.push(DATA.wildcard);
   grid.innerHTML = SHOWN.map((o, i) => cardHTML(o, i, !!o.wildcard)).join('');
   fitGrey();
-  const lead = `${SHOWN.length - (DATA.wildcard ? 1 : 0)} suggestions + wildcard · `
+  // Singular matters here: at 390px the grid collapses to one column, so the
+  // count really is 1 and the page read "1 suggestions". Only visible on a
+  // phone, which is why it survived until the viewport could be rendered.
+  const nSug = SHOWN.length - (DATA.wildcard ? 1 : 0);
+  const lead = `${nSug} suggestion${nSug === 1 ? '' : 's'} + wildcard · `
     + `learned from ${DATA.prior_looks} published looks`;
   // In the demo nothing is recorded, so claiming a judgement count would be a
   // lie; say what the page IS instead.
