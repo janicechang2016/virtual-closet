@@ -654,6 +654,58 @@ H(shoe|occasion) 1.11, over 8 distinct shoes in 15 wears.
 - Weather landed but says nothing yet: 15 wears, **2 distinct conditions** (rain/cloud) across
   one humid NYC fortnight. Its value is that it now accrues for free.
 
+## TOUCH — the interaction half of mobile (2026-07-28, $0)
+
+**Her ask: mobile across the board, layout AND interactions.** Audited at a real 390px WITH
+touch emulation (`cdp.py --touch`, which sets `Emulation.setTouchEmulationEnabled` so
+`(hover:none)` and `(pointer:coarse)` actually match — without it, hover-gated affordances
+look reachable in a screenshot and are not on a thumb).
+
+**LAYOUT WAS ALREADY FINE. The gap was entirely interaction.** Zero horizontal overflow on
+any of the six pages, and every page already uses **PointerEvents, never MouseEvents**, so
+the gestures were never dead. Two things were genuinely wrong and are fixed:
+
+- **STICKY HOVER, on every page.** Not one page carried a single `(hover:...)` media query,
+  so on a touchscreen a tapped element KEEPS its `:hover` state until something else is
+  tapped — and these pages dim buttons to `opacity:.72` on hover, so **the button she just
+  pressed sits there looking disabled.** Guarded on `(hover:none)`, not a width breakpoint:
+  the question is whether a hover exists, not how wide the screen is.
+- **TAP TARGETS at 16–35px** across all six (the galaxy sliders were 16). Now `min-height:44px`
+  on buttons/selects/ranges under `(pointer:coarse)` — WCAG 2.5.5. Verified: **0 controls
+  under 44px on any page**, and desktop is unchanged (buttons still 35px, hover still live).
+- **BOTH LIVE IN `nav.js`**, because it is the ONLY file every page already loads. The
+  carousel and galaxy are deliberately single-file and offline-capable, so a shared
+  stylesheet would cost them that; nav.js already injects CSS into all of them and is
+  already in `APP_FILES`. One edit, six pages.
+
+**`/galaxy` was the one page with a real gesture gap.** Fixed:
+- **No `touch-action` on the canvas**, so the browser claimed the gesture first — a one-finger
+  drag scrolled the page and a pinch zoomed the document, and the pan handler never saw
+  either. Now `touch-action:none`; the field IS the interaction surface.
+- **Zoom was `wheel`-only, so on a phone the field could be panned but never scaled** — and at
+  390px the whole archive is a thumbnail. Pinch added through the SAME pointer events as the
+  pan, so there is one gesture model rather than a parallel touch path. A second finger clears
+  `dragging`, which is what stops the pinch's release from firing `select()`. Verified: 1× → 3×
+  with no node selected on release.
+
+**ALREADY WORKED, DO NOT REBUILD:** tap-to-try-on in the fitting room (`click` on a rack row
+calls `tryOn()`; the row's own tooltip says so), tap-to-select on `/galaxy` (`pointerup` with
+<4px movement, and the HUD draws from `hover || selected`), the carousel's touch scrolling
+(explicit `touchstart/move/end`), and `touch-action:pan-y` on the draggable garment rows —
+someone had already thought about letting a long rack scroll while still allowing a drag out.
+
+**THE TRAP THAT NEARLY COST A REGRESSION: a full-page screenshot captures the DOCUMENT, not
+"the whole page".** The fitting room's `main` has its own `overflow-y:auto` while `body` is
+`height:100vh;overflow:hidden`, so `--full` returned an 844px image of the mirror alone and
+read as a broken layout with 58 unreachable rack rows. It scrolls fine —
+`main.scrollHeight` 5584 vs 731 — and the stacked mobile layout has been correct since 07-26.
+**Check `el.scrollHeight > el.clientHeight` before believing a full-page shot.** Recorded in
+`cdp.py`'s docstring too.
+
+**Known and NOT fixed, because it is a design question not a bug:** building a multi-item
+outfit needs a drag onto a slot, which is awkward on a phone. Single try-on is a tap and
+works; slot assignment has no tap path. Raise it with her before inventing one.
+
 ## PHONE LAYOUT — the first REAL 390px audit (2026-07-28, $0)
 
 **EVERY EARLIER "TESTED AT 390px" CLAIM WAS A TEST AT 500px.** Chrome clamps

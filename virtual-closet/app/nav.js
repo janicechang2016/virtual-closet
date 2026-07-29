@@ -75,7 +75,48 @@
       '#navsheet a[aria-current="page"]{text-decoration:underline;text-underline-offset:6px;}',
       '@media (max-width:760px){#navsheet a{font-size:19px;}}',
       '@media (prefers-reduced-motion:reduce){',
-      '  #navsheet{transition:none;}}'
+      '  #navsheet{transition:none;}}',
+
+      // ── TOUCH (07-28) ────────────────────────────────────────────────────
+      // This lives in nav.js because it is the ONLY file every page already
+      // loads. The carousel and galaxy are deliberately single-file and
+      // offline-capable, so a shared stylesheet would cost them that; nav.js
+      // already injects CSS into all of them and is already in APP_FILES.
+      //
+      // Audited 07-28 at a real 390px WITH touch emulation (scripts/cdp.py
+      // --touch): no page carries a single `(hover:...)` media query, and every
+      // page has interactive controls between 16px and 35px. Layout was fine —
+      // zero horizontal overflow anywhere — so this is entirely about the half
+      // of "mobile" that a screenshot cannot show.
+
+      // STICKY HOVER. On a touchscreen a tapped element KEEPS its :hover state
+      // until something else is tapped. These pages dim buttons to opacity .72
+      // on hover, so the button she just pressed sits there looking disabled.
+      // Guarded on (hover:none) rather than a width breakpoint — the question
+      // is whether a hover exists, not how wide the screen is.
+      '@media (hover:none){',
+      '  button:hover,.btn:hover,.viewtab:hover,a:hover,.chip:hover,',
+      '  .moneylock button:hover{opacity:1;}',
+      // the chrome-silver wash marks "the action applies to THIS card" — a
+      // cursor-only idea. On touch the tap is the pointing, and a wash that
+      // sticks after the tap says the opposite of what it means.
+      '  .card:hover,.gcell:hover,.pic:hover,.g:hover{background:none;}',
+      '  .unit:hover{transform:none;}',
+      '}',
+
+      // TAP TARGETS. WCAG 2.5.5 asks for 44px; these pages were laid out for a
+      // cursor and land at 16-35px (the galaxy sliders are 16). Keyed on
+      // (pointer:coarse) — this is about finger size, not hover. min-height
+      // rather than height so nothing that already clears the bar reflows, and
+      // deliberately NOT applied to inline text links like the wordmark, where
+      // 44px would wreck the header for no real gain.
+      '@media (pointer:coarse){',
+      '  button,.btn,select,summary,[role=button]{min-height:44px;}',
+      '  input[type=range]{height:44px;}',
+      // the carousel/index lens toggle is a bare span, and it is how you change
+      // what the archive shows — it has to be hittable.
+      '  .viewtab{display:inline-block;padding:11px 0;}',
+      '}'
     ].join('');
   }
 

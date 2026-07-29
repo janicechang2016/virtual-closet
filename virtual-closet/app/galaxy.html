@@ -35,7 +35,12 @@
   #stage { position:fixed; inset:0; }
   /* two stacked canvases: the field, then the glass layer that refracts it */
   #stage canvas { position:absolute; inset:0; display:block;
-    width:100%; height:100%; cursor:grab; }
+    width:100%; height:100%; cursor:grab;
+    /* Without this the browser claims the gesture first: a one-finger drag
+       scrolls the page and a pinch zooms the document, and the pointer handlers
+       below never see either. The field IS the interaction surface, so it takes
+       the whole gesture. */
+    touch-action:none; }
   #glass { pointer-events:none; }
   canvas.grabbing { cursor:grabbing; }
 
@@ -1043,18 +1048,65 @@ function hit(px, py) {
   return null;
 }
 let dragging = false, last = null;
+// Pinch (07-28). Zoom was wheel-only, so on a phone the field could be panned
+// but never scaled — and at 390px the whole archive is a thumbnail. Tracked
+// through the same pointer events as the pan, so there is one gesture model
+// rather than a parallel touch path.
+const pointers = new Map();
+let pinchDist = 0;
+
+function zoomAt(x, y, factor) {
+  const p = toWorld(x, y);
+  VIEW.k = Math.max(0.35, Math.min(3, VIEW.k * factor));
+  VIEW.x = x - p.x * VIEW.k; VIEW.y = y - p.y * VIEW.k;
+}
+
 cv.addEventListener('pointerdown', e => {
+  pointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+  if (pointers.size === 2) {
+    // A second finger turns a pan into a zoom. `dragging` is cleared so the
+    // pointerup tap test below cannot fire select() when the pinch ends.
+    const [a, b] = [...pointers.values()];
+    pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+    dragging = false;
+    return;
+  }
   dragging = true; last = {x: e.clientX, y: e.clientY}; cv.classList.add('grabbing');
 });
 addEventListener('pointerup', e => {
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinchDist = 0;
   cv.classList.remove('grabbing');
+  // Unchanged: a pointer that moved less than 4px is a tap, and a tap selects.
+  // This is why tap-to-inspect already worked on touch — the HUD draws from
+  // `hover || selected`, and a tap sets the second one.
   if (dragging && last && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 4) {
     const n = hit(e.clientX, e.clientY);
     n ? select(n) : deselect();
   }
   dragging = false;
 });
+addEventListener('pointercancel', e => {
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinchDist = 0;
+  dragging = false; cv.classList.remove('grabbing');
+});
 cv.addEventListener('pointermove', e => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+
+  if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    if (pinchDist > 0 && d > 0) {
+      // Zoom about the midpoint, so the field grows out of the gap between her
+      // fingers rather than out of the corner.
+      zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, d / pinchDist);
+    }
+    pinchDist = d;
+    settle = Math.max(settle, 1);
+    return;
+  }
+
   if (dragging && last) {
     VIEW.x += e.clientX - last.x; VIEW.y += e.clientY - last.y;
     last = {x: e.clientX, y: e.clientY};
@@ -1066,10 +1118,7 @@ cv.addEventListener('pointermove', e => {
 });
 cv.addEventListener('wheel', e => {
   e.preventDefault();
-  const f = e.deltaY < 0 ? 1.08 : 1/1.08;
-  const p = toWorld(e.clientX, e.clientY);
-  VIEW.k = Math.max(0.35, Math.min(3, VIEW.k * f));
-  VIEW.x = e.clientX - p.x * VIEW.k; VIEW.y = e.clientY - p.y * VIEW.k;
+  zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.08 : 1 / 1.08);
 }, {passive:false});
 
 function centreOn(n) {

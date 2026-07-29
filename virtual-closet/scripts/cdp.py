@@ -137,7 +137,8 @@ class WS:
 # ------------------------------------------------------------------- chrome
 
 class Chrome:
-    def __init__(self, width=390, height=844, scale=2, headless=True, quiet=True):
+    def __init__(self, width=390, height=844, scale=2, headless=True, quiet=True,
+                 touch=False):
         self.profile = tempfile.mkdtemp(prefix="cdp-profile-")
         self.port = self._free_port()
         args = [
@@ -163,8 +164,16 @@ class Chrome:
         # THE WHOLE POINT: a real 390px viewport, which --window-size cannot give.
         self.call("Emulation.setDeviceMetricsOverride", {
             "width": width, "height": height,
-            "deviceScaleFactor": scale, "mobile": scale > 1,
+            "deviceScaleFactor": scale, "mobile": bool(touch) or scale > 1,
         })
+        if touch:
+            # Layout is only half of "does this work on a phone". Without this,
+            # `(hover: hover)` and `(pointer: fine)` still match, so hover-gated
+            # affordances look reachable in a screenshot and are not on a thumb.
+            self.call("Emulation.setTouchEmulationEnabled",
+                      {"enabled": True, "maxTouchPoints": 5})
+            self.call("Emulation.setEmitTouchEventsForMouse",
+                      {"enabled": True, "configuration": "mobile"})
         self.call("Page.enable")
 
     @staticmethod
@@ -223,6 +232,13 @@ class Chrome:
         return (r.get("result") or {}).get("value")
 
     def screenshot(self, path, full=False):
+        """`full=True` captures the DOCUMENT, which is not the same as "the whole
+        page": a container with its own `overflow-y:auto` scrolls internally, and
+        everything below its fold is silently absent from the image. The fitting
+        room is exactly this — `main` scrolls, `body` does not — so a full-page
+        shot of it shows the mirror and nothing else, and reads as a broken
+        layout. Check `el.scrollHeight > el.clientHeight` before believing it.
+        """
         params = {"format": "png", "captureBeyondViewport": bool(full)}
         if full:
             m = self.call("Page.getLayoutMetrics")
@@ -263,11 +279,14 @@ def main():
     ap.add_argument("--height", type=int, default=844)
     ap.add_argument("--scale", type=int, default=2)
     ap.add_argument("--settle", type=float, default=1.2)
+    ap.add_argument("--touch", action="store_true",
+                    help="emulate a touchscreen: (hover:none), (pointer:coarse), touch events")
     ap.add_argument("--full", action="store_true", help="full-page, not just viewport")
     ap.add_argument("--out", default="shot.png")
     args = ap.parse_args()
 
-    with Chrome(width=args.width, height=args.height, scale=args.scale) as c:
+    with Chrome(width=args.width, height=args.height, scale=args.scale,
+                touch=args.touch) as c:
         c.navigate(args.url, settle=args.settle)
         if args.cmd == "eval":
             print(json.dumps(c.eval(args.expr)))
