@@ -1085,10 +1085,11 @@ badly at this — yours is better"). The better image is a bonus for the render 
   detail/preview panel that opens. Treat this as a visual-design study first,
   preserving the existing hero transition, legibility, and action hierarchy;
   do not ship it until Janice reviews the direction.
-- **Look cards, remaining half:** the content-unit half shipped with publish (rembg
-  cutout → cleanup → crop, per CARD-PIPELINE). Still queued: a dense **grid/index view**
-  of all looks (second lens beside the carousel) once the archive grows past ~10 looks,
-  plus any coverflow treatment from `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`.
+- **Look cards — the grid/index lens ALREADY SHIPPED (verified 07-28).** This entry used to
+  say a dense grid view was "still queued once the archive grows past ~10 looks"; the archive
+  is at 18 and `carousel.html` has had the Carousel/Index viewtabs, the `.gcell` grid and
+  drag-reordering for some time. Do not rebuild it. Genuinely still open: any coverflow
+  treatment from `~/liminal-wardrobe-v2/spec/design/CARD-PIPELINE.md`.
 **Standing rules that outlived their queue entries** (the work itself shipped in July —
 these are the constraints to honour, not tasks):
 - **Poses:** assign one per saved look at creation (~$0.06/render). Do NOT re-pose via
