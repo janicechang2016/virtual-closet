@@ -283,6 +283,7 @@ class TestRealCloset(unittest.TestCase):
             data = json.load(fh)
         cls.garments = data["garments"]
         cls.outfits = data["outfits"]
+        cls.wears = data.get("wears") or []
 
     def test_every_garment_attributed(self):
         for field in ("formality", "warmth", "volume", "subcategory"):
@@ -391,6 +392,38 @@ class TestRealCloset(unittest.TestCase):
             ids = [g_["id"] for g_ in combo]
             self.assertEqual(len(ids), len(set(ids)),
                              "garment duplicated within an outfit: %s" % ids)
+
+    def test_worn_means_the_same_thing_everywhere(self):
+        """One definition of "worn", checked against /insights' own arithmetic.
+
+        `engine_report.py` passed the RAW outfit list to unworn()/cost_per_wear()
+        until 07-28, so a garment counted as worn because the stylist once
+        suggested it: 9 never-worn reported against /insights' 13, and every
+        cost-per-wear deflated by suggestions. This reproduces the /insights
+        number independently — published appearances plus the wear log — and
+        asserts gaps.worn_outfits() agrees with it.
+        """
+        self.assertTrue(self.wears, "fixture has no wear log to check against")
+        wears = {w["outfit_id"] for w in self.wears}
+        by_id = {o["id"]: o for o in self.outfits}
+        seen = set()
+        for o in self.outfits:
+            if o.get("source") == "manual":
+                seen.update(o.get("garment_ids") or [])
+        for oid in wears:
+            seen.update((by_id.get(oid) or {}).get("garment_ids") or [])
+        expected = sorted(g["id"] for g in self.garments if g["id"] not in seen)
+
+        got = sorted(gaps.unworn(self.garments, gaps.worn_outfits(self.outfits)))
+        self.assertEqual(got, expected)
+
+    def test_suggestions_are_not_evidence_of_wearing(self):
+        """A stylist suggestion must never make a garment count as worn."""
+        suggested = [o for o in self.outfits
+                     if o.get("source") not in gaps.WORN_SOURCES]
+        self.assertTrue(suggested, "fixture has no suggestions to exclude")
+        kept = {o["id"] for o in gaps.worn_outfits(self.outfits)}
+        self.assertFalse(kept & {o["id"] for o in suggested})
 
     def test_published_looks_are_structurally_valid(self):
         """Her own 18 looks must pass the rules. If they do not, the rules are wrong."""

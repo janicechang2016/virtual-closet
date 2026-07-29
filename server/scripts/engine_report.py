@@ -89,16 +89,22 @@ def main():
         print("   %-34s %4d good outfits · best %.3f · %s"
               % (gid, cnt, best, by_id[gid].get("category")))
 
-    never = gaps.unworn(G, O)
-    print("\nnever worn in a published look: %d of %d" % (len(never), len(G)))
+    # Published looks + logged wears — NOT the raw outfit list, which also holds
+    # stylist suggestions. Passing all 57 counted a garment as worn because the
+    # engine once proposed it, which is how this printed 9 never-worn against
+    # /insights' 13 and quietly deflated every cost-per-wear.
+    WORN = gaps.worn_outfits(O)
+    never = gaps.unworn(G, WORN)
+    print("\nnever worn (published looks + logged wears): %d of %d"
+          % (len(never), len(G)))
 
-    cpw = [r for r in gaps.cost_per_wear(G, O) if r["wears"] == 0]
+    cpw = [r for r in gaps.cost_per_wear(G, WORN) if r["wears"] == 0]
     print("value sitting unworn: ${:,.0f} across {} garments".format(
         sum(r["price_usd"] for r in cpw), len(cpw)))
     for r in sorted(cpw, key=lambda r: -r["price_usd"])[:5]:
         print("   %-34s $%.0f" % (r["id"], r["price_usd"]))
 
-    worn = [r for r in gaps.cost_per_wear(G, O) if r["wears"] > 0]
+    worn = [r for r in gaps.cost_per_wear(G, WORN) if r["wears"] > 0]
     if worn:
         print("\nbest cost-per-wear so far:")
         for r in sorted(worn, key=lambda r: r["cost_per_wear"])[:5]:

@@ -228,6 +228,27 @@ def hypothetical_unlocks(garments, min_score=None, categories=None,
             "rows": rows}
 
 
+#: Outfit sources that count as EVIDENCE OF WEARING. This is the standing
+#: definition and the same one `_wear_counts()` uses for /insights: a published
+#: look was styled and photographed, so it was worn at least once, and a
+#: 'worn' row is a logged wear. A 'stylist' or 'wildcard' row is a SUGGESTION —
+#: something the engine proposed and she may never have put on.
+WORN_SOURCES = ("manual", "worn")
+
+
+def worn_outfits(outfits):
+    """The subset of outfits that count as wearing, per WORN_SOURCES.
+
+    Exists because passing the raw outfit list to `unworn()` or
+    `cost_per_wear()` silently counts SUGGESTIONS as wears — which is exactly
+    what `engine_report.py` did until 07-28, reporting 9 never-worn garments
+    against /insights' 13, and deflating cost-per-wear for anything the stylist
+    happened to propose. Call this rather than filtering at each call site, so
+    the definition cannot drift between two pages again.
+    """
+    return [o for o in outfits if o.get("source") in WORN_SOURCES]
+
+
 def unworn(garments, worn_outfits):
     """Garments in the closet that appear in no recorded outfit.
 
