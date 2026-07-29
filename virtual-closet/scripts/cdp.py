@@ -138,7 +138,7 @@ class WS:
 
 class Chrome:
     def __init__(self, width=390, height=844, scale=2, headless=True, quiet=True,
-                 touch=False):
+                 touch=False, gpu=False):
         self.profile = tempfile.mkdtemp(prefix="cdp-profile-")
         self.port = self._free_port()
         args = [
@@ -148,10 +148,20 @@ class Chrome:
             "--remote-allow-origins=*",
             "--user-data-dir=" + self.profile,
             "--no-first-run", "--no-default-browser-check",
-            "--disable-gpu", "--hide-scrollbars",
+            "--hide-scrollbars",
             # NOT --virtual-time-budget: it starves rAF and captures blank pages.
             "--window-size=%d,%d" % (max(width, 500), height),
         ]
+        # WebGL, in headless. Without these Chrome has no GL context at all, so
+        # a page with a shader silently renders its no-WebGL fallback and the
+        # screenshot shows something the user will never see. /galaxy's reeded
+        # glass is exactly this: `GLASS_GL` goes null and drawReededGlass() paints
+        # the 2D stand-in instead. SwiftShader is software GL — slow, correct.
+        if gpu:
+            args += ["--use-gl=angle", "--use-angle=swiftshader",
+                     "--enable-unsafe-swiftshader"]
+        else:
+            args.append("--disable-gpu")
         if headless:
             args.insert(1, "--headless=new")
         self.proc = subprocess.Popen(
@@ -279,6 +289,8 @@ def main():
     ap.add_argument("--height", type=int, default=844)
     ap.add_argument("--scale", type=int, default=2)
     ap.add_argument("--settle", type=float, default=1.2)
+    ap.add_argument("--gpu", action="store_true",
+                    help="software WebGL (SwiftShader) — needed for shader pages")
     ap.add_argument("--touch", action="store_true",
                     help="emulate a touchscreen: (hover:none), (pointer:coarse), touch events")
     ap.add_argument("--full", action="store_true", help="full-page, not just viewport")
@@ -286,7 +298,7 @@ def main():
     args = ap.parse_args()
 
     with Chrome(width=args.width, height=args.height, scale=args.scale,
-                touch=args.touch) as c:
+                touch=args.touch, gpu=args.gpu) as c:
         c.navigate(args.url, settle=args.settle)
         if args.cmd == "eval":
             print(json.dumps(c.eval(args.expr)))

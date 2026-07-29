@@ -654,6 +654,45 @@ H(shoe|occasion) 1.11, over 8 distinct shoes in 15 wears.
 - Weather landed but says nothing yet: 15 wears, **2 distinct conditions** (rain/cloud) across
   one humid NYC fortnight. Its value is that it now accrues for free.
 
+## GALAXY LIGHT-GROUND PREVIEW (`?ground=light`, 2026-07-29, $0) — PREVIEW, NOT A DECISION
+
+Her question: what does it look like inverted — white ground, black nodes, consistent with the
+site's white void and black hairlines. **The default is untouched**; this is one query param.
+
+- **THE DITHER NEEDS NO NEW MATHS, AND THAT IS THE ARGUMENT FOR IT.** Coverage is already
+  `0.30 + 0.70 * (1 - lum)` — dense for dark. On the ink ground those dense dots must be drawn
+  in PAPER, so a black garment reads as a dense field of LIGHT: right by density, backwards by
+  tone, which is precisely why it needed a paragraph of explanation. On paper the identical
+  formula draws dense BLACK dots for a black garment. **The encoding stops needing a note**,
+  which matters when 60% of the closet is below L*25.
+- **Edges invert their BLEND, not their idea.** `lighter` is additive so crossings bloom; on
+  white it adds toward white and edges vanish. `multiply` is the mirror — overlapping strokes
+  darken — so the nebula-convergence behaviour survives in ink. `T.edgeGain` (1.9 on paper)
+  compensates because multiply needs more ink than lighter needs light.
+- **THE GLASS WORKS ON PAPER. I gated it off first and that was wrong.** The reasoning —
+  "refracted black is black, so refracted white is white" — ignored that the ribs GATHER the
+  field (07-26). The field on paper is black marks on white, which gives refraction plenty to
+  bend; the empty-strip problem the gathering fix solved is polarity-independent. It renders as
+  flutes of INK rather than flutes of light, arguably with more tonal range, because ink on
+  paper spans 0–100% while light on ink is capped by the field's own brightness.
+- **What is genuinely lost: the emitted-light quality.** Dark reads as an instrument, light
+  reads as an engraved plate. The never-worn row hover had to become ink WEIGHT instead of a
+  glow, because paper cannot emit. That is the actual aesthetic decision, not a bug.
+  **Oxblood never-worn rings read better on white** and match /insights, where oxblood already
+  sits on white as the alert token.
+- **A HALF-TOKENISED PALETTE CANNOT BE THEMED, and it failed twice the same way.** The chrome
+  was already in `--ink`/`--paper` but every canvas colour was a literal. Two hardcoded
+  `rgba(245,243,239,…)` survived the first pass — the edge CORE (white lines on a white ground,
+  i.e. **the graph's entire structure invisible**) and the legend swatches for *worn together*
+  and *could pair* (paper lines on paper, so the key showed nothing). Both are now tokens
+  (`--edge-strong` / `--edge-weak`), so the key and the field are described in one place.
+
+**`cdp.py --gpu` (new): every /galaxy screenshot before 07-29 was the 2D FALLBACK.** Headless
+Chrome ran `--disable-gpu`, so `GLASS_GL` went null and `drawReededGlass()` painted the
+stand-in — meaning the reeded glass had never actually been reviewed in a screenshot, only its
+substitute. `--gpu` uses SwiftShader (software GL, slow, correct). **Use it for any page with a
+shader**, or the image shows something the user will never see.
+
 ## TOUCH — the interaction half of mobile (2026-07-28, $0)
 
 **Her ask: mobile across the board, layout AND interactions.** Audited at a real 390px WITH

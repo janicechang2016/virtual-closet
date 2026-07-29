@@ -15,6 +15,10 @@
   :root {
     --ink:#0E0E10; --charcoal:#1C1D20; --graphite:#3A3D42;
     --oxblood:#6F2B2B; --amber:#CC8A3A; --paper:#F5F3EF; --dim:#8b8d92;
+    /* The legend swatches were inline rgba(245,243,239,...) literals — paper
+       lines, invisible the moment the ground became paper. Tokens instead, so
+       the key and the field are described in one place. */
+    --edge-strong:rgba(245,243,239,.55); --edge-weak:rgba(245,243,239,.16);
 
   }
   /* LIGHT-GROUND PREVIEW (`?ground=light`, 07-29). Preview only — the default
@@ -22,7 +26,8 @@
      chrome is already expressed in --ink/--paper rather than literals; the
      canvas needed a theme object because its colours were hardcoded. */
   html.ground-light { --ink:#F5F3EF; --paper:#0E0E10; --dim:#6b6d72;
-    --graphite:#c9c7c2; }
+    --graphite:#c9c7c2;
+    --edge-strong:rgba(14,14,16,.62); --edge-weak:rgba(14,14,16,.26); }
   html.ground-light header {
     background:linear-gradient(180deg, rgba(245,243,239,.95), rgba(245,243,239,0)); }
   html.ground-light #detail,
@@ -36,13 +41,9 @@
   html.ground-light #panel .orow:hover { color:var(--paper); text-shadow:none;
     font-weight:600; }
   html.ground-light .moneylock input { background:rgba(245,243,239,.8); }
-  /* THE GLASS IS OFF IN THIS PREVIEW, DELIBERATELY. Its whole rationale is
-     inverted here: the ribs gather the field because "refracted black is black"
-     and the column needed light to catch. On paper the problem is the mirror
-     image — refracted white is white — so the column needs re-deriving, not
-     re-tinting. Better she judges the field clean than judges the idea by a
-     shader built for the opposite ground. */
-  html.ground-light #glass { display:none; }
+  /* The glass runs on the light ground too (her call 07-29) — its rationale
+     inverts rather than disappears, so the question is what refraction does with
+     ink on paper instead of light on ink. */
 
   * { box-sizing:border-box; }
   html,body { margin:0; height:100%; background:var(--ink); color:var(--paper);
@@ -136,7 +137,10 @@
   #legend { position:fixed; left:22px; top:64px; z-index:20; color:var(--dim);
     display:flex; flex-direction:column; gap:7px; }
   #legend div { display:flex; align-items:center; gap:8px; }
-  #legend i { width:22px; height:0; border-top:1px solid; display:block; }
+  #legend i { width:22px; height:0; display:block;
+    border-top:1px solid var(--edge-strong); }
+  #legend i.weak { border-top-color:var(--edge-weak); border-top-style:dashed; }
+  #legend i.never { border-top-color:var(--oxblood); }
   #legend .thick { border-top-width:1px; }
   #hint { position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
     color:var(--dim); z-index:20; }
@@ -191,9 +195,9 @@
 <div id="stage"><canvas id="c"></canvas><canvas id="glass"></canvas></div>
 
 <div id="legend" class="mono">
-  <div><i style="border-color:rgba(245,243,239,.55)"></i> worn together</div>
-  <div><i style="border-color:rgba(245,243,239,.16);border-top-style:dashed"></i> could pair</div>
-  <div><i style="border-color:var(--oxblood)"></i> never worn</div>
+  <div><i></i> worn together</div>
+  <div><i class="weak"></i> could pair</div>
+  <div><i class="never"></i> never worn</div>
 </div>
 
 <div id="controls">
@@ -651,7 +655,7 @@ function glassRect() {
   // running rather than merely being invisible, which matters on a phone.
   // Same empty-rect switch is used by the light-ground preview: the glass is
   // built for an ink field and needs re-deriving on paper, not re-tinting.
-  if (innerWidth <= 640 || LIGHT_GROUND) {
+  if (innerWidth <= 640) {
     return { left: innerWidth, top: 0, width: 0, height: innerHeight };
   }
   const w = Math.min(334, innerWidth * 0.34);
