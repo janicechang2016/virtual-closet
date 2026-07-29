@@ -308,8 +308,10 @@ def feedback_current(garment=None, limit=None):
 def _engine():
     if str(ENGINE_DIR) not in sys.path:
         sys.path.insert(0, str(ENGINE_DIR))
-    from engine import gaps, preference  # noqa: E402
-    return gaps, preference
+    # `constraints` is returned too since 07-28: the stylist paths need
+    # normalise_occasion() to map a tab label onto her occasion-scoped rules.
+    from engine import constraints, gaps, preference  # noqa: E402
+    return gaps, preference, constraints
 
 
 def stylist_log_entries():
@@ -1027,7 +1029,7 @@ def _gap_report(data, garments, looks, names):
 def stylist_suggest(occasion="", n=6):
     if not SNAPSHOT.exists():
         return {"error": "no closet snapshot - run server/scripts/dump_closet.py"}
-    gaps, preference = _engine()
+    gaps, preference, constraints = _engine()
     data = json.loads(SNAPSHOT.read_text())
     garments, looks = data["garments"], data["outfits"]
     by_id = {g["id"]: g for g in garments}
@@ -1055,7 +1057,11 @@ def stylist_suggest(occasion="", n=6):
         prior = published
 
     aff = preference.affinity(garments, prior, stylist_feedback())
-    ranked = gaps.ranked_outfits(garments, affinity=aff)
+    # Same normalisation as the deployed pool, so the two paths cannot disagree
+    # about which rules apply to a tab.
+    ranked = gaps.ranked_outfits(
+        garments, affinity=aff,
+        occasion=constraints.normalise_occasion(occasion))
 
     # Rotate. Ranking is deterministic, so without this every "suggest again"
     # returned the identical six cards and the feedback loop could never be fed.

@@ -57,7 +57,7 @@ def stylist_pool(limit=POOL_DEPTH):
     Feedback is empty by construction here: the export has no log to read and no
     route to write one, so affinity rests on her published looks alone.
     """
-    gaps, preference = closet_server._engine()
+    gaps, preference, constraints = closet_server._engine()
     data = json.loads(closet_server.SNAPSHOT.read_text())
     garments, looks = data["garments"], data["outfits"]
     by_id = {g["id"]: g for g in garments}
@@ -131,7 +131,12 @@ def stylist_pool(limit=POOL_DEPTH):
         else:
             prior = published
         aff = preference.affinity(garments, prior, ())
-        full = gaps.ranked_outfits(garments, affinity=aff)
+        # Her occasion-scoped rules apply to the tab being built. The tab label is
+        # the published-looks vocabulary, so it is normalised rather than passed
+        # raw — see constraints.OCCASION_ALIASES.
+        full = gaps.ranked_outfits(
+            garments, affinity=aff,
+            occasion=constraints.normalise_occasion(occ))
         ranked = full[:limit]
         out[occ] = {
             "prior_looks": len(prior),

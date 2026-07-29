@@ -98,15 +98,31 @@ def is_valid(garments):
 # she wrote about her Keens.
 KEEN_SANDALS = "53-keen-sandals"
 
+#: Rules take (garments, occasion). `occasion` is an OCCASION SLUG from
+#: `app.wear_rules.OCCASIONS`, or None when the caller has no context — and None
+#: must mean "cannot violate an occasion rule", never "assume the worst".
+#: Suggestions are made for a specific occasion or for none at all, and
+#: silently applying a dinner rule to an unspecified request would filter the
+#: general pool on a premise nobody stated.
 USER_RULES = (
     # "Never suggest a sneaker with a skirt or dress."
     ("sneaker with a skirt or dress",
-     lambda gs: (_any_sub(gs, "sneaker") and _any_skirt_or_dress(gs))),
+     lambda gs, occ: (_any_sub(gs, "sneaker") and _any_skirt_or_dress(gs))),
     # "Keen sandals are for extremely casual and walking days only. Never
     #  suggest them with a skirt or dress."
     ("keen sandals with a skirt or dress",
-     lambda gs: (any(g.get("id") == KEEN_SANDALS for g in gs)
-                 and _any_skirt_or_dress(gs))),
+     lambda gs, occ: (any(g.get("id") == KEEN_SANDALS for g in gs)
+                      and _any_skirt_or_dress(gs))),
+    # "Never suggest a sneaker for dinner." — added 07-28 from the wear data,
+    # confirmed by her. Of her 6 logged dinners, 5 were the yello-heels and one
+    # was flats; sneakers were worn 5 times and NEVER to dinner. This is the
+    # first rule derived from what she DID rather than from what she said, which
+    # is exactly the target the stylist was re-pointed at on 07-27.
+    # CAVEAT, recorded so it can be undone honestly: n=6 dinners. It is enforced
+    # because she confirmed it, not because 6 is a sample. Delete this tuple and
+    # its test to remove it — nothing else references it.
+    ("sneaker for dinner",
+     lambda gs, occ: occ == "dinner" and _any_sub(gs, "sneaker")),
 )
 
 
@@ -121,17 +137,51 @@ def _any_skirt_or_dress(garments):
                for g in garments)
 
 
-def user_rule_violations(garments):
+#: The stylist's occasion tabs come from the PUBLISHED LOOKS' free-text
+#: vocabulary; wear logging uses the 0006 slugs. They are two vocabularies for
+#: one idea, and `dinner` happens to be spelled identically in both — relying on
+#: that coincidence is how the live route and the deployed pool drifted apart on
+#: 07-27, so the mapping is written down instead.
+#:
+#: `work` maps to NOTHING on purpose: a look tagged "work" does not say whether
+#: it was worn from home or in an office, and 0006 split those precisely because
+#: the difference matters. Guessing would put a rule on a premise she never
+#: stated.
+OCCASION_ALIASES = {
+    "day out": "day_out",
+    "dinner": "dinner",
+    "event / formal": "event",
+    "home / lounge": "home",
+}
+
+
+def normalise_occasion(value):
+    """Display label or slug -> slug, or None if it cannot be resolved."""
+    if not value:
+        return None
+    if value in OCCASION_ALIASES:
+        return OCCASION_ALIASES[value]
+    # already a slug? only accept ones a rule could reference
+    known = {slug for _, slug in OCCASION_ALIASES.items()} | {"work_home", "work_out"}
+    return value if value in known else None
+
+
+def user_rule_violations(garments, occasion=None):
     """Her directives. Empty list means the stylist may suggest this outfit.
 
     Filters suggestions only. Never call this to decide whether something IS an
     outfit — that is `hard_violations`.
+
+    `occasion` is optional and defaults to None, which cannot violate an
+    occasion-scoped rule. A caller with no occasion is asking a general
+    question, and answering it with dinner's constraints would filter the pool
+    on a premise nobody stated.
     """
-    return [name for name, breaks in USER_RULES if breaks(garments)]
+    return [name for name, breaks in USER_RULES if breaks(garments, occasion)]
 
 
-def allowed_by_user_rules(garments):
-    return not user_rule_violations(garments)
+def allowed_by_user_rules(garments, occasion=None):
+    return not user_rule_violations(garments, occasion)
 
 
 def _spread(values):

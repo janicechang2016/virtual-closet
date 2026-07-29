@@ -170,6 +170,41 @@ class TestUserRules(unittest.TestCase):
                  g("99-other-sandals", "shoes", subcategory="sandal")]
         self.assertTrue(constraints.allowed_by_user_rules(combo))
 
+    def test_sneaker_for_dinner_rejected(self):
+        """Her 07-28 rule, from the wear data: 6 dinners, 0 sneakers."""
+        combo = [g("t", "top"), g("b", "bottom", subcategory="trousers"),
+                 g("sn", **self.SNEAK)]
+        self.assertTrue(constraints.allowed_by_user_rules(combo))          # no occasion
+        self.assertIn("sneaker for dinner",
+                      constraints.user_rule_violations(combo, "dinner"))
+
+    def test_no_occasion_cannot_violate_an_occasion_rule(self):
+        """None means "not stated", never "assume the strictest".
+
+        A caller with no occasion is asking a general question; answering it
+        with dinner's constraints would filter the pool on a premise nobody
+        stated, and would silently shrink the default stylist tab.
+        """
+        combo = [g("t", "top"), g("b", "bottom", subcategory="trousers"),
+                 g("sn", **self.SNEAK)]
+        for occ in (None, "", "work_home", "day_out"):
+            self.assertTrue(constraints.allowed_by_user_rules(combo, occ),
+                            "sneakers wrongly blocked for %r" % occ)
+
+    def test_occasion_aliases_map_the_two_vocabularies(self):
+        """Published-look labels and 0006 slugs are two vocabularies for one
+        idea; `dinner` matching in both is a coincidence, not a design."""
+        self.assertEqual(constraints.normalise_occasion("event / formal"), "event")
+        self.assertEqual(constraints.normalise_occasion("day out"), "day_out")
+        self.assertEqual(constraints.normalise_occasion("dinner"), "dinner")
+        self.assertEqual(constraints.normalise_occasion("home / lounge"), "home")
+        # "work" is deliberately unresolvable: a look tagged work does not say
+        # whether it was from home or in an office, and 0006 split those because
+        # the difference matters.
+        self.assertIsNone(constraints.normalise_occasion("work"))
+        self.assertIsNone(constraints.normalise_occasion(""))
+        self.assertIsNone(constraints.normalise_occasion("brunch"))
+
     def test_user_rules_are_not_hard_rules(self):
         """The tiers must stay separate.
 
@@ -392,6 +427,49 @@ class TestRealCloset(unittest.TestCase):
             ids = [g_["id"] for g_ in combo]
             self.assertEqual(len(ids), len(set(ids)),
                              "garment duplicated within an outfit: %s" % ids)
+
+    def test_outerwear_coverage_gap_is_known_and_deliberate(self):
+        """Exactly ONE logged wear falls outside the suggestable space.
+
+        `02-jeans + 04-structured-blazer + 07-aritzia-suit-vest +
+        54-salomon-sneakers` needs `with_outerwear=True`. MEASURED 07-28 and
+        left as-is on purpose:
+
+          space            1600 -> 9250 (5.8x)
+          coverage        14/15 -> 15/15
+          top 12 shown        0 outerwear outfits — the visible stylist is UNCHANGED
+          top 180 (shuffle)  46% outerwear, in a 27-37C New York July
+          that outfit ranks   5389 of 9250
+
+        So enabling outerwear does not surface the outfit that motivates it —
+        it only makes it enumerable — while flooding the pool the deployed page
+        shuffles from. The real fix is to gate outerwear on WEATHER, which
+        migration 0006 now collects but cannot yet support (15 wears, one
+        fortnight, two conditions). Revisit with a winter's data.
+
+        This test pins the gap so it stays a decision instead of becoming a
+        rediscovery.
+        """
+        target = sorted(["02-jeans", "04-structured-blazer",
+                         "07-aritzia-suit-vest", "54-salomon-sneakers"])
+        if not all(t in {g["id"] for g in self.garments} for t in target):
+            self.skipTest("closet no longer contains that outfit")
+
+        def space(**kw):
+            return {tuple(sorted(g["id"] for g in c))
+                    for c in gaps.enumerate_outfits(self.garments, **kw)}
+
+        self.assertNotIn(tuple(target), space(),
+                         "outerwear is now enumerated by default — update this test "
+                         "and the notes in CLAUDE.md, do not just delete it")
+        self.assertIn(tuple(target), space(with_outerwear=True))
+
+        by_oid = {o["id"]: o for o in self.outfits}
+        worn = {tuple(sorted(by_oid[w["outfit_id"]]["garment_ids"]))
+                for w in self.wears if w["outfit_id"] in by_oid}
+        uncovered = [w for w in worn if w not in space()]
+        self.assertEqual(len(uncovered), 1,
+                         "coverage changed: %d wears outside the space" % len(uncovered))
 
     def test_worn_means_the_same_thing_everywhere(self):
         """One definition of "worn", checked against /insights' own arithmetic.

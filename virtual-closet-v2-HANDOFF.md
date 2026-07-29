@@ -192,11 +192,13 @@ strongest candidate, so raise it with her rather than treating it as closed.**
 - **A stale `closet_snapshot.json` looks exactly like unbuilt features.** Phase 3c appeared
   "not done" for a day; the code had always been there and the snapshot was old. When new data
   "changes nothing downstream", re-dump before reading code.
-- **THE 07-27 MEASUREMENT SCRIPTS ARE GONE (confirmed 07-28).** `heldout_wear_test.py` and
-  `loo_wear_test.py` lived in an untracked `scratchpad/` that no longer exists. The headline
-  numbers (0.660 / 0.555, the leave-one-out table) **cannot be reproduced today**, and Phase 6
-  has no harness to re-measure with. Anything worth quoting later belongs in `server/scripts/`
-  and in git, not in scratchpad.
+- **The 07-27 measurement scripts were lost to an untracked `scratchpad/`. REBUILT 07-28 as
+  `server/scripts/wear_model_report.py`** — run `--check` before trusting any number that
+  claims to compare against 07-27. Anything worth quoting later belongs in `server/scripts/`
+  and in git, never in scratchpad.
+- **Measurements must run with `apply_user_rules=False`.** The 07-27 figures are on the 2320
+  structural space; her rules cut the suggestable space to 1600 on 07-28. Comparing across the
+  two silently compares different questions.
 - **`dump_closet.py` FLATTENS ITS QUERY TO ONE LINE** before handing it to psql, so a `--`
   comment inside `QUERY` silently swallows the rest of the statement. Use no line comments
   there. Cost a broken dump on 07-28.

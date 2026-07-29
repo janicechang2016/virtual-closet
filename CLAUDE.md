@@ -654,6 +654,44 @@ H(shoe|occasion) 1.11, over 8 distinct shoes in 15 wears.
 - Weather landed but says nothing yet: 15 wears, **2 distinct conditions** (rain/cloud) across
   one humid NYC fortnight. Its value is that it now accrues for free.
 
+## Measurement harness + four foundation fixes (2026-07-28, $0)
+
+- **`server/scripts/wear_model_report.py` — THE MEASUREMENT HARNESS, TRACKED.** Replaces the
+  lost `scratchpad/*.py`. Reproduces 07-27 with the figures as its acceptance test (`--check`,
+  exit 1 on drift): affinity 0.648/0.543 (expected 0.652/0.548), colour 0.373, in-sample
+  sanity **0.940 against a documented 0.939** — that last one is the evidence the METHOD
+  matches, not merely the neighbourhood. LOO reproduces too: adding wears costs **−0.123 /
+  −0.172** (documented −0.120 / −0.172), pinned separately and failing loudly if it ever stops
+  being negative, since that is what justifies `PRIOR = ("manual",)`.
+  **THE TRAP IT IS BUILT AROUND: the 07-27 space was STRUCTURAL (2320); her rules cut the
+  suggestable space to 1600 on 07-28.** Everything runs `apply_user_rules=False` or it is not
+  comparable. `--rules` measures the filtered space and answers a different question — there
+  affinity falls to 0.630/0.507, because **her rules removed 720 outfits that were free wins
+  for the ranker.** The remaining space is a harder, more honest benchmark.
+- **ONE DEFINITION OF "WORN" (`gaps.worn_outfits()` = published + logged).** `engine_report.py`
+  passed the RAW outfit list to `unworn()`/`cost_per_wear()`, so a garment counted as worn
+  because the stylist once SUGGESTED it — 9 never-worn against /insights' 13, and every
+  cost-per-wear deflated. Now 13 / $1,456 on both surfaces, pinned by a test that recomputes
+  the /insights figure independently.
+- **USER RULES ARE OCCASION-AWARE**, and her third rule is the first derived from BEHAVIOUR:
+  **"never suggest a sneaker for dinner"** (6 logged dinners: 5 yello-heels, 1 flats; sneakers
+  worn 5×, never to dinner). Rules take `(garments, occasion)`; **`occasion=None` cannot violate
+  an occasion rule** — None means "not stated", never "assume the strictest", or the default
+  tab would silently shrink on a premise nobody made. Dinner tab 1600 -> 1248; both stylist
+  paths verified at 0 violations across 7,200 deployed + 42 live suggestions.
+  **`OCCASION_ALIASES` maps the two vocabularies** (published-look labels vs 0006 slugs);
+  `dinner` matching in both is a COINCIDENCE, not a design. **`work` maps to nothing on
+  purpose** — a look tagged "work" does not say whether it was from home or in an office, and
+  0006 split those precisely because that difference matters.
+- **THE OUTERWEAR COVERAGE GAP IS A DECISION, NOT AN OVERSIGHT.** One logged wear
+  (`02-jeans + 04-structured-blazer + 07-aritzia-suit-vest + 54-salomon-sneakers`) needs
+  `with_outerwear=True`. Measured: space 1600 -> 9250, coverage 14/15 -> 15/15, **but 0 of the
+  top 12 shown are outerwear (the visible stylist is unchanged), 46% of the top 180 the
+  deployed page shuffles from ARE — in a 27–37°C New York July — and the outfit that motivates
+  the change ranks 5389 of 9250.** Enabling outerwear does not surface it; it only makes it
+  enumerable. **The real fix is to gate outerwear on WEATHER**, which 0006 now collects but
+  cannot yet support. Revisit with a winter's data. Pinned by a test so it stays decided.
+
 ## Her rules run in the engine (2026-07-28, $0) — the FIRST time her words change `/stylist`
 
 **`constraints.py` now has THREE tiers, not two: HARD (structural) · USER (hers) · SOFT

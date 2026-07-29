@@ -27,7 +27,8 @@ def _cat(garments, name):
             or name in (g.get("alt_categories") or ())]
 
 
-def enumerate_outfits(garments, with_outerwear=False, apply_user_rules=True):
+def enumerate_outfits(garments, with_outerwear=False, apply_user_rules=True,
+                      occasion=None):
     """Every structurally valid outfit shape: (top+bottom | dress) + shoes.
 
     Outerwear is off by default — including it multiplies the space by the
@@ -50,7 +51,11 @@ def enumerate_outfits(garments, with_outerwear=False, apply_user_rules=True):
     def ok(combo):
         if not constraints.is_valid(combo):
             return False
-        return constraints.allowed_by_user_rules(combo) if apply_user_rules else True
+        # `occasion` enables her occasion-scoped rules. None cannot violate one,
+        # so a caller that does not know the occasion gets the general pool
+        # rather than dinner's.
+        return (constraints.allowed_by_user_rules(combo, occasion)
+                if apply_user_rules else True)
 
     out = []
     for base in bases:
@@ -69,16 +74,21 @@ def enumerate_outfits(garments, with_outerwear=False, apply_user_rules=True):
 
 
 def ranked_outfits(garments, limit=None, with_outerwear=False, affinity=None,
-                   affinity_weight=0.75):
+                   affinity_weight=0.75, occasion=None):
     """Valid outfits ordered best-first.
 
     With an `affinity` map (see engine.preference) that signal leads, because it
     is the only one measured to predict her judgement: on outfits it had never
     seen, learned affinity scored AUC 0.824 while colour harmony scored 0.491 —
     chance. Colour is kept at a small weight as a tiebreak, not a ranker.
+
+    `occasion` FILTERS by her occasion-scoped rules; it does not re-rank. There
+    is no occasion-conditioned model — at 15 wears the largest occasion has 6
+    examples, and a ranker built on that would be a number with nothing behind
+    it. Her rules are a different thing: she stated them.
     """
     scored = []
-    for combo in enumerate_outfits(garments, with_outerwear):
+    for combo in enumerate_outfits(garments, with_outerwear, occasion=occasion):
         ids = [g["id"] for g in combo]
         h, worst = colour.outfit_harmony(combo)
         s, notes = constraints.score(combo, h)
