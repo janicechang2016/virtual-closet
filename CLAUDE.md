@@ -1000,7 +1000,14 @@ which is also the only thing that improves the model.
 - **`engine_report.py` WAS CRASHING, and had been before this session** — `pcts.sort()` fell
   through to comparing `render_cache_key` (None) against a str whenever two looks tied, so the
   acceptance-evidence script died partway through its own output. Sorts on the numbers now.
-### The `reasoning` toggle (07-29, $0) — the stylist explains itself, on request
+### The `reasoning` toggle (07-29, $0) — the stylist explains itself, on request. **DEPLOYED at `b252d61`.**
+
+**Verified live after the push:** all six pages 200, API `/health` 200 and `/wear` 401, 7,200
+entries carrying evidence, first card reading "not yet tried · samira draped tank + studded
+mule heels". Live distribution in the default tab: **untried 631 · rejected 557 · styled 12**
+(it moves with each rebuild — her verdicts are training data). **The toggle ships on the PUBLIC
+`/stylist` too**, which is safe because it is display-only: `body.demo` still hides the verdict
+controls, so an interviewer can see the model account for itself without being able to write.
 
 **A `reasoning` button in the stylist header; OFF by default, and her choice PERSISTS**
 (`localStorage.stylistReasoning`). On, every card gains one line saying what the model
