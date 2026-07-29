@@ -955,8 +955,17 @@ pairwise.**
   best of six ablations on a 15-positive test set is selection on the test set: the ROBUST
   claim is "pair structure beats a per-garment scalar in-rotation" (every variant except
   positives-only clears 0.726 against 0.543), not any single decimal.
-**WIRED AND DEPLOYED 07-29.** She reviewed it locally over 34 verdicts first, then approved
-the push — the review is what produced the session findings below.
+**WIRED AND DEPLOYED 07-29 at commit `3de2a9c`.** She reviewed it locally over 34 verdicts
+first, then approved the push — the review is what produced the session findings below.
+Verified against the LIVE payload, not the local build: build stamp `3de2a9c`, all six pages
+200, Railway `/health` 200 and `/wear` 401, **7,200 live suggestions at 0 user-rule
+violations**, dress share of the live top 12 **0/12**, money still sealed (closet value not in
+the clear anywhere). The full Vercel build command was run locally BEFORE the push —
+`export_static.py` + `lock_money.mjs`, privacy check included — rather than discovering a
+broken build in production. **The deployed pool was rebuilt after her session, so her 13 new
+blames are already in the live ranking.** Test counts: **76 engine + 31 server = 107.**
+**`/stylist` on the deploy stays read-only** (`body.demo`), so judging still happens locally —
+which is also the only thing that improves the model.
 - **ONE INSERTION POINT, `gaps.ranked_outfits(..., compat=...)`** — the same discipline that
   made her rules land on both stylist paths with no per-path edit. The live route
   (`closet_server.stylist_suggest`) and the deployed pool builder (`export_static.stylist_pool`)
