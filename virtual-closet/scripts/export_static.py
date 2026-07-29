@@ -44,6 +44,14 @@ def asset_urls(node, found):
             asset_urls(v, found)
 
 
+def _evidence_entry(garment_ids, compat, index):
+    """[kind, i, j] for the deployed payload — same engine call the live route
+    makes, so the two cannot disagree about what she has and has not tried."""
+    pairwise = closet_server._pairwise()
+    kind, a, b = pairwise.outfit_evidence(garment_ids, compat)
+    return [kind, index.get(a, -1), index.get(b, -1)]
+
+
 def stylist_pool(limit=POOL_DEPTH):
     """Everything /stylist needs to rank and re-roll in the browser.
 
@@ -160,8 +168,14 @@ def stylist_pool(limit=POOL_DEPTH):
             "total": len(full),
             # aligned to `garments` so it costs one number per garment, not a key
             "affinity": [round(aff.get(gid, 0.5), 4) for gid in order],
+            # Third element: what the model KNOWS about this combination, as
+            # [kind, i, j] against `garments` — indices, not names, because this
+            # ships 1200 entries per tab and a sentence per entry would be most
+            # of the payload. The engine classifies; stylist.html words it, the
+            # same renderer the live route feeds.
             "ranked": [
-                ([index[g] for g in o["garment_ids"]], o.get("notes") or [])
+                ([index[g] for g in o["garment_ids"]], o.get("notes") or [],
+                 _evidence_entry(o["garment_ids"], compat, index))
                 for o in ranked
             ],
         }

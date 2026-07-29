@@ -236,7 +236,10 @@ strongest candidate, so raise it with her rather than treating it as closed.**
 - **`INSIGHTS_PASSCODE` must exist in Vercel, Production *and* Preview.** Missing it fails the
   build on purpose — a silent skip would publish real figures.
 - **Serving a copy of a page from another path breaks it** — node and garment images resolve
-  relative. Test on the real route.
+  relative. Test on the real route. **`scripts/serve_site.py` (07-29) is how**: a plain
+  `http.server` over a built site 404s `/stylist` and `/api/stylist/suggest`, and stylist.html
+  answers by rendering NOTHING, which reads as a broken feature rather than a broken test. It
+  applies vercel.json's rewrites, read from the file so they cannot drift.
 - **A stale `closet_snapshot.json` looks exactly like unbuilt features.** Phase 3c appeared
   "not done" for a day; the code had always been there and the snapshot was old. When new data
   "changes nothing downstream", re-dump before reading code.

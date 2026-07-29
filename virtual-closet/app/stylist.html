@@ -108,6 +108,16 @@
   .panel .grey { flex:1; min-height:0; overflow:hidden; margin-top:6px;
     color:var(--dim); }
   .panel .caution { text-transform:uppercase; letter-spacing:.12em; }
+  /* What the model knows about this combination. Hidden until she asks for it —
+     the cards are hers to read at a glance, and reasoning is a lens over them,
+     not a permanent fixture. Same relationship the carousel's Index tab has to
+     the carousel. */
+  .panel .ev { display:none; text-transform:uppercase; letter-spacing:.12em; }
+  body.reasoning .panel .ev { display:block; }
+  /* The one state that is not a caveat: she has already put all of these
+     together, so it reads as ink rather than as a hedge. */
+  .panel .ev.styled { color:var(--ink); opacity:.55; }
+  #why[aria-pressed="true"] { background:var(--ink); color:var(--paper); }
   .panel .items { text-transform:uppercase; letter-spacing:.1em; margin-top:3px; }
 
   .acts { display:flex; border-top:1px solid var(--line); }
@@ -166,6 +176,7 @@
       <option>event / formal</option><option>travel</option><option>home / lounge</option>
     </select>
   </label>
+  <button id="why" aria-pressed="false">reasoning</button>
   <button id="hist">decisions</button>
   <button id="again" class="primary">suggest again</button>
 </header>
@@ -199,6 +210,24 @@ let SHOWN = [];
 
 const nameOf = g => (g.name || g.subcategory || g.category || g.id);
 
+// THE WORDING LIVES HERE AND ONLY HERE. Both payloads ship the engine's
+// CLASSIFICATION — [kind, a, b] — and this renders it, so the live route and
+// the deployed pool cannot describe the same outfit differently.
+//
+// "styled", never "worn": the positive evidence is her published looks, and
+// published is not worn. 18 of the 35 garments in those looks have never
+// appeared in the wear log, so a card claiming she wore something she only
+// photographed would be a small lie in a feature whose whole job is honesty.
+function evidenceLine(ev) {
+  if (!ev) return '';
+  const [kind, a, b] = ev;
+  if (kind === 'rejected')
+    return `<div class="ev">you passed on ${a} + ${b}</div>`;
+  if (kind === 'untried')
+    return `<div class="ev">not yet tried · ${a} + ${b}</div>`;
+  return `<div class="ev styled">you have styled all of these</div>`;
+}
+
 function cardHTML(o, i, wild) {
   const items = o.garments.map(g => `
     <div class="it${g.framed ? ' framed' : ''}" data-c="${g.category}"
@@ -216,6 +245,7 @@ function cardHTML(o, i, wild) {
         <div class="why">${o.why || ''}</div>
         <div class="grey">
           ${o.caution ? `<div class="caution">${o.caution}</div>` : ''}
+          ${evidenceLine(o.evidence)}
           <div class="items">${rows}</div>
         </div>
       </div>
@@ -353,9 +383,15 @@ function poolSuggest(occasion, n) {
       return PRETTY[(w[0] + ' ' + w.slice(1, -1).join(' ')).trim()] || PRETTY[t] || t;
     }).join('; ');
 
+    // o[2] is [kind, i, j] against G — the engine's classification, resolved to
+    // names here so both payloads reach evidenceLine() in the same shape.
+    const e = o[2];
+    const evidence = e ? [e[0], e[1] >= 0 ? G[e[1]].name : null,
+                                e[2] >= 0 ? G[e[2]].name : null] : null;
+
     return {
       garment_ids: idx.map(i => G[i].id),
-      why: lead, caution, wildcard: !!wild,
+      why: lead, caution, evidence, wildcard: !!wild,
       garments: idx.map(i => ({
         id: G[i].id, name: G[i].name, category: G[i].category,
         subcategory: G[i].subcategory, affinity: aff[i],
@@ -533,6 +569,26 @@ document.getElementById('hist').addEventListener('click', () => {
 
 // #decisions deep-links straight to the review drawer
 if (location.hash === '#decisions') { drawer.classList.add('open'); loadHistory(); }
+
+// REASONING IS A LENS, AND IT STICKS. A per-visit toggle would make her re-ask
+// every time; the whole point is that she decides once whether this page
+// explains itself. Applied to <body> rather than per card, so re-rolling
+// suggestions cannot lose the state — and it needs no re-render, since the
+// lines are already in the DOM and CSS decides whether they show. That also
+// means it works identically on the deployed pool, where there is no server.
+const whyBtn = document.getElementById('why');
+const REASONING_KEY = 'stylistReasoning';
+function setReasoning(on) {
+  document.body.classList.toggle('reasoning', on);
+  whyBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  try { localStorage.setItem(REASONING_KEY, on ? '1' : '0'); } catch (e) {}
+  fitGrey();   // the grey block is a fixed slot; one more line changes the fit
+}
+setReasoning((() => {
+  try { return localStorage.getItem(REASONING_KEY) === '1'; } catch (e) { return false; }
+})());
+whyBtn.addEventListener('click', () =>
+  setReasoning(!document.body.classList.contains('reasoning')));
 
 occ.addEventListener('change', load);
 document.getElementById('again').addEventListener('click', load);

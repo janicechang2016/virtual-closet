@@ -1000,6 +1000,49 @@ which is also the only thing that improves the model.
 - **`engine_report.py` WAS CRASHING, and had been before this session** — `pcts.sort()` fell
   through to comparing `render_cache_key` (None) against a str whenever two looks tied, so the
   acceptance-evidence script died partway through its own output. Sorts on the numbers now.
+### The `reasoning` toggle (07-29, $0) — the stylist explains itself, on request
+
+**A `reasoning` button in the stylist header; OFF by default, and her choice PERSISTS**
+(`localStorage.stylistReasoning`). On, every card gains one line saying what the model
+actually knows about that combination. **Her call: a toggle rather than hover** — hover does
+not exist on a phone, and a lens she sets once beats one she re-asks for every visit. Applied
+to `<body>`, so re-rolling suggestions cannot lose it and no re-render is needed; that is also
+why it works identically on the deployed pool, where there is no server.
+
+**WHAT MADE THIS FEATURE DIFFERENT FROM THE ONE ORIGINALLY SCOPED.** The plan was "name the
+weak link". Measured first: across the top 40 suggestions **no weakest pair scores below 0.41
+and the median is 0.50 — exactly the no-evidence value.** The ranker has already removed the
+bad pairings, so on a card good enough to show her the weak link is almost never "this is bad"
+and almost always "I have never seen these two together". Phrasing that as a flaw would have
+been quietly dishonest. Phrased as a gap it is true AND more useful: the pair it knows least
+about is the pair her verdict teaches it the most from. **The explanation layer and the
+data-collection layer turned out to be the same feature.**
+
+- Three states from `pairwise.outfit_evidence()`: `rejected` ("you passed on X + Y", from her
+  blame), `untried` ("not yet tried · X + Y"), `styled` ("you have styled all of these").
+  Distribution in the deployed default tab: untried 706, rejected 482, **styled only 12**.
+- **IT SAYS "STYLED", NEVER "WORN".** Positive evidence is her PUBLISHED looks, and published is
+  not worn — 18 of the 35 garments in those looks have never appeared in the wear log. A card
+  claiming she wore something she only photographed is the small false note that makes a whole
+  feature untrustworthy.
+- **THE SENTENCE IGNORES THE TYPE BACKOFF, deliberately, and a test pins it.** The model may
+  score a sneaker low because she rejected a DIFFERENT sneaker with a skirt; that inference
+  belongs in the ranking, never in a sentence asserting she did something she did not do.
+  `pair_evidence()` reads garment-level counts only.
+- **NO THIRD COPY OF THE LOGIC.** The lead/caution rationale is already written twice — Python
+  (`_rationale`, live route) and JS (`decorate`, static pool). Both payloads now ship the
+  engine's CLASSIFICATION and `stylist.html` does the wording, so the two paths cannot describe
+  the same outfit differently. The deployed payload carries `[kind, i, j]` INDICES; a sentence
+  per entry across 7,200 would have been most of the file (177KB -> 322KB as indices).
+- **The fixed 104px panel survives it**, which was the obvious thing to break: panel stays
+  exactly 104px on both paths, no overflow, grey block auto-fits 10px -> 9px against a 6.5px
+  floor. Toggle off is byte-identical to before — the line is in the DOM at `display:none`.
+- **`scripts/serve_site.py` is new and exists because of a false negative.** A plain
+  `http.server` over a built site 404s `/stylist` and `/api/stylist/suggest`, and stylist.html
+  answers by rendering NOTHING — indistinguishable from a broken feature. It applies
+  vercel.json's rewrites (read from the file, so they cannot drift) so the DEPLOYED page can be
+  tested on its real routes. Use it for any deployed-path check.
+
 ### Her first session on the pairwise stylist (07-29, 34 verdicts) — what it taught
 
 **SHE LIKES IT, AND HER CLICKS AGREE: acceptance 46% -> 62%** (50% -> 67% excluding

@@ -314,6 +314,13 @@ def _engine():
     return gaps, preference, constraints
 
 
+def _pairwise():
+    if str(ENGINE_DIR) not in sys.path:
+        sys.path.insert(0, str(ENGINE_DIR))
+    from engine import pairwise  # noqa: E402
+    return pairwise
+
+
 def blamed_rejections():
     """Her rejections that NAME the garment at fault — the pairwise model's only
     source of negative evidence, and the reason it can do what affinity cannot.
@@ -1228,6 +1235,13 @@ def stylist_suggest(occasion="", n=6):
         lead, caution = _rationale(o, aff, names, worn, occasion, wild)
         out["why"] = lead
         out["caution"] = caution
+        # What the model actually KNOWS about this combination, shipped as data
+        # rather than as a sentence: the CLASSIFICATION lives in the engine and
+        # the wording lives in stylist.html, which renders for both this route
+        # and the static pool. The lead/caution above are already written twice
+        # (here and in JS) — do not make that three.
+        kind, pa, pb = _pairwise().outfit_evidence(o["garment_ids"], compat)
+        out["evidence"] = [kind, names.get(pa, pa), names.get(pb, pb)]
         out["garments"] = [{
             "id": gid,
             "name": names.get(gid, gid),

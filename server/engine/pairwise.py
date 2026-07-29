@@ -208,6 +208,67 @@ def worst_pair(garment_ids, model):
     return (a, b, s)
 
 
+def pair_evidence(model, a, b):
+    """(positive, negative) weight recorded for this exact pair of garments.
+
+    GARMENT LEVEL ONLY, deliberately — this answers "what have I seen HER do
+    with these two", not "what do I infer". The type backoff is inference and
+    belongs in the score, not in a sentence claiming she did something.
+    """
+    key = (a, b) if a < b else (b, a)
+    return (model["pair_pos"].get(key, 0.0), model["pair_neg"].get(key, 0.0))
+
+
+# What an outfit's evidence looks like. Ordered by how much it should be said:
+# a pairing she has REJECTED outranks one she has never tried, which outranks
+# an outfit made entirely of pairings she has already put together.
+EVIDENCE_REJECTED = "rejected"
+EVIDENCE_UNTRIED = "untried"
+EVIDENCE_STYLED = "styled"
+
+
+def outfit_evidence(garment_ids, model):
+    """What the model actually KNOWS about this combination: (kind, a, b).
+
+    `a`/`b` name the pair the kind refers to; both are None for STYLED, where
+    the statement is about the whole outfit.
+
+    THE POINT OF THIS FUNCTION IS HONESTY ABOUT THE COMMON CASE. Measured on the
+    top 40 suggestions: no weakest pair scores below 0.41 and the median is 0.50
+    — which is exactly the no-evidence value. The ranker has already removed the
+    bad pairings, so on a card good enough to show her, the weak link is almost
+    never "this is bad" and almost always "I have never seen these two
+    together". A UI that phrased that as a flaw would be quietly lying, and one
+    that phrased it as a gap is both true and useful: the pair it knows least
+    about is the pair her verdict would teach it the most from.
+
+    STYLED says styled, not WORN. Positive evidence here comes from her
+    published looks, and published is not worn — 18 of the 35 garments in her
+    published looks have never appeared in the wear log. Claiming she wore
+    something she only photographed is the kind of small false note that makes a
+    whole feature untrustworthy.
+    """
+    ps = pairs(garment_ids)
+    if not ps:
+        return (EVIDENCE_STYLED, None, None)
+
+    rejected, untried = [], []
+    for a, b in ps:
+        pos, neg = pair_evidence(model, a, b)
+        if neg > 0:
+            rejected.append((neg, -pos, a, b))
+        elif pos <= 0:
+            untried.append((pair_score(model, a, b), a, b))
+
+    if rejected:                       # most negative evidence speaks first
+        rejected.sort(reverse=True)
+        return (EVIDENCE_REJECTED, rejected[0][2], rejected[0][3])
+    if untried:                        # of the unknowns, the least promising
+        untried.sort()
+        return (EVIDENCE_UNTRIED, untried[0][1], untried[0][2])
+    return (EVIDENCE_STYLED, None, None)
+
+
 def coverage(model, outfits):
     """How much of a set of outfits the GARMENT level actually speaks to.
 

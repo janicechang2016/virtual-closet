@@ -723,6 +723,56 @@ class TestPairwise(unittest.TestCase):
         cal = pairwise.rank_calibrator(m, [("tee", "jeans"), ("skirt", "flat")])
         self.assertIsInstance(cal(["tee", "jeans", "flat", "skirt"]), float)
 
+    def test_evidence_reports_a_rejected_pairing_first(self):
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans"]}],
+                   verdicts=[{"ids": ["tee", "jeans", "sneaker"],
+                              "verdict": "no", "blame": "sneaker"}])
+        kind, a, b = pairwise.outfit_evidence(["tee", "jeans", "sneaker"], m)
+        self.assertEqual(kind, pairwise.EVIDENCE_REJECTED)
+        self.assertIn("sneaker", (a, b))
+
+    def test_evidence_reports_an_untried_pairing(self):
+        """The COMMON case on a good card, and the one the wording hangs on."""
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans"]}])
+        kind, a, b = pairwise.outfit_evidence(["tee", "jeans", "flat"], m)
+        self.assertEqual(kind, pairwise.EVIDENCE_UNTRIED)
+        self.assertEqual({a, b} & {"tee", "jeans"}, {a, b} - {"flat"})
+        self.assertIn("flat", (a, b))
+
+    def test_evidence_reports_styled_only_when_every_pair_is_known(self):
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans", "flat"]}])
+        kind, a, b = pairwise.outfit_evidence(["tee", "jeans", "flat"], m)
+        self.assertEqual(kind, pairwise.EVIDENCE_STYLED)
+        self.assertIsNone(a)
+        self.assertIsNone(b)
+
+    def test_styled_does_not_claim_a_rejected_pair_is_fine(self):
+        """A pair with BOTH positive and negative evidence is still rejected —
+        she turned it down after styling it, and the later fact is the one that
+        matters."""
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans", "flat"]}] * 3,
+                   verdicts=[{"ids": ["tee", "jeans", "flat"],
+                              "verdict": "no", "blame": "flat"}])
+        self.assertEqual(pairwise.outfit_evidence(["tee", "jeans", "flat"], m)[0],
+                         pairwise.EVIDENCE_REJECTED)
+
+    def test_evidence_ignores_the_type_backoff(self):
+        """Inference belongs in the SCORE. A sentence saying what she did must
+        rest on what she actually did with THESE two garments."""
+        closet = self.closet + [g("sneaker2", "shoes", subcategory="sneaker")]
+        m = pairwise.compatibility(
+            closet, verdicts=[{"ids": ["tee", "skirt", "sneaker"],
+                               "verdict": "no", "blame": "sneaker"}])
+        # sneaker2 inherits a LOW score from the type, but she has never
+        # rejected it, so the sentence must not say she did.
+        self.assertLess(pairwise.pair_score(m, "sneaker2", "skirt"), 0.5)
+        self.assertEqual(pairwise.outfit_evidence(["tee", "skirt", "sneaker2"], m)[0],
+                         pairwise.EVIDENCE_UNTRIED)
+
+    def test_single_item_outfit_is_styled(self):
+        self.assertEqual(pairwise.outfit_evidence(["tee"], self.m())[0],
+                         pairwise.EVIDENCE_STYLED)
+
 
 class TestPairwiseRealCloset(unittest.TestCase):
     """Against the real 58 garments and 18 published looks.
