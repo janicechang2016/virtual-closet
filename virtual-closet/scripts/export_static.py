@@ -54,8 +54,17 @@ def stylist_pool(limit=POOL_DEPTH):
     stylist still re-rolls rather than being a screenshot of one set of cards,
     and why none of `server/engine/` had to be rewritten in JavaScript.
 
-    Feedback is empty by construction here: the export has no log to read and no
-    route to write one, so affinity rests on her published looks alone.
+    The export has no route to WRITE feedback, so affinity still rests on her
+    published looks alone. It does now READ the log, though: since 07-29 the
+    pairwise model trains on her blamed rejections, and `stylist_feedback.jsonl`
+    is tracked in git, so it is present in the Vercel checkout. **If that file
+    ever becomes untracked the deployed pool silently falls back to a
+    published-looks-only pairwise model** (0.754/0.726 rather than 0.814/0.794)
+    — weaker, still far better than affinity, and easy to miss.
+
+    Note what this does and does not publish. The ORDERING is derived from her
+    rejections; the rejections themselves are not in the payload, and neither is
+    anything from the style profile (`assert_private()` fails the build on that).
     """
     gaps, preference, constraints = closet_server._engine()
     data = json.loads(closet_server.SNAPSHOT.read_text())
@@ -131,11 +140,16 @@ def stylist_pool(limit=POOL_DEPTH):
         else:
             prior = published
         aff = preference.affinity(garments, prior, ())
+        # PAIRWISE LEADS as of 07-29, exactly as on the live route — built by
+        # closet_server.stylist_compat() rather than assembled here, because
+        # these two paths silently disagreeing is a mistake this project has
+        # already made once (23 vs 13 never-worn, 07-27).
+        compat = closet_server.stylist_compat(garments, prior)
         # Her occasion-scoped rules apply to the tab being built. The tab label is
         # the published-looks vocabulary, so it is normalised rather than passed
         # raw — see constraints.OCCASION_ALIASES.
         full = gaps.ranked_outfits(
-            garments, affinity=aff,
+            garments, affinity=aff, compat=compat,
             occasion=constraints.normalise_occasion(occ))
         ranked = full[:limit]
         out[occ] = {

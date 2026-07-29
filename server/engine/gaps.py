@@ -6,10 +6,20 @@ count is what makes orphan detection trustworthy.
 """
 import itertools
 
-from . import colour, constraints, preference
+from . import colour, constraints, pairwise, preference
 
 # A garment appearing in this few valid outfits is functionally stranded.
 ORPHAN_PARTICIPATION = 2
+
+# Pairwise's share of the preference term when a `compat` model is supplied.
+# Measured on the SHIPPED scoring path (her rules on, colour tiebreak included),
+# in-rotation: affinity alone 0.507, pairwise 1.00 -> 0.708, 0.75 -> 0.708,
+# 0.50 -> 0.710 but two-item outfits climb back into the top 12. The three are
+# indistinguishable at n=14, so this is not tuned to the third decimal — it is
+# 0.75 because affinity is worth keeping as a MINORITY voice: a brand-new
+# garment has no pair evidence at either level and scores a flat 0.5, and
+# affinity is what breaks that tie sensibly until it has been worn with things.
+COMPAT_WEIGHT = 0.75
 
 
 def _cat(garments, name):
@@ -74,7 +84,8 @@ def enumerate_outfits(garments, with_outerwear=False, apply_user_rules=True,
 
 
 def ranked_outfits(garments, limit=None, with_outerwear=False, affinity=None,
-                   affinity_weight=0.75, occasion=None):
+                   affinity_weight=0.75, occasion=None, compat=None,
+                   compat_weight=COMPAT_WEIGHT):
     """Valid outfits ordered best-first.
 
     With an `affinity` map (see engine.preference) that signal leads, because it
@@ -82,19 +93,42 @@ def ranked_outfits(garments, limit=None, with_outerwear=False, affinity=None,
     seen, learned affinity scored AUC 0.824 while colour harmony scored 0.491 —
     chance. Colour is kept at a small weight as a tiebreak, not a ranker.
 
+    With a `compat` model (see engine.pairwise) PAIRWISE leads instead, and
+    `compat_weight` is its share of the preference term (1.0 = pairwise alone,
+    0.0 = affinity alone). Measured against her real wears: affinity 0.648 whole
+    / 0.543 in-rotation, pairwise 0.814 / 0.794. The in-rotation column is the
+    honest one and it is where affinity sits at chance.
+
+    **CALIBRATION HAPPENS HERE, AGAINST THE SPACE ACTUALLY BEING RANKED, and it
+    is not optional.** Raw pair scores are not comparable across outfits with
+    different numbers of pairs — a two-item outfit's single pair is both its mean
+    and its minimum, so nothing can drag it down, and raw scoring put a dress in
+    10 of the top 12 on a closet where dresses are 5% of the space and 1 of 15
+    wears. Calibrating inside this function is what stops a caller calibrating
+    against one space and ranking another; `occasion` in particular changes the
+    space, and a percentile borrowed from the unfiltered space would be wrong.
+
     `occasion` FILTERS by her occasion-scoped rules; it does not re-rank. There
     is no occasion-conditioned model — at 15 wears the largest occasion has 6
     examples, and a ranker built on that would be a number with nothing behind
     it. Her rules are a different thing: she stated them.
     """
+    combos = list(enumerate_outfits(garments, with_outerwear, occasion=occasion))
+    calibrate = (pairwise.rank_calibrator(
+        compat, [[g["id"] for g in combo] for combo in combos]) if compat else None)
+
     scored = []
-    for combo in enumerate_outfits(garments, with_outerwear, occasion=occasion):
+    for combo in combos:
         ids = [g["id"] for g in combo]
         h, worst = colour.outfit_harmony(combo)
         s, notes = constraints.score(combo, h)
         pref = None
-        if affinity:
-            pref = preference.outfit_preference(ids, affinity)
+        if affinity or calibrate:
+            pref = (preference.outfit_preference(ids, affinity) if affinity
+                    else 0.5)
+            if calibrate:
+                pref = (compat_weight * calibrate(ids)
+                        + (1.0 - compat_weight) * pref)
             s = max(0.0, affinity_weight * pref + (1.0 - affinity_weight) * s
                     - constraints.soft_notes(combo)[0] * (1.0 - affinity_weight))
         scored.append({

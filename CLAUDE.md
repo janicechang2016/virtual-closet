@@ -879,6 +879,168 @@ FILTER, not a ranker; affinity still does the ranking.
   occasions, 0 violations** (entries are index-encoded `[[23,1,50],[]]` — decode through
   `payload["garments"]` or a scan silently passes on zero resolved ids).
 
+## PAIRWISE COMPATIBILITY (2026-07-29, $0) — the first model that beats chance on her WEARS. **RANKS `/stylist` ON BOTH PATHS, DEPLOYED.**
+
+**THE HEADLINE: 0.814 whole space / 0.794 in-rotation, against affinity's 0.648 / 0.543.**
+The in-rotation column is the one that matters — it restricts negatives to garments she
+actually has in rotation, removing the shortcut of scoring dead stock low, and it is where
+every previous model collapsed to a CI spanning chance. Pairwise is the **first model whose
+in-rotation CI [0.707, 0.871] excludes 0.5.** `server/engine/pairwise.py`, 20 new tests
+(engine 56 -> 76).
+
+- **THE SHAPE, NOT NEW DATA, IS MOST OF THE WIN.** Trained on the SAME 18 published looks and
+  nothing else, pair structure scores 0.754 / 0.726 where per-garment affinity scores
+  0.648 / 0.543. No wear data, no verdicts — the identical evidence, read as pairs instead of
+  as a scalar. That retires the standing read that the dataset was the constraint: for the
+  in-rotation question, the model shape was.
+- **HER BLAME DATA IS LOAD-BEARING, and this is its first use.** Ablated: positives only
+  (looks + "yes" verdicts) 0.599 / 0.601; adding the 44 blamed rejections 0.768 / 0.774.
+  A rejection naming a shoe is evidence about (shoe, skirt) — it says nothing bad about the
+  skirt, which is exactly why `NEGATIVE_WEIGHT = 0.0` was the right answer for a scalar and
+  the wrong question to ask of it. **The negatives finally have somewhere to go.**
+- **HER "YES" VERDICTS MEASURABLY HURT: 0.809 -> 0.768 when included.** Best variant is
+  published looks + blamed rejections ONLY. Mechanism, and it is a known one: the yes-verdicts
+  were given on outfits the AFFINITY model chose, so they import that model's taste, and
+  stated preference has already been measured as a different target from lived behaviour
+  (0.824 stated vs 0.660 behavioural, 07-27). Kept as a documented ablation rather than a
+  silent default — n=15 cannot separate 0.809 from 0.768 with confidence.
+- **TWO LEVELS, because garment pairs are sparse: only 39% of the pairs in the test set have
+  any garment-level evidence.** A pair backs off to its TYPE pair (subcategory x subcategory)
+  via hierarchical shrinkage — the type score IS the prior mean for the garment pair, so it is
+  one formula and no threshold. Both levels earn their place: type-only 0.733 / 0.743,
+  garment-only 0.695 / 0.689, together 0.768 / 0.774.
+- **IT LEARNS HER WRITTEN RULES FROM BEHAVIOUR, WITHOUT BEING TOLD THEM.** Type scores:
+  `sneaker x skirt` **0.071**, `boot x skirt` 0.190, `flat x skirt` 0.615. Her hand-written
+  rule ("never a sneaker with a skirt or dress") and D.1's prose finding fall out of the blame
+  data as numbers. The hand-written USER tier in `constraints.py` stays regardless — a rule she
+  wrote is not up for re-derivation, and a filter is not a ranker.
+
+**THE FAILURE AUC COULD NOT SEE, and it is the most useful thing here.** Raw pair scoring
+measured 0.809 while putting a **DRESS in 10 of its top 12** — dresses are 5% of the space,
+appear in **1 of her 15 wears**, and are the pieces her own rules call event wear for events
+she has not had. Cause: a two-item outfit (dress + shoes) has exactly ONE pair, so its mean IS
+its minimum and nothing can drag it down, while a three-item outfit is always judged by its
+weakest of three. AUC did not move because dress outfits are only 120 of 2320 negatives —
+floating all of them costs almost nothing on a rank statistic, and costs everything on the row
+she actually sees.
+- **Fix: `rank_calibrator()` ranks an outfit within its own pair-count class.** Monotone inside
+  each class, so it changes no within-class ordering — it only makes the classes comparable.
+  Top-12 dress share **10/12 -> 0/12**, distinct garments 16 -> 18 (more variety than
+  affinity's 12), and AUC went UP: 0.809 -> **0.814** whole, 0.795 -> 0.794 in-rotation.
+- **`top_of_list()` in the harness is now a standing guard** — it prints the two-item and dress
+  share of any model's top 12 beside the space's own shares. **A ranking model must be LOOKED
+  AT, not only scored**; this pair of numbers is what looking at it costs.
+- Size was ruled out as an explanation of the AUC itself: restricted to three-item outfits
+  only, pairwise still scores 0.760 / 0.767.
+
+**WEARS MAY TRAIN THIS ONE — the opposite of the affinity finding, and measured the same way.**
+Leave-one-out over the 15 wears: **+0.012 whole, +0.005 in-rotation**, against affinity's
+**-0.123 / -0.172**. Neutral-to-slightly-positive, i.e. no evidence it helps yet, but the
+harm is specific to the scalar and does NOT generalise — a pair either co-occurred or did not,
+so repeats cannot inflate it the way wear frequency inflated affinity. **`PRIOR = ("manual",)`
+stays correct for `preference.affinity` and must not be quietly reused as a rule about
+pairwise.**
+
+- **LEAKAGE GUARD, built because it will matter later:** `load_verdicts()` drops any judged
+  outfit she has also WORN. It is 0 today (verified) and will not stay 0 — the wears are the
+  test set, and a judged copy of one would train the model on its own answer.
+- **Acceptance is a RELATION, not a float.** `PAIRWISE_MARGIN = 0.15` pins "pairwise beats
+  affinity in-rotation by a wide margin" (currently +0.231), because that is the claim that
+  must survive more data; the exact figures are pinned only as "the data state that produced
+  the write-up" and are expected to move. **The 07-27 affinity/colour figures still reproduce
+  unchanged** — this work added a model, it did not perturb the old ones.
+- **CAVEATS, stated because n is small.** 15 worn outfits and 82 verdicts; every CI here is
+  wide. The verdicts are self-selected — they were passed on outfits the old model chose — so
+  they describe her judgement of what it shows, not of the closet as a whole. And picking the
+  best of six ablations on a 15-positive test set is selection on the test set: the ROBUST
+  claim is "pair structure beats a per-garment scalar in-rotation" (every variant except
+  positives-only clears 0.726 against 0.543), not any single decimal.
+**WIRED AND DEPLOYED 07-29.** She reviewed it locally over 34 verdicts first, then approved
+the push — the review is what produced the session findings below.
+- **ONE INSERTION POINT, `gaps.ranked_outfits(..., compat=...)`** — the same discipline that
+  made her rules land on both stylist paths with no per-path edit. The live route
+  (`closet_server.stylist_suggest`) and the deployed pool builder (`export_static.stylist_pool`)
+  both pass it, and the model itself is built by **`closet_server.stylist_compat()` — defined
+  once and imported by the exporter**, because these two paths silently disagreeing is a
+  mistake this project has already made (23 vs 13 never-worn, 07-27). **Verified: the top 50 is
+  identical across both paths.**
+- **CALIBRATION LIVES INSIDE `ranked_outfits`, against the space it is actually ranking.** That
+  is deliberate: `occasion` changes the space, and a percentile borrowed from the unfiltered
+  space would be quietly wrong on every occasion tab.
+- **`compat_weight = 0.75` (`gaps.COMPAT_WEIGHT`), and it is NOT tuned to the third decimal.**
+  On the shipped scoring path, in-rotation: affinity alone 0.507, pairwise at 1.00 -> 0.708,
+  0.75 -> 0.708, 0.50 -> 0.710 but two-item outfits climb back into the top 12. The three are
+  indistinguishable at n=14. It is 0.75 because affinity is worth keeping as a MINORITY voice —
+  a newly ingested garment has no pair evidence at either level and scores a flat 0.5, and
+  affinity is what breaks that tie until it has been worn with things.
+- **The colour tiebreak was left at 0.25 on purpose.** Sweeping it (0.25 -> 0) moves in-rotation
+  0.708 -> 0.709. Below the noise floor, so it stays where it is rather than being churned for
+  a number that does not exist.
+- **The whole shipped path improves in-rotation 0.507 -> 0.708.** Lower than the pure model's
+  0.794 because the colour tiebreak and soft penalties ride along; measured on the SHIPPED
+  scoring function rather than on the model in isolation, which is the honest comparison and
+  the one that closes the gap between what is measured and what runs.
+- **The deployed exporter now READS `logs/stylist_feedback.jsonl`** (it is tracked, so it is in
+  the Vercel checkout). If it ever becomes untracked, the deployed pool silently degrades to a
+  published-looks-only pairwise model — weaker, still well ahead of affinity, and easy to miss.
+  **7,200 deployed suggestions re-verified at 0 user-rule violations.**
+
+- **Latent bug found and fixed in passing:** `unittest.main()` sat MID-FILE in
+  `engine/tests/test_engine.py`, so direct invocation ran 49 tests and silently skipped the 7
+  `TestPreference` ones while `discover` ran 56. Both now run the full suite.
+- **`engine_report.py` WAS CRASHING, and had been before this session** — `pcts.sort()` fell
+  through to comparing `render_cache_key` (None) against a str whenever two looks tied, so the
+  acceptance-evidence script died partway through its own output. Sorts on the numbers now.
+### Her first session on the pairwise stylist (07-29, 34 verdicts) — what it taught
+
+**SHE LIKES IT, AND HER CLICKS AGREE: acceptance 46% -> 62%** (50% -> 67% excluding
+wildcards). Same session, different cards, n=34 — corroboration, not proof, but it is
+independent of the impression.
+
+**THE TRAP THIS SESSION SET, AND IT WILL BE SET AGAIN: scored on her new verdicts, pairwise
+gets 0.557 and affinity 0.725.** Read naively that says the change was a regression. It is
+RANGE RESTRICTION: she only ever saw cards pairwise had already ranked at the top — p65-p100
+of its own ranking, IQR 13 points — while affinity spreads those same cards over p2-p98, IQR
+46. A model that has already filtered out what it dislikes has no variance left to discriminate
+with. **A ranker cannot be evaluated on the slice it selected** (the caveat
+`analyse_stylist_feedback.py` has always carried, now with a number attached). **The wear log
+is the only unbiased benchmark, because no verdict touches it.**
+
+- **On that benchmark her new blames HELPED, mostly by narrowing the interval:** in-rotation
+  0.794 -> **0.799**, whole 0.814 -> 0.821, CI [0.707, 0.871] -> **[0.728, 0.863]**. The point
+  estimate barely moved; the uncertainty did.
+- **Today's 13 blames ALONE score 0.539 — chance.** One session cannot carry this model; it
+  refines accumulated evidence rather than replacing it. Do not read a single session as a
+  result.
+- **THE FRONTIER MOVED FROM SHOES TO BOTTOMS.** Blame was 29/44 shoes (66%) through 07-26;
+  this session it was bottoms 6, shoes 5, tops 2. The shoe lesson has been absorbed.
+  **`26-liniss-dune-pants` is the new sore point** — blamed 3x in one session against 1x in all
+  prior history, in **0 of her 15 worn outfits** and 1 published look. A garment the model likes
+  and she does not wear.
+- **`51-weejuns-loafers` was over-promoted and she corrected it** — 3 blames, while sitting in
+  55 of the top 200 on zero published looks and one worn outfit. Generalised up from
+  loafer-shaped evidence; this is the type backoff's failure mode, seen live.
+- **THE CLEANEST VINDICATION OF THE PAIR SHAPE.** She blamed `52-camper-flats` on the two-item
+  wildcard `34-realisation-allegra-dress + 52-camper-flats` — the FIRST blame those flats have
+  taken in 116 verdicts. A scalar would have docked her most-accepted shoe globally (3 of 15
+  wears, never blamed). Pairwise penalised only that pairing: **0.833 -> 0.381**, and her flats
+  elsewhere were untouched by it. This is exactly the contextual rejection that forced
+  `NEGATIVE_WEIGHT = 0.0`, now handled instead of discarded.
+- **WATCH THE TYPE BACKOFF: IT IS VOLATILE.** 11 type pairings moved >0.15 on 13 blames;
+  `trousers x flat` went 0.667 -> 0.333 on three negatives against one positive, and only **59
+  of 231 possible type pairings have any evidence at all**. The mechanism that generalises one
+  sneaker to all sneakers overreacts from one trouser to all trousers. Consequence worth
+  knowing: a pair with NO garment-level evidence — e.g. `(02-jeans, 52-camper-flats)`, which she
+  has neither worn nor published — is 100% type prior and swings with it. **`TYPE_PRIOR` is the
+  knob; tuning it on 13 blames would be fitting noise.** Let it accumulate first.
+
+- **AND IT WAS SCORING THE ENGINE'S OWN SUGGESTIONS AS HER TASTE.** The section headed "her 18
+  published looks" iterated every outfit row — all 57, including the 24 the stylist proposed
+  and the 15 logged wears. Filtered to `source == "manual"`; her published looks sit at **mean
+  percentile 42** against the rule-filtered space. **This is the third instance of the same
+  confusion** (never-worn 9 vs 13 on 07-28; `PRIOR` vs worn on 07-27): a stylist SUGGESTION is
+  not evidence of anything she did.
+
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear

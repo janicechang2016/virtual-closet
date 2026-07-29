@@ -17,7 +17,7 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 
-from engine import colour, constraints, gaps, preference  # noqa: E402
+from engine import colour, constraints, gaps, pairwise, preference  # noqa: E402
 
 SNAPSHOT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "..", "..", "scripts", "closet_snapshot.json")
@@ -530,10 +530,6 @@ class TestRealCloset(unittest.TestCase):
                                 "her own looks rank below the median outfit")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TestPreference(unittest.TestCase):
     """Learned affinity — the only signal measured to predict her judgement."""
 
@@ -581,3 +577,215 @@ class TestPreference(unittest.TestCase):
         self.assertIn("good", ranked[0]["garment_ids"])
         self.assertIn("bad", ranked[-1]["garment_ids"])
         self.assertIsNotNone(ranked[0]["preference"])
+
+
+class TestPairwise(unittest.TestCase):
+    """Pair compatibility — the shape a per-garment scalar cannot hold.
+
+    The property these tests exist to protect is ATTRIBUTION: when she rejects
+    an outfit and blames one garment, only the pairs NAMING that garment may
+    move. Every previous attempt to use her rejections failed by smearing them,
+    and it cost accuracy twice on independent data.
+    """
+
+    def setUp(self):
+        self.closet = [g("tee", "top", subcategory="short-sleeve"),
+                       g("skirt", "bottom", subcategory="skirt"),
+                       g("jeans", "bottom", subcategory="trousers"),
+                       g("sneaker", "shoes", subcategory="sneaker"),
+                       g("flat", "shoes", subcategory="flat")]
+
+    def m(self, looks=(), verdicts=()):
+        return pairwise.compatibility(self.closet, looks=looks, verdicts=verdicts)
+
+    def test_no_evidence_is_neutral(self):
+        m = self.m()
+        self.assertAlmostEqual(pairwise.pair_score(m, "tee", "jeans"), 0.5)
+        self.assertAlmostEqual(pairwise.outfit_compatibility(["tee", "jeans"], m), 0.5)
+
+    def test_unknown_garment_is_neutral(self):
+        self.assertAlmostEqual(pairwise.pair_score(self.m(), "tee", "ghost"), 0.5)
+
+    def test_score_is_symmetric(self):
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans"]}])
+        self.assertEqual(pairwise.pair_score(m, "tee", "jeans"),
+                         pairwise.pair_score(m, "jeans", "tee"))
+
+    def test_co_occurrence_raises_the_pair(self):
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans", "flat"]}])
+        self.assertGreater(pairwise.pair_score(m, "tee", "jeans"), 0.5)
+
+    def test_blame_penalises_only_the_pairs_naming_the_blamed_garment(self):
+        """THE central property. She rejected tee+skirt+sneaker blaming the
+        sneaker: that is evidence against (sneaker, skirt) and (sneaker, tee),
+        and NO evidence at all about (tee, skirt)."""
+        m = self.m(verdicts=[{"ids": ["tee", "skirt", "sneaker"],
+                              "verdict": "no", "blame": "sneaker"}])
+        self.assertLess(pairwise.pair_score(m, "sneaker", "skirt"), 0.5)
+        self.assertLess(pairwise.pair_score(m, "sneaker", "tee"), 0.5)
+        self.assertAlmostEqual(pairwise.pair_score(m, "tee", "skirt"), 0.5,
+                               msg="an innocent pair was smeared with the blame")
+
+    def test_unattributed_rejection_is_ignored(self):
+        m = self.m(verdicts=[{"ids": ["tee", "skirt", "sneaker"],
+                              "verdict": "no", "blame": None}])
+        for a, b in pairwise.pairs(["tee", "skirt", "sneaker"]):
+            self.assertAlmostEqual(pairwise.pair_score(m, a, b), 0.5)
+
+    def test_rejection_credits_nothing(self):
+        """A rejected outfit is not a positive for the pairs that survived it."""
+        m = self.m(verdicts=[{"ids": ["tee", "skirt", "sneaker"],
+                              "verdict": "no", "blame": "sneaker"}])
+        self.assertLessEqual(pairwise.pair_score(m, "tee", "skirt"), 0.5)
+
+    def test_type_backoff_generalises_to_an_unseen_pair(self):
+        """The whole reason for two levels: 61% of the pairs in the real test
+        set have no garment-level evidence. A sneaker blamed against ONE skirt
+        must inform a different sneaker against a different skirt."""
+        closet = self.closet + [g("sneaker2", "shoes", subcategory="sneaker"),
+                                g("skirt2", "bottom", subcategory="skirt")]
+        m = pairwise.compatibility(
+            closet, verdicts=[{"ids": ["tee", "skirt", "sneaker"],
+                               "verdict": "no", "blame": "sneaker"}])
+        self.assertEqual(m["pair_pos"].get(("skirt2", "sneaker2")), None)
+        self.assertLess(pairwise.pair_score(m, "sneaker2", "skirt2"), 0.5)
+
+    def test_garment_evidence_overrides_its_type_prior(self):
+        """One pair of sneakers she actually wears with skirts must be able to
+        escape what sneakers-with-skirts says in general."""
+        closet = self.closet + [g("sneaker2", "shoes", subcategory="sneaker")]
+        verdicts = [{"ids": ["tee", "skirt", "sneaker"], "verdict": "no",
+                     "blame": "sneaker"}] * 3
+        looks = [{"garment_ids": ["tee", "skirt", "sneaker2"]}] * 6
+        m = pairwise.compatibility(closet, looks=looks, verdicts=verdicts)
+        self.assertLess(pairwise.pair_score(m, "sneaker", "skirt"), 0.5)
+        self.assertGreater(pairwise.pair_score(m, "sneaker2", "skirt"), 0.5)
+
+    def test_one_bad_pair_sinks_the_outfit(self):
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans"]}] * 4,
+                   verdicts=[{"ids": ["tee", "jeans", "sneaker"],
+                              "verdict": "no", "blame": "sneaker"}] * 4)
+        good = pairwise.outfit_compatibility(["tee", "jeans", "flat"], m)
+        bad = pairwise.outfit_compatibility(["tee", "jeans", "sneaker"], m)
+        self.assertGreater(good, bad)
+        self.assertLess(bad, 0.5, "a strong top/bottom pair rescued a bad shoe")
+
+    def test_worst_pair_names_the_offender(self):
+        m = self.m(verdicts=[{"ids": ["tee", "jeans", "sneaker"],
+                              "verdict": "no", "blame": "sneaker"}] * 3)
+        a, b, _ = pairwise.worst_pair(["tee", "jeans", "sneaker"], m)
+        self.assertIn("sneaker", (a, b))
+
+    def test_single_garment_outfit_is_neutral(self):
+        self.assertAlmostEqual(pairwise.outfit_compatibility(["tee"], self.m()), 0.5)
+
+    def test_coverage_reports_the_garment_level_only(self):
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans"]}])
+        ev, tot = pairwise.coverage(m, [("tee", "jeans", "flat")])
+        self.assertEqual((ev, tot), (1, 3))
+
+    def test_rank_calibrator_is_monotone_within_a_size_class(self):
+        """It may reorder classes against each other; it may never reorder
+        within one, or it would be changing the model rather than calibrating."""
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans", "flat"]}] * 3,
+                   verdicts=[{"ids": ["tee", "skirt", "sneaker"],
+                              "verdict": "no", "blame": "sneaker"}] * 3)
+        space = [("tee", "jeans", "flat"), ("tee", "skirt", "sneaker"),
+                 ("tee", "jeans", "sneaker"), ("skirt", "flat"), ("jeans", "flat")]
+        cal = pairwise.rank_calibrator(m, space)
+        threes = [c for c in space if len(c) == 3]
+        raw_order = sorted(threes, key=lambda c: pairwise.outfit_compatibility(list(c), m))
+        cal_order = sorted(threes, key=lambda c: cal(list(c)))
+        self.assertEqual(raw_order, cal_order)
+
+    def test_rank_calibrator_makes_sizes_comparable(self):
+        """THE DEFECT IT EXISTS FOR: a two-item outfit has one pair, so its mean
+        IS its minimum and nothing can drag it down. Raw, a mediocre pair beats
+        a three-item outfit that is the best of its class."""
+        # The three-item outfit has two strong pairs and one merely neutral one,
+        # so its MINIMUM holds it down. The two-item outfit has a single decent
+        # pair and nothing to drag it — and it is not even the best of its class.
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans"]}] * 6
+                         + [{"garment_ids": ["jeans", "flat"]}] * 6
+                         + [{"garment_ids": ["skirt", "flat"]}] * 8
+                         + [{"garment_ids": ["skirt", "sneaker"]}] * 2)
+        space = [("tee", "jeans", "flat"), ("tee", "jeans", "sneaker"),
+                 ("tee", "skirt", "sneaker"), ("skirt", "sneaker"),
+                 ("skirt", "flat")]
+        best3, two = ["tee", "jeans", "flat"], ["skirt", "sneaker"]
+        cal = pairwise.rank_calibrator(m, space)
+        self.assertLess(pairwise.outfit_compatibility(best3, m),
+                        pairwise.outfit_compatibility(two, m))
+        self.assertGreater(cal(best3), cal(two))
+
+    def test_rank_calibrator_handles_an_unseen_size(self):
+        m = self.m(looks=[{"garment_ids": ["tee", "jeans"]}])
+        cal = pairwise.rank_calibrator(m, [("tee", "jeans"), ("skirt", "flat")])
+        self.assertIsInstance(cal(["tee", "jeans", "flat", "skirt"]), float)
+
+
+class TestPairwiseRealCloset(unittest.TestCase):
+    """Against the real 58 garments and 18 published looks.
+
+    Verdict-dependent assertions live in `scripts/wear_model_report.py`, which
+    already owns loading the append-only feedback log; the engine stays free of
+    I/O beyond the snapshot every other real test here reads.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        with open(SNAPSHOT) as fh:
+            cls.snap = json.load(fh)
+        cls.G = cls.snap["garments"]
+        cls.published = [o for o in cls.snap["outfits"] if o.get("source") == "manual"]
+        cls.model = pairwise.compatibility(cls.G, looks=cls.published)
+        by_oid = {o["id"]: o for o in cls.snap["outfits"]}
+        seen, cls.worn = set(), []
+        for w in cls.snap.get("wears") or []:
+            o = by_oid.get(w.get("outfit_id"))
+            key = tuple(sorted(o.get("garment_ids") or [])) if o else None
+            if key and key not in seen:
+                seen.add(key)
+                cls.worn.append(key)
+
+    def test_every_garment_has_a_backoff_type(self):
+        self.assertEqual(len(self.model["types"]), len(self.G))
+        self.assertNotIn(None, self.model["types"].values())
+
+    def test_worn_outfits_rank_above_the_median_outfit(self):
+        """The finding, pinned: trained on published looks ALONE — no wear data,
+        no verdicts — pair structure ranks what she actually wore above the
+        median of the space. Per-garment affinity on identical training data
+        scores 0.543 against these same wears, which is chance."""
+        space = [tuple(sorted(x["id"] for x in c))
+                 for c in gaps.enumerate_outfits(self.G, apply_user_rules=False)]
+        scores = sorted(pairwise.outfit_compatibility(list(c), self.model)
+                        for c in space)
+        median = scores[len(scores) // 2]
+        worn = [pairwise.outfit_compatibility(list(c), self.model) for c in self.worn]
+        above = sum(1 for s in worn if s > median)
+        self.assertGreater(above, len(worn) * 0.6,
+                           "only %d of %d worn outfits beat the median outfit"
+                           % (above, len(worn)))
+
+    def test_published_looks_are_covered_at_the_garment_level(self):
+        ev, tot = pairwise.coverage(self.model,
+                                    [o["garment_ids"] for o in self.published])
+        self.assertEqual(ev, tot, "a published look has a pair its own model missed")
+
+    def test_calibration_stops_two_item_outfits_owning_the_top(self):
+        """Pinned because AUC cannot see it. Two-item outfits are 120 of 2320
+        (5%) of the space; raw pair scoring floated them to 4 of the top 12 on
+        published looks alone, and to 10 of 12 once her blame data was added.
+        A stylist row is what she actually sees, so this is the failure that
+        matters most and the one a rank statistic is blindest to."""
+        space = [tuple(sorted(x["id"] for x in c))
+                 for c in gaps.enumerate_outfits(self.G, apply_user_rules=False)]
+        cal = pairwise.rank_calibrator(self.model, space)
+        top = sorted(space, key=lambda c: -cal(list(c)))[:12]
+        two = sum(1 for c in top if len(c) == 2)
+        self.assertLessEqual(two, 3, "two-item outfits took %d of the top 12" % two)
+
+
+if __name__ == "__main__":
+    unittest.main()

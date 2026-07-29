@@ -37,9 +37,11 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.normpath(os.path.join(HERE, "..")))
 
-from engine import colour, constraints, gaps, preference  # noqa: E402
+from engine import colour, constraints, gaps, pairwise, preference  # noqa: E402
 
 SNAPSHOT = os.path.join(HERE, "closet_snapshot.json")
+STYLIST_SCRIPTS = os.path.normpath(
+    os.path.join(HERE, "..", "..", "virtual-closet", "scripts"))
 
 # What TRAINS affinity. Not what counts as worn — that distinction cost a day on
 # 07-27 and is why /stylist and /insights once disagreed 23 vs 13.
@@ -63,6 +65,20 @@ TOLERANCE = 0.03
 # much bigger deal than a third-decimal wobble.
 EXPECTED_LOO_DELTA = {"whole": -0.120, "rotation": -0.172}
 LOO_TOLERANCE = 0.05
+
+# PAIRWISE, measured 07-29 on 15 wears / 82 verdicts / 18 published looks.
+# Unlike the block above these are NOT historic reproductions — they are this
+# model's first measurement, and they WILL move as she logs more. The durable
+# claim is the relational one below; these floats only say "the data state that
+# produced the write-up".
+EXPECTED_PAIRWISE = {"whole": 0.768, "rotation": 0.774}
+
+# THE FINDING, pinned as a relation because that is what has to survive more
+# data: against the in-rotation pool — the one that strips the model's ability
+# to win by scoring dead stock low, and where affinity collapses to 0.543 —
+# pair structure must stay decisively ahead. If this margin ever closes, the
+# argument for ranking on pairs has gone with it.
+PAIRWISE_MARGIN = 0.15
 
 
 def auc(scored):
@@ -102,6 +118,30 @@ def bootstrap_ci(pos, neg, n=2000, seed=17):
 def affinity_model(garments, looks):
     aff = preference.affinity(garments, looks=looks)
     return lambda ids: preference.outfit_preference(ids, aff)
+
+
+def pairwise_model(garments, looks, verdicts):
+    m = pairwise.compatibility(garments, looks=looks, verdicts=verdicts)
+    return lambda ids: pairwise.outfit_compatibility(ids, m)
+
+
+def calibrated_pairwise_model(d, verdicts, space=None):
+    """The shipping candidate: pairs learned from published looks + her BLAME
+    negatives, ranked within pair-count class. Positive verdicts are left out
+    deliberately — measured, they cost 0.15 (see `pairwise_report`)."""
+    neg = [e for e in verdicts if e.get("verdict") == "no" and e.get("blame")]
+    m = pairwise.compatibility(d["garments"], looks=d["published"], verdicts=neg)
+    return pairwise.rank_calibrator(m, space if space is not None else d["space"])
+
+
+def blended_model(garments, looks, verdicts, w=0.5):
+    """Affinity and compatibility answer different questions — WHICH garments
+    versus WHICH combinations — so the blend is worth measuring rather than
+    assuming one supersedes the other. `w` is the weight on pairwise."""
+    aff = preference.affinity(garments, looks=looks)
+    m = pairwise.compatibility(garments, looks=looks, verdicts=verdicts)
+    return lambda ids: ((1 - w) * preference.outfit_preference(ids, aff)
+                        + w * pairwise.outfit_compatibility(ids, m))
 
 
 def colour_model(by_id):
@@ -158,6 +198,36 @@ def load(apply_user_rules=False):
     }
 
 
+def load_verdicts(d):
+    """Her stylist judgements, resolved newest-wins. The pairwise model's only
+    source of NEGATIVE evidence — the affinity model cannot use them at all.
+
+    Imported from `closet_server.stylist_current()` rather than re-parsed here:
+    the log is append-only with tombstones, and a second implementation of
+    "which verdict is current" is exactly how two paths drift.
+
+    LEAKAGE GUARD: any judged outfit that she has also WORN is dropped. It is 0
+    today and will not stay 0 — the wears are the test set, and a judged copy of
+    one would train the model on its own answer.
+    """
+    sys.path.insert(0, STYLIST_SCRIPTS)
+    try:
+        import closet_server as cs
+    except Exception as exc:                                   # pragma: no cover
+        print("  (no stylist verdicts: %s)" % exc)
+        return [], 0
+    worn = set(d["positives"])
+    entries, dropped = [], 0
+    for sig, e in cs.stylist_current().items():
+        if e.get("verdict") not in ("yes", "no"):
+            continue
+        if sig in worn:
+            dropped += 1
+            continue
+        entries.append(e)
+    return entries, dropped
+
+
 def negatives(d, positives, rotation_only=False):
     pos = set(positives)
     out = []
@@ -181,7 +251,7 @@ def measure(d, score, positives, rotation_only=False, ci=True):
 
 # -------------------------------------------------------------------- report
 
-def held_out(d):
+def held_out(d, verdicts):
     print("\nHELD OUT — the %d worn outfits as a test set the model never saw"
           % len(d["positives"]))
     print("%-34s %-24s %s" % ("model", "vs whole valid space", "vs in-rotation only"))
@@ -189,6 +259,12 @@ def held_out(d):
     for label, score in (
         ("learned affinity (published)", affinity_model(d["garments"], d["published"])),
         ("colour + constraints", colour_model(d["by_id"])),
+        ("pairwise (published+verdicts)",
+         pairwise_model(d["garments"], d["published"], verdicts)),
+        ("affinity + pairwise, 50/50",
+         blended_model(d["garments"], d["published"], verdicts)),
+        ("pairwise, blame-neg + calibrated",
+         calibrated_pairwise_model(d, verdicts)),
     ):
         cells = []
         for rot in (False, True):
@@ -266,6 +342,147 @@ def leave_one_out(d):
     return out, deltas, drift
 
 
+def pairwise_report(d, verdicts):
+    """Ablations, because "pairwise works" is not a finding — WHICH PART works is.
+
+    The one that matters is `positives only`: affinity structurally cannot use a
+    rejection (measured twice, it costs accuracy), so if the blame negatives buy
+    nothing here either, the pairwise argument is dead and the honest conclusion
+    is that the dataset, not the model shape, is the constraint.
+    """
+    G, looks = d["garments"], d["published"]
+    pos_only = [e for e in verdicts if e.get("verdict") == "yes"]
+    neg_only = [e for e in verdicts if e.get("verdict") == "no" and e.get("blame")]
+
+    full = pairwise.compatibility(G, looks=looks, verdicts=verdicts)
+    ev, tot = pairwise.coverage(full, d["positives"])
+    print("\nPAIRWISE — %d verdicts (%d yes, %d blamed no) · %d published looks"
+          % (len(verdicts),
+             sum(1 for e in verdicts if e.get("verdict") == "yes"),
+             sum(1 for e in verdicts if e.get("verdict") == "no" and e.get("blame")),
+             len(looks)))
+    print("  garment-level evidence covers %d of %d pairs in the test set (%.0f%%) "
+          "— the rest fall back to their type" % (ev, tot, 100.0 * ev / max(tot, 1)))
+
+    def strip(m, level):
+        m = dict(m)
+        if level == "type":          # forget individual garments
+            m["pair_pos"], m["pair_neg"] = {}, {}
+        else:                        # forget the backoff
+            m["type_pos"], m["type_neg"] = {}, {}
+        return m
+
+    print("%-38s %-16s %s" % ("variant", "vs whole space", "vs in-rotation"))
+    out = {}
+    for label, model in (
+        ("full (pairs + type backoff)", full),
+        ("positives only — no blame negatives",
+         pairwise.compatibility(G, looks=looks, verdicts=pos_only)),
+        ("published looks only — no verdicts",
+         pairwise.compatibility(G, looks=looks)),
+        ("published + blame negatives only",
+         pairwise.compatibility(G, looks=looks, verdicts=neg_only)),
+        ("type level only", strip(full, "type")),
+        ("garment level only", strip(full, "garment")),
+    ):
+        score = (lambda m: lambda ids: pairwise.outfit_compatibility(ids, m))(model)
+        a, _, _, _ = measure(d, score, d["positives"], False, ci=False)
+        b, _, _, _ = measure(d, score, d["positives"], True, ci=False)
+        out[label] = (a, b)
+        print("  %-36s %-16.3f %.3f" % (label, a, b))
+
+    print("\n  blend weight on pairwise (0 = affinity today, 1 = pairwise alone)")
+    for w in (0.0, 0.25, 0.5, 0.75, 1.0):
+        score = blended_model(G, looks, verdicts, w=w)
+        a, _, _, _ = measure(d, score, d["positives"], False, ci=False)
+        b, _, _, _ = measure(d, score, d["positives"], True, ci=False)
+        print("    w=%.2f   whole %.3f   in-rotation %.3f" % (w, a, b))
+    return out
+
+
+def top_of_list(d, verdicts, n=12):
+    """WHAT SHE WOULD ACTUALLY SEE — the check AUC cannot perform.
+
+    A ranking model is judged on its top row, not on its average behaviour, and
+    the two came apart badly here: raw pair scoring measured 0.809 while putting
+    a DRESS in 10 of its top 12, on a closet where dresses are 5% of the space,
+    appear in 1 of 15 wears, and are the pieces her own rules call event wear
+    for events she has not had. AUC did not move because dress outfits are 120
+    of 2320 negatives. This table is the standing guard against that class of
+    failure — read it every time, and compare against the space's own shares.
+    """
+    two_share = 100.0 * sum(1 for c in d["space"] if len(c) == 2) / len(d["space"])
+    dress_share = 100.0 * sum(
+        1 for c in d["space"]
+        if any(d["by_id"][g]["category"] == "dress" for g in c)) / len(d["space"])
+    print("\nTOP OF THE LIST — what a stylist row would actually show (n=%d)" % n)
+    print("  the space itself is %.0f%% two-item, %.0f%% dress"
+          % (two_share, dress_share))
+    print("  %-34s %-9s %-9s %s" % ("model", "two-item", "dress", "distinct garments"))
+    for label, score in (
+        ("affinity (shipped today)",
+         affinity_model(d["garments"], d["published"])),
+        ("pairwise, raw",
+         pairwise_model(d["garments"], d["published"],
+                        [e for e in verdicts
+                         if e.get("verdict") == "no" and e.get("blame")])),
+        ("pairwise, blame-neg + calibrated",
+         calibrated_pairwise_model(d, verdicts)),
+    ):
+        top = sorted(d["space"], key=lambda c: -score(list(c)))[:n]
+        two = sum(1 for c in top if len(c) == 2)
+        dress = sum(1 for c in top
+                    if any(d["by_id"][g]["category"] == "dress" for g in c))
+        print("  %-34s %-9s %-9s %d"
+              % (label, "%d/%d" % (two, n), "%d/%d" % (dress, n),
+                 len({g for c in top for g in c})))
+
+
+def pairwise_loo(d, verdicts):
+    """Should WORN outfits train the pairwise model? For affinity the answer was
+    a firm no (-0.120 / -0.172). It is a genuinely different question here: the
+    objection was that wear FREQUENCY is not preference, and a pair either
+    co-occurred or did not — repeats add far less than they do to a scalar.
+
+    Per-fold models throughout, same discipline as `leave_one_out`.
+    """
+    print("\nPAIRWISE LEAVE-ONE-OUT — should wears train it?")
+    print("%-34s %-16s %s" % ("training set", "vs whole space", "vs in-rotation"))
+    pos = d["positives"]
+    worn_as_looks = [{"garment_ids": list(c)} for c in pos]
+
+    def fold_scores(build, rotation_only):
+        fracs = []
+        for i, held in enumerate(pos):
+            others = [worn_as_looks[j] for j in range(len(pos)) if j != i]
+            m = build(others)
+            neg = negatives(d, [held], rotation_only)
+            hs = pairwise.outfit_compatibility(list(held), m)
+            ns = [pairwise.outfit_compatibility(list(c), m) for c in neg]
+            wins = sum(1 for s in ns if hs > s) + 0.5 * sum(1 for s in ns if hs == s)
+            fracs.append(wins / len(ns))
+        return statistics.fmean(fracs)
+
+    res = {}
+    for label, build in (
+        ("published + verdicts (today)",
+         lambda others: pairwise.compatibility(d["garments"], looks=d["published"],
+                                               verdicts=verdicts)),
+        ("+ the other wears",
+         lambda others: pairwise.compatibility(d["garments"],
+                                               looks=d["published"] + others,
+                                               verdicts=verdicts)),
+    ):
+        a = fold_scores(build, False)
+        b = fold_scores(build, True)
+        res[label] = (a, b)
+        print("%-34s %-16.3f %.3f" % (label, a, b))
+    base, plus = res["published + verdicts (today)"], res["+ the other wears"]
+    print("\n  adding wears to the pairwise training set: %+.3f whole, %+.3f in-rotation"
+          % (plus[0] - base[0], plus[1] - base[1]))
+    return res
+
+
 def by_occasion(d):
     """NEW 07-28. Occasion was unrecorded until migration 0006; it is here
     because it removed 59% of the uncertainty about footwear.
@@ -310,6 +527,21 @@ def check(d, rows, sanity):
         bad += not ok
         print("  %-30s expected %.3f  got %.3f   %s"
               % (k, want, have, "ok" if ok else "*** DRIFTED ***"))
+
+    pw = ("pairwise (published+verdicts)", True)
+    if pw in rows:
+        margin = rows[pw] - rows[("learned affinity (published)", True)]
+        ok = margin >= PAIRWISE_MARGIN
+        bad += not ok
+        print("  %-30s pairwise beats affinity in-rotation by %+.3f "
+              "(need >= %.2f)   %s"
+              % ("pairwise_margin", margin, PAIRWISE_MARGIN,
+                 "ok" if ok else "*** THE FINDING NO LONGER HOLDS ***"))
+        for k, want in EXPECTED_PAIRWISE.items():
+            have = rows[("pairwise (published+verdicts)", k == "rotation")]
+            note = "ok" if abs(have - want) <= TOLERANCE else "moved (expected with new data — read it, do not just repin)"
+            print("  %-30s 07-29 %.3f  got %.3f   %s"
+                  % ("pairwise_" + k, want, have, note))
     return bad
 
 
@@ -326,14 +558,23 @@ def main():
           % (len(d["space"]),
              "her rules APPLIED" if args.rules else "structural, rules off",
              len(d["positives"]), len(d["published"]), len(d["in_rotation"])))
+    verdicts, leaked = load_verdicts(d)
+    if leaked:
+        print("  %d judged outfit(s) dropped as leakage — she has WORN them, and "
+              "the wears are the test set" % leaked)
 
-    rows = held_out(d)
+    rows = held_out(d, verdicts)
     sanity = in_sample_sanity(d)
     loo_drift = []
     if not args.check:
+        if verdicts:
+            pairwise_report(d, verdicts)
+            top_of_list(d, verdicts)
         by_occasion(d)
         if not args.skip_loo:
             _, _, loo_drift = leave_one_out(d)
+            if verdicts:
+                pairwise_loo(d, verdicts)
     bad = check(d, rows, sanity) + len(loo_drift)
     if bad and not args.rules:
         print("\n%d figure(s) drifted. That is a FINDING — investigate before "

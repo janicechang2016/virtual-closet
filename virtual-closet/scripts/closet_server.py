@@ -314,6 +314,35 @@ def _engine():
     return gaps, preference, constraints
 
 
+def blamed_rejections():
+    """Her rejections that NAME the garment at fault — the pairwise model's only
+    source of negative evidence, and the reason it can do what affinity cannot.
+
+    "Yes" verdicts are deliberately NOT included. Measured 07-29: adding them
+    costs 0.809 -> 0.768 AUC against her real wears, because they were given on
+    outfits the AFFINITY model chose and so import that model's taste — and
+    stated preference has already measured as a different target from lived
+    behaviour (0.824 stated vs 0.660 behavioural). They still train
+    `preference.affinity`, which is a separate question with its own answer.
+    """
+    return [e for e in stylist_current().values()
+            if e.get("verdict") == "no" and e.get("blame")]
+
+
+def stylist_compat(garments, prior):
+    """The pairwise model BOTH stylist paths rank with — defined once, here.
+
+    The live route and the deployed pool drifted apart on 07-27 (each derived
+    its own worn set and they disagreed 23 vs 13). One definition is the fix, so
+    `export_static.py` calls THIS rather than assembling its own.
+    """
+    if str(ENGINE_DIR) not in sys.path:
+        sys.path.insert(0, str(ENGINE_DIR))
+    from engine import pairwise  # noqa: E402
+    return pairwise.compatibility(garments, looks=prior,
+                                  verdicts=blamed_rejections())
+
+
 def stylist_log_entries():
     """Every line in the log, oldest first. Malformed lines are skipped."""
     out = []
@@ -1101,10 +1130,17 @@ def stylist_suggest(occasion="", n=6):
         prior = published
 
     aff = preference.affinity(garments, prior, stylist_feedback())
+    # PAIRWISE LEADS THE RANKING as of 07-29; affinity stays as the minority
+    # voice that breaks ties for garments with no pair evidence yet. Measured
+    # against her real wears, in-rotation: affinity 0.543, pairwise 0.794 — the
+    # first model whose CI excludes chance. See the "PAIRWISE COMPATIBILITY"
+    # section of CLAUDE.md, especially why raw pair scores must be CALIBRATED
+    # (ranked_outfits does it, against the space it is actually ranking).
+    compat = stylist_compat(garments, prior)
     # Same normalisation as the deployed pool, so the two paths cannot disagree
     # about which rules apply to a tab.
     ranked = gaps.ranked_outfits(
-        garments, affinity=aff,
+        garments, affinity=aff, compat=compat,
         occasion=constraints.normalise_occasion(occasion))
 
     # Rotate. Ranking is deterministic, so without this every "suggest again"

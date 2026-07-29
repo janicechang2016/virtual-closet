@@ -1,6 +1,6 @@
 # Virtual Closet v2 — Handoff / Resume Point
 
-**Last updated 2026-07-28 · branch `main`.** Read `CLAUDE.md` first — it is the source of
+**Last updated 2026-07-29 · branch `main`.** Read `CLAUDE.md` first — it is the source of
 truth and is kept current. `virtual-closet/docs/decisions.md` carries the standing rules.
 This file is the five-minute orientation: what runs where, what to do next, what has already
 cost time.
@@ -125,17 +125,30 @@ page fetches, and `asset_urls()` walking that payload or its images 404.
    section of `CLAUDE.md`, and `virtual-closet-v2-completion-plan.md` §4.1 for the audit that
    sized it. **`scripts/render_coverage.py` is the re-runnable check** — it found garment-level
    coverage already complete, which is why this was a wiring job and not a render backlog.
-3. **The stylist cannot yet hit its own target.** Her call 07-27: `/stylist` should suggest
-   outfits she would WEAR, not ones she would publish. Measured, it does not — 0.660 held out
-   against real wears, and **0.555 (CI spanning chance)** once garment rotation is controlled
-   for, versus 0.824 on her stated verdicts. Feeding wears into affinity was measured and makes
-   it WORSE; that is settled, do not retry it. Candidates for a model that could hit the
-   target, none built: **pairwise compatibility** (her blame data already encodes exactly
-   this), **context/occasion** (`outfit.context` exists), or **frequency-normalised affinity**.
-   All are speculative — at 15 wears the CIs are wide, and another few weeks of logging would
-   sharpen the next measurement for free.
-4. **`/galaxy` time scrubber** (plan E.4) — previously impossible because `wear_log` was
-   empty. It now carries 15 dated rows, so it finally has something to animate.
+3. **PAIRWISE COMPATIBILITY — BUILT, MEASURED, WIRED AND DEPLOYED 07-29, $0.** She reviewed it
+   locally over 34 verdicts, liked it, and approved the deploy. It is the first model to beat
+   chance on what she actually wears:
+   **0.814 whole / 0.794 in-rotation**, against affinity's 0.648 / 0.543, with the in-rotation
+   CI [0.707, 0.871] excluding 0.5 for the first time. Most of the win is the model SHAPE, not
+   new data — on the same 18 published looks and nothing else, pairs score 0.754 / 0.726. Her
+   44 blamed rejections are load-bearing, and this is their first use for anything.
+   Both stylist paths rank with it through the ONE insertion point
+   `gaps.ranked_outfits(..., compat=...)`, and the model is built by
+   `closet_server.stylist_compat()` — defined once, imported by the exporter, top-50 verified
+   identical across both. Read the "PAIRWISE COMPATIBILITY" section of `CLAUDE.md` before
+   touching it — especially the calibration trap (raw pair scoring measured 0.809 while putting
+   a dress in 10 of its top 12, which AUC cannot see) and the fact that her "yes" verdicts
+   measurably HURT this model.
+   **To deploy: commit and push `main`** — that redeploys the site and the API together, and
+   regenerates the pool with pairs. To back it out, drop `compat=` at the two call sites.
+   Still-unbuilt candidates from the 07-27 list: **context/occasion** (`outfit.context` and now
+   `wear_log.occasion` exist) and **frequency-normalised affinity**.
+   **Do not retry feeding wears into `preference.affinity`** — settled, -0.123 / -0.172. That
+   finding does NOT transfer to pairwise, where the same test gives +0.012 / +0.005.
+4. **`/galaxy` time scrubber — BUILT 07-27 (E.4), and it runs on ACQUISITION, not wear.** (This
+   entry previously said it was unbuilt; that was stale.) The wear log is one row per day across
+   a fortnight, so replaying it is a ticker; purchase dates span 2018-10 -> 2026-07 and carry
+   the real shape. See the `/galaxy` notes in `CLAUDE.md`.
 5. **Track A paid half** — multi-garment detection + vision-LLM tagging. Blocked on the fal
    balance (**-$0.08**) and needs approval. Build only if *tagging* rather than *photographing*
    turns out to be her bottleneck. `/ingest`'s `stage` already returns one garment per call,
@@ -162,6 +175,8 @@ Read the matching sections of `CLAUDE.md` before touching any of it.
 - **`/galaxy` is now a LIGHT ground** (her call). `?ground=dark` restores the old field.
 - **Find-a-better-photo -> grid pre-fill: $0 skeleton built, never run paid.** One approved
   batch of 3 garments (~18c) is the next step; see the CLAUDE.md section.
+- **`engine/pairwise.py` is new (07-29) and is the first model to beat chance on her wears.**
+  Measured, tested (engine 56 -> 76 tests), NOT wired into `/stylist`. See §3.3.
 - **`scripts/cdp.py` is new and is how any of this gets checked.** `--touch` for real
   touchscreen emulation, `--gpu` for software WebGL. **Without `--gpu` every /galaxy
   screenshot is the 2D fallback, not the shader.**
@@ -229,6 +244,16 @@ strongest candidate, so raise it with her rather than treating it as closed.**
   `server/scripts/wear_model_report.py`** — run `--check` before trusting any number that
   claims to compare against 07-27. Anything worth quoting later belongs in `server/scripts/`
   and in git, never in scratchpad.
+- **NEVER SCORE A RANKER ON THE CARDS IT CHOSE.** Her first pairwise session (07-29) scored
+  0.557 for pairwise and 0.725 for affinity on the same 34 verdicts — which reads as a
+  regression and is not one. She only saw cards pairwise ranked p65-p100 (IQR 13 points);
+  affinity spreads those same cards p2-p98 (IQR 46). The filtered model has no variance left to
+  discriminate with. **The wear log is the only unbiased benchmark** — no verdict touches it.
+- **AUC CANNOT SEE A BAD TOP-OF-LIST, and on 07-29 it hid a disqualifying one.** Raw pair
+  scoring measured 0.809 while putting a dress in 10 of its top 12 — dresses are 5% of the
+  space and 1 of 15 wears — because floating 120 of 2320 negatives barely moves a rank
+  statistic. A ranking model is judged on its first row. `wear_model_report.top_of_list()`
+  prints that row's composition beside the space's own shares; read it every run.
 - **Measurements must run with `apply_user_rules=False`.** The 07-27 figures are on the 2320
   structural space; her rules cut the suggestable space to 1600 on 07-28. Comparing across the
   two silently compares different questions.
@@ -262,6 +287,12 @@ strongest candidate, so raise it with her rather than treating it as closed.**
   is only 0.660 / 0.555.** Stated preference and lived behaviour are not the same target.
 - **Wears do NOT feed affinity** (`PRIOR = ("manual",)`). Measured by leave-one-out: adding
   them costs 0.120–0.172 AUC. Wear FREQUENCY is not preference. Sibling of NEGATIVE_WEIGHT.
+  **This rule is about `preference.affinity` SPECIFICALLY and does not generalise** — the same
+  test on `engine/pairwise.py` gives +0.012 / +0.005 (07-29). A pair either co-occurred or did
+  not, so repeats cannot inflate it the way frequency inflated a per-garment scalar.
+- **Rejections are unusable by a SCALAR, not unusable full stop** (07-29). `NEGATIVE_WEIGHT = 0.0`
+  stands for `preference.affinity`. Read as PAIRS, the same 44 blamed rejections are worth
+  +0.17 AUC — they are the largest single contribution to the pairwise model.
 - **`PRIOR` is what TRAINS affinity; it is NOT what counts as WORN.** The worn set comes from
   `_wear_counts()` — published appearances PLUS the wear log — which is what /insights reports.
   Conflating them made /stylist and /insights disagree (23 vs 13 never-worn) on 07-27.

@@ -124,8 +124,14 @@ def main():
 
     # Her own looks are the ground truth available: if the ranking is sane they
     # should sit high in the space they were drawn from.
+    #
+    # PUBLISHED ONLY. This iterated over every outfit row — all 57, including the
+    # 24 the STYLIST itself proposed and the 15 logged wears — while printing the
+    # header "her 18 published looks". Scoring the engine's own suggestions and
+    # calling the result her taste is circular, and it is the same confusion that
+    # made this file report 9 never-worn against /insights' 13 on 07-28.
     pcts = []
-    for o in O:
+    for o in [x for x in O if x.get("source") == "manual"]:
         combo = [by_id[i] for i in o["garment_ids"] if i in by_id]
         if not combo:
             continue
@@ -134,8 +140,12 @@ def main():
         pct = 100.0 * sum(1 for x in scores if x < s) / len(scores)
         pcts.append((pct, s, o.get("render_cache_key"),
                      (o.get("context") or {}).get("occasion")))
-    pcts.sort()
-    print("\nher 18 published looks, scored against all %d outfits:" % len(ranked))
+    # Sort on the NUMBERS only. A plain sort() falls through to the 3rd and 4th
+    # tuple fields whenever two looks tie on (pct, score), and `render_cache_key`
+    # can be None — which raises on py3 comparing None to str. It crashed here.
+    pcts.sort(key=lambda p: (p[0], p[1]))
+    print("\nher %d published looks, scored against all %d outfits:"
+          % (len(pcts), len(ranked)))
     print("   mean percentile %.0f · median %.0f"
           % (sum(p[0] for p in pcts) / len(pcts),
              statistics.median([p[0] for p in pcts])))
