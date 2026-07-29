@@ -17,6 +17,33 @@
     --oxblood:#6F2B2B; --amber:#CC8A3A; --paper:#F5F3EF; --dim:#8b8d92;
 
   }
+  /* LIGHT-GROUND PREVIEW (`?ground=light`, 07-29). Preview only — the default
+     is untouched. Swapping the two tokens carries most of the page, because the
+     chrome is already expressed in --ink/--paper rather than literals; the
+     canvas needed a theme object because its colours were hardcoded. */
+  html.ground-light { --ink:#F5F3EF; --paper:#0E0E10; --dim:#6b6d72;
+    --graphite:#c9c7c2; }
+  html.ground-light header {
+    background:linear-gradient(180deg, rgba(245,243,239,.95), rgba(245,243,239,0)); }
+  html.ground-light #detail,
+  html.ground-light #panel { background:rgba(245,243,239,.82);
+    border-color:rgba(14,14,16,.18); }
+  html.ground-light #detail .fig { background:rgba(14,14,16,.05); }
+  html.ground-light #detail .acts a { border-color:rgba(14,14,16,.3); }
+  /* The row-hover glow is the page's native signal — emitted light on a dark
+     field. On paper light cannot be emitted, so the same emphasis becomes ink
+     weight instead of a halo. */
+  html.ground-light #panel .orow:hover { color:var(--paper); text-shadow:none;
+    font-weight:600; }
+  html.ground-light .moneylock input { background:rgba(245,243,239,.8); }
+  /* THE GLASS IS OFF IN THIS PREVIEW, DELIBERATELY. Its whole rationale is
+     inverted here: the ribs gather the field because "refracted black is black"
+     and the column needed light to catch. On paper the problem is the mirror
+     image — refracted white is white — so the column needs re-deriving, not
+     re-tinting. Better she judges the field clean than judges the idea by a
+     shader built for the opposite ground. */
+  html.ground-light #glass { display:none; }
+
   * { box-sizing:border-box; }
   html,body { margin:0; height:100%; background:var(--ink); color:var(--paper);
     font:13px/1.45 Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased;
@@ -217,6 +244,36 @@ let hover = null, selected = null, filter = null;
 let spread = 165, lineAlpha = 0.6;
 
 const OX = '#6F2B2B', AMBER = '#CC8A3A', PAPER = '#F5F3EF';
+
+// ── LIGHT-GROUND PREVIEW (07-29, `?ground=light`) ───────────────────────────
+// Her question: what does this look like inverted — white ground, black nodes,
+// consistent with the rest of the site's white void and black hairlines?
+// Preview only; the default is unchanged, and nothing here is a decision.
+//
+// THE DITHER NEEDS NO NEW MATHS, AND THAT IS THE ARGUMENT FOR IT. Coverage is
+// already `0.30 + 0.70 * (1 - lum)` — dense for dark. On the ink ground those
+// dense dots have to be drawn in PAPER, so a black garment reads as a dense
+// field of LIGHT: correct by density, backwards by tone. On paper the same
+// formula draws dense BLACK dots for a black garment, which is what the eye
+// already expects. The encoding stops needing an explanation.
+//
+// EDGES INVERT THEIR BLEND, NOT THEIR IDEA. 'lighter' is additive, so crossings
+// bloom and convergence reads as light; on white it adds toward white and the
+// edges vanish. 'multiply' is its mirror — overlapping strokes get darker — so
+// the nebula behaviour survives in ink rather than being lost.
+const LIGHT_GROUND = new URLSearchParams(location.search).get('ground') === 'light';
+const T = LIGHT_GROUND ? {
+  ground: '#F5F3EF', dot: '#0E0E10', edgeRGB: '14,14,16', blend: 'multiply',
+  edgeGain: 1.9,
+  hudBg: 'rgba(245,243,239,.86)', hudInk: 'rgba(14,14,16,.92)', ruleRGB: '14,14,16',
+  plate: 'rgba(245,243,239,.55)',
+} : {
+  ground: '#0E0E10', dot: '#F5F3EF', edgeRGB: '226,232,245', blend: 'lighter',
+  edgeGain: 1,
+  hudBg: 'rgba(14,14,16,.82)', hudInk: 'rgba(245,243,239,.92)', ruleRGB: '245,243,239',
+  plate: 'rgba(14,14,16,.55)',
+};
+if (LIGHT_GROUND) document.documentElement.classList.add('ground-light');
 
 function resize() {
   const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -466,7 +523,7 @@ function setPlaying(on) {
 function draw(now) {
   now = now || performance.now();
   ctx.save();
-  ctx.fillStyle = '#0E0E10';
+  ctx.fillStyle = T.ground;
   ctx.fillRect(0, 0, innerWidth, innerHeight);
   ctx.translate(VIEW.x, VIEW.y); ctx.scale(VIEW.k, VIEW.k);
 
@@ -480,7 +537,7 @@ function draw(now) {
   // own, which is the nebula behaviour rather than a uniform neon stroke.
   // Dimmed edges get no halo: light is the signal, so unfocused links must not
   // emit any.
-  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalCompositeOperation = T.blend;
   for (const e of EDGES) {
     const rv = Math.min(revealOf(e.s, now), revealOf(e.t, now),
                         timeGate(e.s, now), timeGate(e.t, now));
@@ -494,7 +551,7 @@ function draw(now) {
       ctx.setLineDash([]);                     // the halo never dashes — a dashed
                                                // glow reads as a dotted line, not light
       ctx.lineWidth = core + (worn ? 7 : 5);
-      ctx.strokeStyle = `rgba(226,232,245,${(worn ? 0.055 : 0.022) * lineAlpha * rv})`;
+      ctx.strokeStyle = `rgba(${T.edgeRGB},${(worn ? 0.055 : 0.022) * T.edgeGain * lineAlpha * rv})`;
       ctx.moveTo(e.s.x, e.s.y); ctx.lineTo(e.t.x, e.t.y);
       ctx.stroke();
     }
@@ -502,9 +559,13 @@ function draw(now) {
     ctx.beginPath();
     ctx.setLineDash(worn ? [] : [3, 5]);
     ctx.lineWidth = core;
+    // The CORE was hardcoded paper — white lines on a white ground, i.e. the
+    // graph's actual structure invisible. `edgeGain` compensates for blend
+    // mode: 'lighter' accumulates toward white on ink and reads at very low
+    // alpha, while 'multiply' on paper needs more ink for the same weight.
     ctx.strokeStyle = worn
-      ? `rgba(245,243,239,${(off ? 0.06 : 0.5) * lineAlpha * rv})`
-      : `rgba(245,243,239,${(off ? 0.02 : 0.14) * lineAlpha * rv})`;
+      ? `rgba(${T.edgeRGB},${(off ? 0.06 : 0.5) * T.edgeGain * lineAlpha * rv})`
+      : `rgba(${T.edgeRGB},${(off ? 0.02 : 0.14) * T.edgeGain * lineAlpha * rv})`;
     ctx.moveTo(e.s.x, e.s.y); ctx.lineTo(e.t.x, e.t.y);
     ctx.stroke();
   }
@@ -588,7 +649,9 @@ function glassRect() {
   // which no rule on #glass can touch. Both paths already bail on a sub-4px
   // rect, so an empty rect turns off both from one place — and the shader stops
   // running rather than merely being invisible, which matters on a phone.
-  if (innerWidth <= 640) {
+  // Same empty-rect switch is used by the light-ground preview: the glass is
+  // built for an ink field and needs re-deriving on paper, not re-tinting.
+  if (innerWidth <= 640 || LIGHT_GROUND) {
     return { left: innerWidth, top: 0, width: 0, height: innerHeight };
   }
   const w = Math.min(334, innerWidth * 0.34);
@@ -611,7 +674,7 @@ function drawReededGlass() {
 
   ctx.save();
   ctx.beginPath(); ctx.rect(b.left, b.top, w, h); ctx.clip();
-  ctx.fillStyle = 'rgba(14,14,16,.55)';
+  ctx.fillStyle = T.plate;
   ctx.fillRect(b.left, b.top, w, h);
 
   const ribW = w / RIBS;
@@ -642,11 +705,11 @@ function drawReededGlass() {
   // specular rim: light catches the top and left, shadow falls to the right
   ctx.save();
   ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(245,243,239,.34)';
+  ctx.strokeStyle = `rgba(${T.ruleRGB},.34)`;
   ctx.beginPath();
   ctx.moveTo(b.left + .5, b.top + h); ctx.lineTo(b.left + .5, b.top + .5);
   ctx.lineTo(b.left + w, b.top + .5); ctx.stroke();
-  ctx.strokeStyle = 'rgba(245,243,239,.10)';
+  ctx.strokeStyle = `rgba(${T.ruleRGB},.10)`;
   ctx.beginPath();
   ctx.moveTo(b.left + w - .5, b.top); ctx.lineTo(b.left + w - .5, b.top + h - .5);
   ctx.lineTo(b.left, b.top + h - .5); ctx.stroke();
@@ -883,10 +946,10 @@ function drawHUD(n) {
   const t = 8;                                   // corner tick length
   ctx.save();
   ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(245,243,239,.32)';
+  ctx.strokeStyle = `rgba(${T.ruleRGB},.32)`;
   ctx.strokeRect(x - r, y - r, r*2, r*2);
 
-  ctx.strokeStyle = 'rgba(245,243,239,.9)';      // corners read as acquisition
+  ctx.strokeStyle = `rgba(${T.ruleRGB},.9)`;      // corners read as acquisition
   ctx.beginPath();
   [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx, sy]) => {
     ctx.moveTo(x + sx*r - sx*t, y + sy*r); ctx.lineTo(x + sx*r, y + sy*r);
@@ -902,9 +965,9 @@ function drawHUD(n) {
                  price(n.price) || null].filter(Boolean).join('  ·  ');
   // the readout sits over a dot field, so it needs its own ground to stay legible
   const w = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width);
-  ctx.fillStyle = 'rgba(14,14,16,.82)';
+  ctx.fillStyle = T.hudBg;
   ctx.fillRect(x - r - 3, y - r - 24, w + 8, 24);
-  ctx.fillStyle = 'rgba(245,243,239,.92)';
+  ctx.fillStyle = T.hudInk;
   ctx.fillText(line1, x - r, y - r - 14);
   ctx.fillStyle = 'rgba(245,243,239,.55)';
   ctx.fillText(line2, x - r, y - r - 4);
@@ -945,7 +1008,7 @@ const ditherCache = {};
 function ditherOf(node, px) {
   // bucket the size so a drifting node does not rebuild every frame
   const bucket = Math.max(24, Math.round(px / 8) * 8);
-  const key = node.id + '@' + bucket;
+  const key = node.id + '@' + bucket + '@' + T.dot;
   if (ditherCache[key]) return ditherCache[key];
   const im = IMG[node.id];
   if (!im || !im.complete || !im.naturalWidth) return null;
@@ -962,7 +1025,7 @@ function ditherOf(node, px) {
   const out = document.createElement('canvas');
   out.width = out.height = cells * PIXEL;
   const ox = out.getContext('2d');
-  ox.fillStyle = '#F5F3EF';
+  ox.fillStyle = T.dot;
   for (let y = 0; y < cells; y++) {
     for (let x = 0; x < cells; x++) {
       const i = (y * cells + x) * 4;
