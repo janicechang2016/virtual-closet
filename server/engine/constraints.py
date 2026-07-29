@@ -113,14 +113,17 @@ USER_RULES = (
     ("keen sandals with a skirt or dress",
      lambda gs, occ: (any(g.get("id") == KEEN_SANDALS for g in gs)
                       and _any_skirt_or_dress(gs))),
-    # "Never suggest a sneaker for dinner." — added 07-28 from the wear data,
-    # confirmed by her. Of her 6 logged dinners, 5 were the yello-heels and one
-    # was flats; sneakers were worn 5 times and NEVER to dinner. This is the
-    # first rule derived from what she DID rather than from what she said, which
-    # is exactly the target the stylist was re-pointed at on 07-27.
-    # CAVEAT, recorded so it can be undone honestly: n=6 dinners. It is enforced
-    # because she confirmed it, not because 6 is a sample. Delete this tuple and
-    # its test to remove it — nothing else references it.
+    # "Never suggest a sneaker for dinner."
+    # PROVENANCE, in order, because it is the unusual one: DERIVED from the wear
+    # data 07-28 (of 6 logged dinners, 5 were the yello-heels and 1 flats;
+    # sneakers were worn 5 times and never to dinner), written into
+    # style_rules.txt, and only THEN put to her — she confirmed it explicitly
+    # when asked. Every other rule here started as something she said.
+    # This is the first rule derived from what she DID rather than said, which is
+    # exactly the target the stylist was re-pointed at on 07-27.
+    # CAVEAT, recorded so it can be undone honestly: n=6 dinners. It stands on
+    # her confirmation, NOT on the sample size. Delete this tuple and its test to
+    # remove it — nothing else references it.
     ("sneaker for dinner",
      lambda gs, occ: occ == "dinner" and _any_sub(gs, "sneaker")),
 )
