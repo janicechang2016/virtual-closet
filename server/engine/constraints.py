@@ -98,6 +98,15 @@ def is_valid(garments):
 # she wrote about her Keens.
 KEEN_SANDALS = "53-keen-sandals"
 
+# Same reasoning as KEEN_SANDALS: her rule names this specific garment, not
+# "trousers" and not "formality 5". Keyed by ID so nothing else inherits it.
+DUNE_PANTS = "26-liniss-dune-pants"
+
+#: The occasions that make the dune pants suggestable. Everything else — and,
+#: uniquely in this module, an UNSTATED occasion — blocks them. See the rule
+#: itself for why that exception exists.
+DUNE_PANTS_OCCASIONS = ("dinner", "event")
+
 #: Rules take (garments, occasion). `occasion` is an OCCASION SLUG from
 #: `app.wear_rules.OCCASIONS`, or None when the caller has no context — and None
 #: must mean "cannot violate an occasion rule", never "assume the worst".
@@ -126,6 +135,35 @@ USER_RULES = (
     # remove it — nothing else references it.
     ("sneaker for dinner",
      lambda gs, occ: occ == "dinner" and _any_sub(gs, "sneaker")),
+    # "The Liniss dune pants are a special occasion piece. They aren't meant for
+    #  just everyday wear — definitely not a casual piece."
+    #
+    # THE ONE RULE HERE THAT FIRES ON `occasion=None`, AND THE EXCEPTION IS THE
+    # WHOLE POINT — do not "fix" it to match the others. Every other occasion
+    # rule above asks "does this occasion forbid it?", so silence means no. This
+    # one asks "has a special occasion been named?", so silence means no in the
+    # other direction. Her call 07-29, made against the numbers: scoped the safe
+    # way it changes nothing on the default tab (1600 -> 1600), which is the only
+    # tab she uses and the exact place she blamed these pants three times in one
+    # session. A rule that cannot fire where the complaint happened is ceremony.
+    # Cost: default tab 1600 -> 1380, and the four everyday tabs lose the same
+    # 220 outfits. `dinner` and `event` are untouched.
+    #
+    # WHAT IT OVERRIDES, recorded because a later reader will find it and think
+    # the rule is a mistake: on 07-29 she ACCEPTED `01-plain-tee + dune +
+    # 54-salomon-sneakers` and `08-bunnyhill-grey-top + dune + 54-salomon-sneakers`
+    # — the second being her most recent verdict on this garment. This rule
+    # removes both from everyday suggestions. She was shown that and chose it
+    # anyway; it is a change of mind, not an oversight, and her stated rule wins
+    # over her past clicks by design. The verdicts stay in the log and still
+    # train pairwise — this filters, it does not unlearn.
+    #
+    # SAFE AGAINST HER HISTORY: the dune pants have 0 logged wears and appear in
+    # 1 published look, so this invalidates nothing she actually wore. Pinned by
+    # `test_user_rules_do_not_invalidate_worn_outfits`.
+    ("dune pants outside a special occasion",
+     lambda gs, occ: (any(g.get("id") == DUNE_PANTS for g in gs)
+                      and occ not in DUNE_PANTS_OCCASIONS)),
 )
 
 
@@ -175,10 +213,17 @@ def user_rule_violations(garments, occasion=None):
     Filters suggestions only. Never call this to decide whether something IS an
     outfit — that is `hard_violations`.
 
-    `occasion` is optional and defaults to None, which cannot violate an
-    occasion-scoped rule. A caller with no occasion is asking a general
-    question, and answering it with dinner's constraints would filter the pool
-    on a premise nobody stated.
+    `occasion` is optional and defaults to None. THE DEFAULT READING is that
+    None cannot violate an occasion-scoped rule: a caller with no occasion is
+    asking a general question, and answering it with dinner's constraints would
+    filter the pool on a premise nobody stated.
+
+    ONE RULE DELIBERATELY BREAKS THAT (the dune pants, 07-29) because it is
+    shaped the other way round — it gates a garment ON a stated special
+    occasion rather than gating it OFF a stated everyday one, so silence has to
+    mean "not a special occasion" or the rule can never fire on the default
+    tab. The exception is documented at the rule, not here, so it stays
+    attached to the reason it exists. Do not generalise it to the others.
     """
     return [name for name, breaks in USER_RULES if breaks(garments, occasion)]
 

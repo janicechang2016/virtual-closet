@@ -84,10 +84,18 @@ def main():
     cutoff = statistics.median(scores)
     qcount, qbest = gaps.quality_participation(G, cutoff)
     stranded = sorted(((qcount[g["id"]], qbest[g["id"]], g["id"]) for g in G))[:8]
+    # This measures the SUGGESTABLE space on purpose — "does this garment have a
+    # good home among what the stylist may offer" — so a garment she has gated by
+    # rule correctly reads 0. That is a decision working, not a garment stranded;
+    # the enumeration block above names the rule and its cost. Do not "fix" a
+    # 0 here by loosening a rule. Contrast `orphans()`, which asks the STRUCTURAL
+    # question and must therefore ignore her rules entirely.
+    gated = {r[2] for r in stranded if qcount[r[2]] == 0}
     print("\ngarments with fewest ABOVE-MEDIAN outfits (cutoff %.3f):" % cutoff)
     for cnt, best, gid in stranded:
-        print("   %-34s %4d good outfits · best %.3f · %s"
-              % (gid, cnt, best, by_id[gid].get("category")))
+        note = "  <- ruled out, not stranded" if gid in gated else ""
+        print("   %-34s %4d good outfits · best %.3f · %s%s"
+              % (gid, cnt, best, by_id[gid].get("category"), note))
 
     # Published looks + logged wears — NOT the raw outfit list, which also holds
     # stylist suggestions. Passing all 57 counted a garment as worn because the

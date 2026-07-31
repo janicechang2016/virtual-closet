@@ -1,5 +1,46 @@
 # Decision log
 
+## 2026-07-30 — A rule that fails a worn outfit is a QUESTION, not a verdict
+
+**Decision (user):** her Keen sandals rule ("never suggest them with a skirt or dress")
+**STAYS**, even though she wore exactly that combination on 07-27 on a `day_out`. Her words:
+*"just keep, that was an exception."*
+
+**Standing rule from this decision, and it overturns a stronger one:** the previous reading —
+*"if a rule ever fails something she actually wore, the rule is what is wrong"* — is too
+strong and was stated absolutely in both the engine tests and the handoff. A rule describes
+what she wants **offered**; one day she reached past it does not invalidate it. **Surface the
+conflict every time, then ask. The verdict is hers, never the test's.**
+
+Recorded as `TestRealCloset.ACCEPTED_RULE_EXCEPTIONS` — keyed by garment set so it survives a
+re-backfill, with a companion test that fails if the exception stops matching a real
+violation, because an allowlist that silently protects nothing still reads as coverage.
+**Nothing is added to that set without her saying so.**
+
+Fixed alongside it: the test meant to catch this filtered on `outfit.source == "worn"`, and a
+wear that MATCHES a published look resolves to the `manual` row — so the one case it existed
+to catch was invisible to it. The worn set now comes from `wear_log`. Fourth instance of that
+same confusion in this project.
+
+## 2026-07-30 — The dune pants are a special-occasion piece
+
+**Decision (user):** *"The Liniss dune pants are a special occasion piece. They aren't meant
+for just everyday wear — definitely not a casual piece."* In `style_rules.txt`; enforced in
+`constraints.USER_RULES`. Default tab 1600 -> 1380; `dinner` and `event` untouched.
+
+**Standing rule from this decision:** this is the **only** rule that fires on an UNSTATED
+occasion, and the exception is deliberate. It gates a garment ON a stated special occasion
+rather than OFF a stated everyday one, so silence has to mean "not a special occasion" — the
+alternative left the default tab untouched, which is the only tab she uses and the exact
+place she had blamed the pants three times in one session. Every other occasion rule keeps
+the standing "None means not stated, never assume the strictest."
+
+**She was shown that her own verdicts contradict it and chose it anyway** — 5 of 15 dune
+verdicts were "yes", including two casual sneaker outfits accepted on 07-29, one of them her
+most recent verdict on the garment. **A stated rule beats past clicks; this is a change of
+mind, not an oversight.** The verdicts stay in the log and still train pairwise: the rule
+filters, it does not unlearn.
+
 ## 2026-07-27 — Logged outfits never reach the archive carousel
 
 **Standing rule (user):** an outfit created by wear logging must NEVER appear in the archive

@@ -165,8 +165,19 @@ def orphans(garments, threshold=ORPHAN_PARTICIPATION):
     Two very different causes, separated here because the answers differ: a
     garment with no structural partner (the only skirt in a closet of trousers)
     versus one that partners fine but clashes with everything.
+
+    STRUCTURAL MEANS `apply_user_rules=False`, and it has to be said in code
+    rather than assumed. This enumerated the FILTERED space until 07-29, so the
+    moment her dune pants rule gated that garment to dinner and event it was
+    reported as having "no structural partner" — a claim about the closet's
+    shape, made from a fact about her preferences, on `/insights` and in
+    `engine_report`. A garment she has RULED OUT of everyday suggestions is the
+    opposite of one the closet cannot dress: the first is a decision working,
+    the second is a hole. Her shoe rules could have triggered the same false
+    alarm at any point since 07-28; the dune rule is just what tripped it.
     """
-    outfits = enumerate_outfits(garments, with_outerwear=True)
+    outfits = enumerate_outfits(garments, with_outerwear=True,
+                                apply_user_rules=False)
     counts = participation(garments, outfits)
     out = []
     for g in garments:

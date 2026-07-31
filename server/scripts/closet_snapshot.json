@@ -3782,6 +3782,28 @@
    "render_cache_key": null
   },
   {
+   "id": "1fc30706-89fa-4850-b122-5e616a95777c",
+   "garment_ids": [
+    "11-coucou-black-muse-tank",
+    "15-coucou-mini-skirt",
+    "50-yello-heels"
+   ],
+   "source": "worn",
+   "context": {},
+   "render_cache_key": null
+  },
+  {
+   "id": "7d91e090-1ab1-4420-9e5c-f94866a8d173",
+   "garment_ids": [
+    "02-jeans",
+    "45-sundae-gorum-shirt",
+    "52-camper-flats"
+   ],
+   "source": "worn",
+   "context": {},
+   "render_cache_key": null
+  },
+  {
    "id": "37d15d7e-01e3-4f5f-bc37-d295e457c837",
    "garment_ids": [
     "02-jeans",
@@ -4104,6 +4126,60 @@
     "conditions": "rain",
     "temp_max_c": 30.3,
     "temp_min_c": 20.6
+   },
+   "nearly_wore": null,
+   "instead_of": null
+  },
+  {
+   "id": "402a6e7b-0248-4b28-9087-59fb232850b5",
+   "outfit_id": "e55cb255-679d-45a6-9fb8-62bb58941b59",
+   "worn_on": "2026-07-27",
+   "occasion": "day_out",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 55,
+    "source": "open-meteo/archive",
+    "precip_mm": 3.6,
+    "conditions": "rain",
+    "temp_max_c": 30.3,
+    "temp_min_c": 20.6
+   },
+   "nearly_wore": null,
+   "instead_of": null
+  },
+  {
+   "id": "8fcfa40e-6cd3-4a7e-ac3f-790afe3783ab",
+   "outfit_id": "1fc30706-89fa-4850-b122-5e616a95777c",
+   "worn_on": "2026-07-28",
+   "occasion": "dinner",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 63,
+    "source": "open-meteo/archive",
+    "precip_mm": 21.0,
+    "conditions": "rain",
+    "temp_max_c": 27.4,
+    "temp_min_c": 20.8
+   },
+   "nearly_wore": null,
+   "instead_of": null
+  },
+  {
+   "id": "3d30f8c5-1434-44c9-9c27-51228ee5548a",
+   "outfit_id": "7d91e090-1ab1-4420-9e5c-f94866a8d173",
+   "worn_on": "2026-07-29",
+   "occasion": "work_out",
+   "weather": {
+    "lat": 40.7128,
+    "lon": -74.006,
+    "code": 65,
+    "source": "open-meteo/archive",
+    "precip_mm": 37.1,
+    "conditions": "rain",
+    "temp_max_c": 28.0,
+    "temp_min_c": 20.9
    },
    "nearly_wore": null,
    "instead_of": null

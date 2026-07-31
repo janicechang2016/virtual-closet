@@ -1100,6 +1100,122 @@ is the only unbiased benchmark, because no verdict touches it.**
   confusion** (never-worn 9 vs 13 on 07-28; `PRIOR` vs worn on 07-27): a stylist SUGGESTION is
   not evidence of anything she did.
 
+## 18 WEARS — the first data increment since pairwise shipped (2026-07-29/30, $0)
+
+**THE SNAPSHOT WAS STALE AGAIN, and it is the same trap as 07-27.** Production held **18**
+wears while the tracked `closet_snapshot.json` held 15, so `/insights`, `/galaxy`, the
+deployed stylist pool and every measurement were running two days behind. Re-dumped;
+**58 garments · 59 outfits (18 manual · 17 worn · 24 stylist) · 18 wears.** Occasion mix is
+now dinner 7 · day_out 5 · work_out 3 · work_home 3. `weather_backfill.py` had not run since
+07-28 and 3 of the newest wears carried none — **18/18 now carry weather**, still only 2
+distinct conditions across a rainy NYC July.
+**`dump_closet.py` must be run from `server/`, not the repo root** — the Railway link is
+registered against `/Users/janice.chang/wardrobe-v3/server` and the CLI answers "No linked
+project found" anywhere else.
+
+- **THE MODEL HELD UP ON MORE DATA, which is the result worth having.** Against 18 worn
+  outfits instead of 15, the shipped pairwise ranker measures **0.802 whole / 0.799
+  in-rotation** (was 0.768 / 0.774), and the best variant — blame-negatives + calibration —
+  reaches **0.850 / 0.824** with the in-rotation CI [0.762, 0.881]. Affinity is still
+  **0.682 / 0.583** with a CI spanning chance, colour still **0.399 / 0.426**. A 20% larger
+  test set did not erode the advantage; the margin is +0.217 against the 0.15 floor.
+- **`--check` reports two DRIFTS and they are fully explained by the bigger test set:**
+  `heldout_affinity_rotation` 0.548 -> 0.583 and `heldout_colour_whole` 0.360 -> 0.399.
+  Both moved UP and in the same direction as the added positives. The harness is doing its
+  job by refusing to repin itself — **repin deliberately, recording 18 wears as the new data
+  state, rather than treating drift as noise.**
+- **THE LEAKAGE GUARD IS NOW LOAD-BEARING: 2 judged outfits dropped, against 0 on 07-29.**
+  `pairwise.load_verdicts()` drops any judged outfit she has also worn, because the wears are
+  the test set. It was built for exactly this and the note that it "will not stay 0" was right
+  within a day.
+- **THE FIRST WEAR EVER TO MATCH A PUBLISHED LOOK.** All 15 wears through 07-27 minted new
+  outfits; on 07-27 she wore **look 011** and `_resolve_outfit` matched it, so that wear
+  points at a `manual` row. This retires the standing "what she wears and what she publishes
+  do not overlap" as an absolute — it is 1 of 18, but it is no longer zero, and it broke a
+  test (below).
+
+### Her dune pants rule (07-30) — the first rule that fires on an UNSTATED occasion
+
+**Her call, and it overrides her own verdicts knowingly.** `26-liniss-dune-pants` was the
+07-29 session's sore point (blamed 3x, 0 of 18 wears, 1 published look). Her rule, now in
+`style_rules.txt`: *"The Liniss dune pants are a special occasion piece. They aren't meant
+for just everyday wear — definitely not a casual piece."*
+
+- **THE VERDICT DATA DOES NOT SUPPORT IT, and she was shown that before choosing.** Across 15
+  verdicts touching the pants she said yes 5 times — including `01-plain-tee + dune +
+  54-salomon-sneakers` and `08-bunnyhill-grey-top + dune + 54-salomon-sneakers` on 07-29, the
+  second being her most recent verdict on the garment and about the most casual pairing this
+  closet can make. She also rejected them with mizuno sneakers, asics sneakers and camper
+  flats the same day. **A stated rule beats past clicks by design — this is a change of mind,
+  not an oversight.** The verdicts stay in the log and still train pairwise: the rule filters,
+  it does not unlearn.
+- **IT FIRES ON `occasion=None`, THE ONLY RULE THAT DOES, AND THAT IS THE ENTIRE POINT.**
+  Scoped like the other occasion rules it would have left the default tab at 1600 — the only
+  tab she uses and the exact place she blamed the pants. A rule that cannot fire where the
+  complaint happened is ceremony. The standing "None means not stated, never assume the
+  strictest" still governs every OTHER rule; this one is shaped the other way round (it gates
+  a garment ON a stated special occasion rather than OFF a stated everyday one), so silence
+  has to mean "not a special occasion". Documented at the rule, not at the function.
+- **Cost, measured before she chose:** default tab **1600 -> 1380**; `day_out` / `home` /
+  `work_home` / `work_out` lose the same 220; `dinner` (1248) and `event` (1600) untouched.
+  Total user-rule cost is now 2320 -> 1380, **-940 (41%)** across 4 rules.
+- **Safe against her history:** the pants have 0 logged wears, so no worn outfit is
+  invalidated. `DUNE_PANTS` is keyed by ID like `KEEN_SANDALS` — other trousers must not
+  inherit a rule she wrote about the Liniss.
+
+**TWO INVARIANTS BROKE, AND BOTH WERE WRONG RATHER THAN THE RULE:**
+- **`orphans()` claimed to be STRUCTURAL while enumerating the FILTERED space.** Gating the
+  pants made them report "no structural partner" — a claim about the closet's shape derived
+  from a fact about her preferences — in `engine_report` and, via `insights_data`'s
+  `structural_orphans`, on `/insights`. Now enumerates with `apply_user_rules=False`, which
+  is what the name always promised. **Her shoe rules could have tripped this any time since
+  07-28**; the dune rule is only what exposed it. Orphans back to 0, pinned by a test.
+- **`test_user_rules_strand_no_garment` measured ONE space.** Reachability is the real
+  invariant; reachability at every occasion never was. It now unions across all six occasions
+  plus None, so a legitimately gated garment is not mistaken for a deleted one, with a second
+  test pinning both directions of the gate.
+- **`quality_participation` correctly reports 0 for the pants and that is NOT a fault** — it
+  asks whether a garment has a good home among what the stylist may SUGGEST. `engine_report`
+  now prints `<- ruled out, not stranded` beside such a row so the next reader does not
+  "fix" it by loosening a rule.
+
+**A THIRD TEST BROKE FOR A DIFFERENT REASON — and it revealed a hole worth knowing about.**
+`test_outerwear_coverage_gap_is_known_and_deliberate` asserted exactly 1 wear falls outside
+the suggestable space and found 2. The second is not an outerwear gap at all: it is the
+07-27 wear of look 011 (`25-kotn-samira-tank + 32-personal-language-skirt +
+53-keen-sandals`), excluded by **her own Keen sandals rule**. That test now measures the
+STRUCTURAL space so it owns enumeration and nothing else.
+### A RULE THAT FAILS A WORN OUTFIT IS A QUESTION, NOT A VERDICT (07-30) — doctrine qualified
+
+**Her Keen rule contradicted her behaviour, she was shown it, and she KEPT THE RULE.**
+*"Keen sandals are for extremely casual and walking days only. Never suggest them with a
+skirt or dress."* On 07-27 she wore exactly that, on a `day_out` — arguably a walking day, so
+the first clause holds and the second does not. Her ruling: **"just keep, that was an
+exception."**
+
+**THIS OVERTURNS A STANDING READING that was stated absolutely in code and in the handoff:**
+*"If a future rule ever fails something she actually WORE, the rule is what is wrong."*
+Too strong. A rule describes what she wants OFFERED; one day she reached past it does not
+invalidate it, and a stylist that quietly rewrote her rules every time she improvised would
+have no rules at all. **The correct behaviour is to SURFACE the conflict and ask** — the
+finding is real and worth raising every time, but the verdict is hers.
+
+- Recorded as `TestRealCloset.ACCEPTED_RULE_EXCEPTIONS` — one entry, keyed by GARMENT SET so
+  it survives a re-backfill, carrying her reasoning inline. **Nothing goes in it without her
+  saying so.**
+- **A second test fails if the exception stops matching a real violation.** An allowlist that
+  silently stops protecting anything is worse than no allowlist: it reads as coverage.
+- **The Keen rule still costs -144 outfits and still filters two published looks** — unchanged
+  by this. What changed is only that one WORN outfit is now a known, accepted casualty.
+
+**AND THE TEST BUILT TO CATCH THIS COULD NOT SEE IT — fixed 07-30.**
+`test_user_rules_do_not_invalidate_worn_outfits` filtered on `source == "worn"`, but a wear
+matching a published look resolves to the `manual` row, so the single case it exists to catch
+was invisible to it. **This is the FOURTH instance of the same confusion** (never-worn 9 vs 13
+on 07-28; `PRIOR` vs worn on 07-27; stylist suggestions counted as her looks on 07-29): the
+worn set comes from the WEAR LOG, never from `outfit.source`. It now reads `wear_log`, the
+same place /insights takes it.
+
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear

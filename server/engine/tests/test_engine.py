@@ -184,12 +184,49 @@ class TestUserRules(unittest.TestCase):
         A caller with no occasion is asking a general question; answering it
         with dinner's constraints would filter the pool on a premise nobody
         stated, and would silently shrink the default stylist tab.
+
+        NOT A GLOBAL INVARIANT since 07-29 — the dune pants rule is gated ON a
+        stated special occasion rather than OFF a stated everyday one, so for
+        that one rule silence correctly blocks. See
+        `test_dune_pants_are_blocked_when_no_occasion_is_stated`.
         """
         combo = [g("t", "top"), g("b", "bottom", subcategory="trousers"),
                  g("sn", **self.SNEAK)]
         for occ in (None, "", "work_home", "day_out"):
             self.assertTrue(constraints.allowed_by_user_rules(combo, occ),
                             "sneakers wrongly blocked for %r" % occ)
+
+    def test_dune_pants_allowed_only_for_dinner_and_event(self):
+        """Her rule 07-29: a special occasion piece, not everyday, not casual."""
+        combo = [g("t", "top"), g(constraints.DUNE_PANTS, "bottom",
+                                  subcategory="trousers"), g("sh", "shoes")]
+        for occ in ("dinner", "event"):
+            self.assertTrue(constraints.allowed_by_user_rules(combo, occ),
+                            "dune pants wrongly blocked for %r" % occ)
+        for occ in ("day_out", "home", "work_home", "work_out"):
+            self.assertIn("dune pants outside a special occasion",
+                          constraints.user_rule_violations(combo, occ))
+
+    def test_dune_pants_are_blocked_when_no_occasion_is_stated(self):
+        """THE DELIBERATE EXCEPTION, and the reason the rule is worth having.
+
+        Scoped like the other occasion rules it would pass here, leaving the
+        default stylist tab unchanged — the only tab she uses, and the exact
+        place she blamed these pants three times in one session. Her call, made
+        against the counts. If this test is ever "fixed" to match the others,
+        the rule stops doing anything at all.
+        """
+        combo = [g("t", "top"), g(constraints.DUNE_PANTS, "bottom",
+                                  subcategory="trousers"), g("sh", "shoes")]
+        for occ in (None, ""):
+            self.assertFalse(constraints.allowed_by_user_rules(combo, occ),
+                             "dune pants wrongly allowed for %r" % occ)
+
+    def test_dune_rule_names_one_garment_not_a_category(self):
+        """Other trousers must not inherit a rule she wrote about the Liniss."""
+        combo = [g("t", "top"), g("02-jeans", "bottom", subcategory="trousers"),
+                 g("sh", "shoes")]
+        self.assertTrue(constraints.allowed_by_user_rules(combo))
 
     def test_occasion_aliases_map_the_two_vocabularies(self):
         """Published-look labels and 0006 slugs are two vocabularies for one
@@ -367,10 +404,19 @@ class TestRealCloset(unittest.TestCase):
         # bases that a banned shoe may no longer finish
         lost = (len(tops) * len(skirts) + len(dresses)) * len(banned)
 
+        # The dune pants rule (07-29) is disjoint from the shoe rules — it names
+        # a BOTTOM, and that bottom is not a skirt, so nothing is double-counted.
+        # With no occasion stated it removes every outfit containing them.
+        dune = [b for b in bottoms if b["id"] == constraints.DUNE_PANTS]
+        lost += len(dune) * len(tops) * len(shoes)
+
         full = len(gaps.enumerate_outfits(self.garments, apply_user_rules=False))
         filtered = len(gaps.enumerate_outfits(self.garments))
         self.assertEqual(full - filtered, lost)
         self.assertTrue(banned and skirts, "fixture lost its sneakers or skirts")
+        self.assertTrue(dune, "fixture lost the dune pants")
+
+    OCCASIONS = ("dinner", "event", "day_out", "home", "work_home", "work_out")
 
     def test_user_rules_strand_no_garment(self):
         """Filtering may shrink the space but must not remove anyone from it.
@@ -378,34 +424,116 @@ class TestRealCloset(unittest.TestCase):
         A garment that appears in zero suggestable outfits is invisible to the
         stylist, the wildcard and the rediscovery leads at once — a rule that
         does that has stopped filtering and started deleting.
+
+        MEASURED ACROSS ALL OCCASIONS, not just the default tab, since 07-29.
+        Her dune pants rule gates that garment to dinner and event, so on the
+        default tab it is legitimately absent — reachability is the invariant,
+        and reachability at EVERY occasion never was one. Narrowing this to a
+        single space would either declare her rule a bug or force it to be
+        weaker than she asked for.
         """
-        space = gaps.enumerate_outfits(self.garments)
-        seen = {g_["id"] for combo in space for g_ in combo}
+        seen = set()
+        for occ in (None,) + self.OCCASIONS:
+            for combo in gaps.enumerate_outfits(self.garments, occasion=occ):
+                seen.update(g_["id"] for g_ in combo)
         wearable = [g_["id"] for g_ in self.garments
                     if g_["category"] in ("top", "bottom", "dress", "shoes")
                     or (g_.get("alt_categories") or ())]
         self.assertEqual([i for i in wearable if i not in seen], [])
 
+    def test_orphans_is_structural_and_ignores_her_rules(self):
+        """"No structural partner" must never mean "she ruled it out".
+
+        `orphans()` enumerated the FILTERED space until 07-29, so gating the
+        dune pants to dinner and event made them report as structurally
+        orphaned — on `/insights` and in `engine_report`. The two findings call
+        for opposite responses, so they must not share a number.
+        """
+        ids = [o["id"] for o in gaps.orphans(self.garments)]
+        self.assertNotIn(constraints.DUNE_PANTS, ids,
+                         "a rule-gated garment is being reported as structurally "
+                         "orphaned")
+        self.assertEqual(ids, [], "closet gained a genuine structural orphan")
+
+    def test_dune_pants_are_reachable_only_through_a_special_occasion(self):
+        """The other half of the strand check: gated, not deleted.
+
+        Pins both directions of her 07-29 rule against the real closet — absent
+        from everyday suggestions, present the moment she names the occasion the
+        garment is actually for.
+        """
+        def has_dune(occ):
+            return any(any(x["id"] == constraints.DUNE_PANTS for x in c)
+                       for c in gaps.enumerate_outfits(self.garments, occasion=occ))
+
+        for occ in ("dinner", "event"):
+            self.assertTrue(has_dune(occ), "dune pants unreachable for %r" % occ)
+        for occ in (None, "day_out", "home", "work_home", "work_out"):
+            self.assertFalse(has_dune(occ), "dune pants still offered for %r" % occ)
+
+    #: Worn outfits a rule rejects that she has looked at and KEPT the rule for.
+    #: Keyed by garment set, not outfit id, so it survives a re-backfill.
+    #:
+    #: THE ONLY ENTRY (07-30): she wore the Keens with the personal-language
+    #: skirt on 07-27, on a `day_out`, which her own rule forbids suggesting.
+    #: Shown the conflict, her ruling was "just keep, that was an exception" —
+    #: the rule describes what she wants OFFERED, and one day she reached past it
+    #: does not make it wrong. **THIS QUALIFIES THE MODULE'S OWN DOCTRINE**: a
+    #: rule failing something she wore is a PROMPT TO ASK HER, not an automatic
+    #: verdict against the rule. Nothing may be added here without her saying so.
+    ACCEPTED_RULE_EXCEPTIONS = {
+        ("25-kotn-samira-tank", "32-personal-language-skirt", "53-keen-sandals"),
+    }
+
     def test_user_rules_do_not_invalidate_worn_outfits(self):
         """The closet's own history is the check on any rule that filters.
 
-        Measured 07-28: zero worn outfits break either rule. Two PUBLISHED looks
-        do (both `32-personal-language-skirt` with the Keens) and neither was
-        ever worn — which is why these are a separate tier and are not in
-        `hard_violations`. If a future rule ever fails something she actually
-        WORE, the rule is what is wrong.
+        Two PUBLISHED looks break the Keen rule, which is why these are a
+        separate tier and not in `hard_violations`: folding them in would
+        retroactively invalidate her own archive.
+
+        **WORN MEANS THE WEAR LOG, NOT `source == "worn"`.** This filtered on the
+        source column until 07-30 and therefore could not see the one case it
+        exists to catch: a wear that MATCHES a published look resolves to that
+        `manual` row, so the 07-27 Keens wear was invisible to it. That is the
+        fourth instance of this codebase confusing the two (never-worn 9 vs 13,
+        07-28; `PRIOR` vs worn, 07-27; suggestions counted as her looks, 07-29).
+        The worn set comes from `wear_log`, the same place /insights takes it.
         """
         by_id = {g_["id"]: g_ for g_ in self.garments}
-        worn_ids = {o["id"] for o in self.outfits if o.get("source") == "worn"}
+        by_oid = {o["id"]: o for o in self.outfits}
+        worn_ids = {w["outfit_id"] for w in self.wears}
+        self.assertTrue(worn_ids, "fixture has no wear log to check against")
+
         bad = []
-        for o in self.outfits:
-            if o["id"] not in worn_ids:
+        for oid in sorted(worn_ids):
+            o = by_oid.get(oid)
+            if not o:
+                continue
+            key = tuple(sorted(o["garment_ids"]))
+            if key in self.ACCEPTED_RULE_EXCEPTIONS:
                 continue
             combo = [by_id[i] for i in o["garment_ids"] if i in by_id]
             v = constraints.user_rule_violations(combo)
             if v:
-                bad.append((o["id"], v))
-        self.assertEqual(bad, [], "a rule rejects an outfit she actually wore: %s" % bad)
+                bad.append((oid, key, v))
+        self.assertEqual(bad, [], "a rule rejects an outfit she actually wore — "
+                                  "ASK HER before changing either: %s" % bad)
+
+    def test_the_accepted_exception_is_still_the_case_it_was_written_for(self):
+        """An allowlist that stops matching anything silently stops protecting.
+
+        If this fails, the Keens/skirt wear is no longer being caught by a rule —
+        either the rule changed or the outfit did, and the exception should be
+        removed rather than left as decoration.
+        """
+        by_id = {g_["id"]: g_ for g_ in self.garments}
+        for key in self.ACCEPTED_RULE_EXCEPTIONS:
+            combo = [by_id[i] for i in key if i in by_id]
+            if len(combo) != len(key):
+                self.skipTest("closet no longer contains %s" % (key,))
+            self.assertTrue(constraints.user_rule_violations(combo),
+                            "%s no longer breaks any rule — drop the exception" % (key,))
 
     def test_dual_role_garment_is_enumerated_in_its_alt_slot(self):
         """A garment with an alt role must actually reach the outfit space.
@@ -464,12 +592,19 @@ class TestRealCloset(unittest.TestCase):
                          "and the notes in CLAUDE.md, do not just delete it")
         self.assertIn(tuple(target), space(with_outerwear=True))
 
+        # MEASURED AGAINST THE STRUCTURAL SPACE (`apply_user_rules=False`), which
+        # is what makes this test about OUTERWEAR. It asserted against the filtered
+        # space until 07-29 and went red the moment a wear was excluded by one of
+        # her rules instead — a different finding wearing this test's name. The
+        # rules-vs-history question has its own test; this one owns enumeration.
         by_oid = {o["id"]: o for o in self.outfits}
         worn = {tuple(sorted(by_oid[w["outfit_id"]]["garment_ids"]))
                 for w in self.wears if w["outfit_id"] in by_oid}
-        uncovered = [w for w in worn if w not in space()]
+        structural = space(apply_user_rules=False)
+        uncovered = [w for w in worn if w not in structural]
         self.assertEqual(len(uncovered), 1,
-                         "coverage changed: %d wears outside the space" % len(uncovered))
+                         "outerwear coverage changed: %d wears outside the "
+                         "structural space (%s)" % (len(uncovered), uncovered))
 
     def test_worn_means_the_same_thing_everywhere(self):
         """One definition of "worn", checked against /insights' own arithmetic.

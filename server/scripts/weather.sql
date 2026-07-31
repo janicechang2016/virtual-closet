@@ -7,12 +7,12 @@ BEGIN;
 UPDATE wear_log w SET weather = x.weather
   FROM jsonb_to_recordset($wx$[
   {
-    "wear_id": "b7315df7-9b8f-4e58-a64f-80b40e7c9a60",
+    "wear_id": "402a6e7b-0248-4b28-9087-59fb232850b5",
     "weather": {
-      "temp_max_c": 29.9,
-      "temp_min_c": 19.6,
-      "precip_mm": 0.3,
-      "code": 51,
+      "temp_max_c": 30.3,
+      "temp_min_c": 20.6,
+      "precip_mm": 3.6,
+      "code": 55,
       "conditions": "rain",
       "source": "open-meteo/archive",
       "lat": 40.7128,
@@ -20,63 +20,11 @@ UPDATE wear_log w SET weather = x.weather
     }
   },
   {
-    "wear_id": "0cf6b986-d872-4b58-bfab-ff71646b83d5",
+    "wear_id": "8fcfa40e-6cd3-4a7e-ac3f-790afe3783ab",
     "weather": {
-      "temp_max_c": 34.2,
-      "temp_min_c": 21.4,
-      "precip_mm": 0.0,
-      "code": 3,
-      "conditions": "cloud",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "f395f66b-8036-4a1b-8953-d23b25d4dfc3",
-    "weather": {
-      "temp_max_c": 36.9,
-      "temp_min_c": 25.5,
-      "precip_mm": 0.7,
-      "code": 53,
-      "conditions": "rain",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "4b9425fc-5c31-40f8-938c-3be4ca99b2c7",
-    "weather": {
-      "temp_max_c": 33.2,
-      "temp_min_c": 23.5,
-      "precip_mm": 0.4,
-      "code": 51,
-      "conditions": "rain",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "5c822f66-dbaa-48c2-a6a9-fe2bd4699446",
-    "weather": {
-      "temp_max_c": 31.3,
-      "temp_min_c": 21.7,
-      "precip_mm": 0.0,
-      "code": 3,
-      "conditions": "cloud",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "eaf0863e-2f88-4f29-9bdf-3e6b6883fe97",
-    "weather": {
-      "temp_max_c": 27.0,
-      "temp_min_c": 21.8,
-      "precip_mm": 29.5,
+      "temp_max_c": 27.4,
+      "temp_min_c": 20.8,
+      "precip_mm": 21.0,
       "code": 63,
       "conditions": "rain",
       "source": "open-meteo/archive",
@@ -85,116 +33,12 @@ UPDATE wear_log w SET weather = x.weather
     }
   },
   {
-    "wear_id": "c504b743-f3f4-4d30-927d-559d6f7021d5",
-    "weather": {
-      "temp_max_c": 26.9,
-      "temp_min_c": 21.8,
-      "precip_mm": 1.9,
-      "code": 61,
-      "conditions": "rain",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "f796f729-ab0c-4eea-a45a-60090a06f212",
-    "weather": {
-      "temp_max_c": 29.1,
-      "temp_min_c": 16.8,
-      "precip_mm": 0.0,
-      "code": 2,
-      "conditions": "cloud",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "8c2fdcd2-4085-445e-a76e-7341dfa42232",
-    "weather": {
-      "temp_max_c": 28.2,
-      "temp_min_c": 21.5,
-      "precip_mm": 20.9,
-      "code": 65,
-      "conditions": "rain",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "10f674d2-ebaf-4427-a6d2-377e46bc3b14",
-    "weather": {
-      "temp_max_c": 30.0,
-      "temp_min_c": 22.1,
-      "precip_mm": 0.4,
-      "code": 51,
-      "conditions": "rain",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "3fa9d937-0a89-4831-82dd-8f857b11ada0",
-    "weather": {
-      "temp_max_c": 27.9,
-      "temp_min_c": 17.6,
-      "precip_mm": 0.0,
-      "code": 3,
-      "conditions": "cloud",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "09ebd301-b405-40f7-b2ba-c41e69a8654a",
+    "wear_id": "3d30f8c5-1434-44c9-9c27-51228ee5548a",
     "weather": {
       "temp_max_c": 28.0,
-      "temp_min_c": 17.5,
-      "precip_mm": 0.0,
-      "code": 3,
-      "conditions": "cloud",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "5b7ca32c-e16f-4c29-90b6-7cc9eb8b741d",
-    "weather": {
-      "temp_max_c": 27.6,
-      "temp_min_c": 17.8,
-      "precip_mm": 0.0,
-      "code": 3,
-      "conditions": "cloud",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "0a1ff94a-1ac4-439a-a182-ecff3de84c4a",
-    "weather": {
-      "temp_max_c": 29.7,
-      "temp_min_c": 17.2,
-      "precip_mm": 0.4,
-      "code": 51,
-      "conditions": "rain",
-      "source": "open-meteo/archive",
-      "lat": 40.7128,
-      "lon": -74.006
-    }
-  },
-  {
-    "wear_id": "2ed96952-eea8-49c4-ac9e-315005b0a35e",
-    "weather": {
-      "temp_max_c": 30.3,
-      "temp_min_c": 20.6,
-      "precip_mm": 3.6,
-      "code": 55,
+      "temp_min_c": 20.9,
+      "precip_mm": 37.1,
+      "code": 65,
       "conditions": "rain",
       "source": "open-meteo/archive",
       "lat": 40.7128,

@@ -1,6 +1,6 @@
 # Virtual Closet v2 — Handoff / Resume Point
 
-**Last updated 2026-07-29 · branch `main`.** Read `CLAUDE.md` first — it is the source of
+**Last updated 2026-07-30 · branch `main`.** Read `CLAUDE.md` first — it is the source of
 truth and is kept current. `virtual-closet/docs/decisions.md` carries the standing rules.
 This file is the five-minute orientation: what runs where, what to do next, what has already
 cost time.
@@ -48,7 +48,7 @@ started". All of that is obsolete — Phases 0–3 and Track A's $0 half are don
 |---|---|---|
 | Public site | virtual-closet-seven.vercel.app | builds from **`main`** |
 | API | virtual-closet-api-production.up.railway.app | Railway, from **`main`**, root dir `server` |
-| Postgres | Railway `Postgres` service | 58 garments · 57 outfits (18 published · 15 worn · 24 stylist) · **15 wears** |
+| Postgres | Railway `Postgres` service | 58 garments · 59 outfits (18 published · 17 worn · 24 stylist) · **18 wears** |
 | Local app | `localhost:8765` | `python3 scripts/closet_server.py` from `virtual-closet/` |
 
 **A push to `main` redeploys BOTH** the site and the API. Deliberate — one branch, no
@@ -81,6 +81,27 @@ rewrite, the file in `APP_FILES`, a static payload *plus its own rewrite* for ev
 page fetches, and `asset_urls()` walking that payload or its images 404.
 
 ## 3. What to do next
+
+**DECIDED 07-30, AND IT QUALIFIES A STANDING DOCTRINE. The Keen rule STAYS.** She wore
+`25-kotn-samira-tank + 32-personal-language-skirt + 53-keen-sandals` on 07-27 (`day_out`),
+which her own rule forbids suggesting. The old reading — "if a rule ever fails something she
+actually wore, the rule is what is wrong" — is now **too strong**: her ruling was *"just
+keep, that was an exception."* A rule describes what she wants OFFERED, and one day she
+reached past it does not invalidate it. **So a worn outfit breaking a rule is a PROMPT TO ASK
+HER, never an automatic verdict against the rule.**
+Recorded as a single allowlisted entry in `TestRealCloset.ACCEPTED_RULE_EXCEPTIONS`, keyed by
+garment set, with a second test that fails if the exception ever stops matching a real
+violation — an allowlist that quietly stops protecting is worse than none. **Nothing goes in
+that set without her saying so.**
+Fixed alongside it: `test_user_rules_do_not_invalidate_worn_outfits` keyed off
+`source == "worn"` and so could not see this case at all, because that wear matched a
+published look. It now takes the worn set from `wear_log`.
+
+**THE SWAP IS STILL 0 AFTER 18 WEARS (07-30).** It lives on `/wear` under the occasion chips
+as a dim 9.5px collapsed link, "+ nearly wore something else?", and its explanation is inside
+the panel you have to open first. She had not found it. It is the only true negative the
+dataset can ever have; treat non-collection as a design problem, not a patience problem.
+
 
 0. **HER RULES NOW RUN IN THE ENGINE — DONE 07-28, $0.** Both executable rules from
    `style_rules.txt` filter every suggestion. **The first time anything she wrote changes what
@@ -240,6 +261,13 @@ strongest candidate, so raise it with her rather than treating it as closed.**
   `http.server` over a built site 404s `/stylist` and `/api/stylist/suggest`, and stylist.html
   answers by rendering NOTHING, which reads as a broken feature rather than a broken test. It
   applies vercel.json's rewrites, read from the file so they cannot drift.
+- **`dump_closet.py` MUST BE RUN FROM `server/`.** The Railway link is registered against
+  `/Users/janice.chang/wardrobe-v3/server`; anywhere else the CLI answers "No linked project
+  found" and the script exits 1, which reads as a broken script rather than a wrong cwd.
+- **"Structural" in a function name is a claim that must be enforced in code.** `orphans()`
+  enumerated the rule-FILTERED space while promising a structural answer, so the first garment
+  she gated by rule was reported as having "no structural partner" on `/insights`. Any
+  measurement of the closet's SHAPE takes `apply_user_rules=False`. (07-30)
 - **A stale `closet_snapshot.json` looks exactly like unbuilt features.** Phase 3c appeared
   "not done" for a day; the code had always been there and the snapshot was old. When new data
   "changes nothing downstream", re-dump before reading code.
