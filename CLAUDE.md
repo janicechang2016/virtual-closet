@@ -1100,7 +1100,20 @@ is the only unbiased benchmark, because no verdict touches it.**
   confusion** (never-worn 9 vs 13 on 07-28; `PRIOR` vs worn on 07-27): a stylist SUGGESTION is
   not evidence of anything she did.
 
-## 18 WEARS — the first data increment since pairwise shipped (2026-07-29/30, $0)
+## 18 WEARS — the first data increment since pairwise shipped (2026-07-29/30, $0). **DEPLOYED at `d8f2b0e`.**
+
+**VERIFIED AGAINST THE LIVE DEPLOY, not the local build** (07-30): build stamp `d8f2b0e`, all
+six pages 200, Railway `/health` 200 and `/wear` 401. **7,200 live suggestions at 0 user-rule
+violations**, with the dune pants present ONLY on `dinner` (128) and `event / formal` (149) and
+absent from the default, `day out`, `home / lounge` and `work` tabs. `/insights` reports
+`logged_wears: 18` · `worn: 45` · `never_worn: 13` and **`structural_orphans: 0`** — the
+`orphans()` fix confirmed live, since the unfixed version would have reported the rule-gated
+dune pants as 1. Money still sealed: `value` / `idle_value` / `median_cpw` are `null` with the
+AES-GCM blob in `_locked`, and the closet value appears nowhere in the clear. Standing rule #0
+holds — `style_profile.json`, `style_profile.txt` and `style_rules.txt` all 404 on the site.
+**`work` normalises to None** (deliberately unresolvable, 07-28) and therefore inherits the
+unstated-occasion behaviour, which is why the dune pants are correctly absent from that tab too.
+
 
 **THE SNAPSHOT WAS STALE AGAIN, and it is the same trap as 07-27.** Production held **18**
 wears while the tracked `closet_snapshot.json` held 15, so `/insights`, `/galaxy`, the

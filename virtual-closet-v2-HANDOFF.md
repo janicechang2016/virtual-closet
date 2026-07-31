@@ -46,7 +46,7 @@ started". All of that is obsolete — Phases 0–3 and Track A's $0 half are don
 
 | Thing | Where | State |
 |---|---|---|
-| Public site | virtual-closet-seven.vercel.app | builds from **`main`** |
+| Public site | virtual-closet-seven.vercel.app | builds from **`main`** · live at **`d8f2b0e`** (07-30) |
 | API | virtual-closet-api-production.up.railway.app | Railway, from **`main`**, root dir `server` |
 | Postgres | Railway `Postgres` service | 58 garments · 59 outfits (18 published · 17 worn · 24 stylist) · **18 wears** |
 | Local app | `localhost:8765` | `python3 scripts/closet_server.py` from `virtual-closet/` |
