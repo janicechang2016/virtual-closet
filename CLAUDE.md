@@ -1229,7 +1229,35 @@ on 07-28; `PRIOR` vs worn on 07-27; stylist suggestions counted as her looks on 
 worn set comes from the WEAR LOG, never from `outfit.source`. It now reads `wear_log`, the
 same place /insights takes it.
 
-## HARNESS REPINNED AT 18 WEARS (2026-07-31, $0) — and one standing claim got weaker
+## HARNESS REPINNED AT 18 WEARS (2026-07-31, $0). **DEPLOYED at `d5ea5ea`.**
+
+**VERIFIED AGAINST THE LIVE DEPLOY, not the local build.** Build stamp `d5ea5ea`; all six
+pages 200; Railway `/health` 200 and `/wear` 401. **7,200 live suggestions at 0 user-rule
+violations**, top-12 at **0/12 two-item and 0/12 dress** (the calibration guard holding), and
+the dune pants present only on `dinner` and `event / formal`. `/insights` reports
+`logged_wears: 18` · `worn: 45` · `never_worn: 13` · `structural_orphans: 0`. Money still
+sealed — `value` / `idle_value` / `median_cpw` all null with the AES-GCM blob in `_locked`,
+and the closet value appears nowhere in the clear. Standing rule #0 holds: `style_profile.json`,
+`style_profile.txt` and `style_rules.txt` all 404. **The full Vercel build was run locally
+first** (`export_static.py` + `lock_money.mjs`, privacy check included), per the 07-29 practice
+of not discovering a broken build in production.
+
+- **READ `/api/insights` AT THE RIGHT LEVEL — the counts are NOT top-level.** `logged_wears`,
+  `worn`, `never_worn` and the money fields live under **`totals`**, and `structural_orphans`
+  under **`gaps`**. A top-level read returns `None` for every one of them, which looks exactly
+  like a sealed or broken payload and cost a few minutes here. Noted because the verification
+  ritual above will be run again.
+- **THE ONLY DEPLOY-VISIBLE CHANGE WAS THE STYLIST POOL.** The harness pin and the docs have
+  no deploy path, and nothing in `server/app/` imports either, so the API redeploy was a pure
+  restart. Her 6 verdicts reordered **1169 of 1200** default-tab entries; the top row kept 6 of
+  12 positions.
+- **AND THE RESHUFFLE SHOWS THE TYPE BACKOFF'S VOLATILITY LIVE, exactly as warned.**
+  `01-plain-tee + 02-jeans + 55-asics-sneakers` fell out of the top 12 on the back of a single
+  blame against `56-mizuno-sneakers` — one blame on one sneaker moving a DIFFERENT sneaker
+  through the shared type. Working as designed, and a concrete reason `TYPE_PRIOR` still must
+  not be tuned yet.
+
+## Detail: the repin, and one standing claim got weaker
 
 **The two drifts flagged on 07-30 are now pinned, deliberately, as the 18-wear data state.**
 `heldout_affinity_rotation` 0.548 -> **0.583** and `heldout_colour_whole` 0.360 -> **0.399**.
@@ -1539,6 +1567,20 @@ badly at this — yours is better"). The better image is a bonus for the render 
   against that before building further.
 
 ## Queued next (do not build until asked)
+
+- **DROP HER "YES" VERDICTS FROM THE PAIRWISE TRAINING SET (measured 07-31, not built).**
+  Published looks + blamed rejections ONLY scores **0.839 / 0.827**; the shipped full-verdict
+  set scores **0.803 / 0.802**. That is **-0.036 in-rotation for including them**, and it is no
+  longer a one-off: the direction has held since 07-29 (0.809 vs 0.768) and now rests on **140
+  verdicts instead of 82**. The mechanism was identified then and is unchanged — the
+  yes-verdicts were given on outfits the AFFINITY model chose, so they import that model's
+  taste, and stated preference has already measured as a different target from lived behaviour.
+  **It is a one-line change in `stylist_compat()`.**
+  Why it is queued and not done: it is a MODEL change, so it wants its own before/after and her
+  review of the resulting cards, not a rider on a docs commit — and the last model change
+  (pairwise) was reviewed over 34 verdicts before deploying. **The blame data is the half that
+  earns its keep; this only ever proposed dropping the "yes" half.** Note the interaction with
+  the entry below: fewer training verdicts makes the type backoff MORE volatile, not less.
 
 - **RUNWAY MOTION IN THE CAROUSEL (her idea 07-28, NOT started, discuss cost/feasibility
   first).** As the carousel scrolls, each avatar should appear to MOVE IN REAL TIME — the
