@@ -97,10 +97,20 @@ Fixed alongside it: `test_user_rules_do_not_invalidate_worn_outfits` keyed off
 `source == "worn"` and so could not see this case at all, because that wear matched a
 published look. It now takes the worn set from `wear_log`.
 
-**THE SWAP IS STILL 0 AFTER 18 WEARS (07-30).** It lives on `/wear` under the occasion chips
-as a dim 9.5px collapsed link, "+ nearly wore something else?", and its explanation is inside
-the panel you have to open first. She had not found it. It is the only true negative the
-dataset can ever have; treat non-collection as a design problem, not a patience problem.
+**THE SWAP IS CLOSED AS A QUESTION (07-31) — ASKED HER, AND IT IS NOT A UI PROBLEM.**
+The 07-30 entry here said the swap sitting at 0 was "a design problem, not a patience
+problem" and pointed at making the control more prominent. **Asked directly before building
+anything, her answer was "rarely — I just get dressed."** There is usually no deliberation to
+record, so no redesign can collect it. Nothing was removed — migration 0006, the API
+validation and the collapsed control all stay, since they cost nothing unused and a real
+near-miss is still the best record available — but **the swap is no longer a next step, a
+blocker, or an argument for touching `/wear`.**
+Two consequences to carry forward: **wear logging will not produce a true negative**, so
+every negative in every measurement stays synthesised from the whole space (which is what the
+in-rotation column is for, permanently, not until better data arrives); and **the negative
+channel that works is `/stylist`** — her blames are true contextual negatives, they have gone
+44 -> 65, and published-looks + blame-negatives is the best-scoring variant at 0.839 / 0.827.
+Judging cards is the collection activity worth her time. See the matching `CLAUDE.md` section.
 
 
 0. **HER RULES NOW RUN IN THE ENGINE — DONE 07-28, $0.** Both executable rules from
@@ -183,7 +193,17 @@ Read the matching sections of `CLAUDE.md` before touching any of it.
 
 - **Measurement harness REBUILT and tracked** (`server/scripts/wear_model_report.py`). The
   07-27 figures had become unreproducible; this reproduces them and fails on drift. **Run
-  `--check` before quoting any number against 07-27**, and always with `apply_user_rules=False`.
+  `--check` before quoting any number**, and always with `apply_user_rules=False`.
+  **REPINNED 07-31 to the 18-wear data state** (affinity rotation 0.548 -> 0.583, colour
+  0.360 -> 0.399, affinity whole 0.652 -> 0.682): the test set grew, so the old values are
+  permanently unreproducible and a permanently-red check stops being read. **The rule is
+  "repin when the data grew, investigate when it did not."** Both load-bearing findings were
+  re-verified first — wears still hurt affinity (-0.118 / -0.170) and are still neutral for
+  pairwise (+0.001 / -0.002). `EXPECTED_PAIRWISE` was repinned too, 0.768/0.774 -> **0.803 /
+  0.802**, but only after her stylist session closed — her verdicts train that model, so it
+  moves on two inputs rather than one. **Repin pairwise only between stylist sessions**, and
+  check the report header's verdict count matches the constant (18 wears / 140 verdicts).
+  **`--check` exits 0 with every figure green.**
 - **One definition of "worn"** — `gaps.worn_outfits()` (published + logged). `engine_report`
   had been counting stylist SUGGESTIONS as wears: 9 never-worn against /insights' 13.
 - **Her rules run in the engine**, occasion-aware. Third rule added from behaviour, not speech:

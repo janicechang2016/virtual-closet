@@ -1229,6 +1229,87 @@ on 07-28; `PRIOR` vs worn on 07-27; stylist suggestions counted as her looks on 
 worn set comes from the WEAR LOG, never from `outfit.source`. It now reads `wear_log`, the
 same place /insights takes it.
 
+## HARNESS REPINNED AT 18 WEARS (2026-07-31, $0) — and one standing claim got weaker
+
+**The two drifts flagged on 07-30 are now pinned, deliberately, as the 18-wear data state.**
+`heldout_affinity_rotation` 0.548 -> **0.583** and `heldout_colour_whole` 0.360 -> **0.399**.
+Neither is a finding: both moved UP and in the same direction as the three added positives,
+and neither depends on anything that changed — no model, no code, no training set.
+**`heldout_affinity_whole` was repinned too** (0.652 -> 0.682) even though it was passing
+inside tolerance, because leaving one member of the same block on the old data state would
+have made the block mean two different things.
+
+- **THE RULE, now written at the top of the file: repin when the DATA grew; investigate when
+  it did not.** Growing the test set changes every held-out statistic by definition, so the
+  15-wear values became permanently unreproducible the moment the 16th wear was logged.
+  A check that can only ever report red is a check nobody reads — which is the exact failure
+  this harness was built to prevent. Superseded values stay inline as comments, because the
+  DIRECTION they established is what must not silently flip.
+- **`insample_published_whole` was deliberately NOT repinned.** It is published looks vs the
+  whole space and does not depend on the wear count at all, so it is not part of this repin;
+  it reads 0.940 against 0.939 pinned, passes, and was left alone rather than churned.
+- **BOTH LOAD-BEARING FINDINGS RE-VERIFIED AT 18 WEARS, which is why the repin is safe.**
+  Wears still hurt affinity: LOO **-0.118 / -0.170** against the pinned -0.120 / -0.172, so
+  `PRIOR = ("manual",)` stands untouched. Wears are still neutral for pairwise: **+0.001 /
+  -0.002**. And pairwise still clears its margin at **+0.219** against the 0.15 floor.
+- **`EXPECTED_PAIRWISE` REPINNED 0.768/0.774 -> `0.803` / `0.802`, but only after her session
+  closed.** It was deliberately held back during the first pass: she was judging while the
+  measurement ran, six verdicts landed mid-run, and two consecutive runs disagreed at the
+  third decimal because of it. Pinned once the log had been quiet for 100 minutes and two
+  runs agreed exactly. **Pairwise moves on TWO inputs where the block above moves on one** —
+  wears grow its test set, her verdicts grow its training set — so **repin it only BETWEEN
+  stylist sessions**, and check the verdict count in the report header matches the one
+  recorded at the constant (18 wears / 140 verdicts / 18 published looks).
+- **`--check` now exits 0 with every figure green**, which is the point of the exercise: the
+  next real drift will be visible instead of being the seventh red line in a list.
+
+**COLOUR'S CLAIM IS NOW WEAKER, AND THE NOTES ABOVE OVERSTATE IT.** At 15 wears colour scored
+0.360 with a CI that EXCLUDED 0.5, which is why it was recorded as "not merely uninformative
+but inverted against real wears". At 18 it is 0.399 with CI **[0.294, 0.506]** — chance is
+back inside the interval. **State the weaker claim from here: colour does not predict her
+wears; it is NOT established that it predicts them backwards.** The standing colour rule is
+untouched, because it has only ever rested on colour failing to BEAT chance — not on it
+losing to chance. Read the 0.360/"below chance" lines in the Phase 3 and Track D sections
+with this attached.
+
+## THE SWAP IS NOT A DESIGN PROBLEM — ASKED AND ANSWERED (2026-07-31, $0)
+
+**HER ANSWER, and it closes the question: "rarely — I just get dressed."** Asked directly,
+before any redesign, whether a recent logged day actually contained a moment of considering
+something else and not wearing it. It usually does not. **There is no deliberation to
+capture, so there is nothing a better UI can collect.**
+
+**THIS OVERTURNS THE STANDING READING**, which said the swap sitting at 0 through 18 wears was
+"a design problem, not a patience problem" and pointed the next session at making the control
+more prominent. Both halves were wrong. It is not prominence and it is not patience — **the
+event being measured mostly does not occur.** Rebuilding the control would have made a hidden
+field into a visible one and then watched it stay at 0, with the failure now costing screen
+space on the one page that has to work one-handed and tired.
+
+- **NOTHING IS BEING REMOVED.** `nearly_wore` / `instead_of`, migration 0006, the API
+  validation and the collapsed control all stay exactly as they are. They cost nothing while
+  unused, the direction validation is already correct, and on the rare day a near-miss DOES
+  happen it remains the highest-value record the closet can take. What changes is only that
+  **the swap stops being planned around** — it is not a blocker, not a next step, and not an
+  argument for a `/wear` redesign.
+- **THE CONSEQUENCE IS REAL AND SHOULD NOT BE SOFTENED: the dataset will not get a true
+  negative from wear logging.** Every negative in every measurement here is synthesised from
+  the whole valid space, which is exactly why the in-rotation column exists and why it is the
+  one that matters. That is now a PERMANENT property of this dataset rather than a gap waiting
+  to be filled, and any future claim resting on "once we have real negatives" is resting on
+  something that is not coming from here.
+- **THE CHANNEL THAT WORKS IS `/stylist`, AND IT IS ALREADY WORKING.** Her blames are true
+  contextual negatives, they are abundant (**44 -> 65 blamed rejections**), and they are
+  load-bearing in the only model that beats chance: published looks + blame negatives scores
+  **0.839 / 0.827** against 0.803 / 0.802 for the full verdict set. Negative collection was
+  never actually blocked — it was happening on a different page than the one being watched.
+  **Judging cards is the data-collection activity worth her time; swapping at wear-time is
+  not.**
+- Method note worth keeping: **the premise was checked before the build, and it cost one
+  question.** The redesign was scoped, the failure mode was correctly diagnosed (a 9.5px
+  dim link, below the fold of attention, with its justification hidden inside the panel it
+  gates) — and all of that was true and none of it was the reason.
+
 - **`/insights` — Track C sustainability dashboard (07-26, $0):** cost-per-wear, idle
   value, spend and wear distribution, computed by `insights_data()` from the same snapshot
   the stylist uses. Leads with a **unit chart** (one mark per garment, ramp steps by wear

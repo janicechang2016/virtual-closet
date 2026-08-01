@@ -13,9 +13,17 @@ reproduced or extended, and Phase 6's "re-measure at ~50 wears" had no harness:
 a rebuild that differs from the original method in how negatives are drawn or
 folds are cut yields a number that LOOKS comparable and is not.
 
-This is that harness, in git, with the 07-27 figures as its acceptance test
+This is that harness, in git, with a pinned data state as its acceptance test
 (`--check`). If a change to the engine moves these numbers, that is a finding,
 not a nuisance — but it must be SEEN.
+
+THE PIN IS A DATA STATE, NOT A CONSTANT, and it moves when the DATA does. It
+was the 07-27 figures at 15 wears; it is the 07-31 figures at 18. Growing the
+test set changes every held-out statistic by definition, so those old values
+became permanently unreproducible the moment the 16th wear was logged — and a
+check that can only ever report red is a check nobody reads. **Repin when the
+data grew; investigate when it did not.** Each repin keeps the superseded value
+inline, because the direction it established is what must not silently flip.
 
 THE ONE THING MOST EASILY GOT WRONG: the 07-27 space was the STRUCTURAL one,
 before her style rules filtered it (2320 outfits). Her rules landed 07-28 and
@@ -47,14 +55,31 @@ STYLIST_SCRIPTS = os.path.normpath(
 # 07-27 and is why /stylist and /insights once disagreed 23 vs 13.
 PRIOR = ("manual",)
 
-# The 07-27 results, as the acceptance test. Tolerance is deliberately loose on
-# the LOO figures: they were computed before 59-el-hoodie gained its `top` alt
-# role (space 2220), and the snapshot now carries it (2320). The DIRECTION is
-# what was established and what must not silently flip.
+# REPINNED 07-31 AT 18 WEARS. These were the 07-27 figures, measured on 15; the
+# test set has since grown by three and THE OLD VALUES CAN NEVER BE REPRODUCED
+# FROM THIS SNAPSHOT AGAIN — adding positives changes the statistic by
+# definition. Leaving them pinned would have meant a harness that reports red
+# forever and so stops being read, which is the failure mode it exists to
+# prevent. The 15-wear values are kept inline as history, because the DIRECTION
+# they established is the thing that must not silently flip.
+#
+# All three moved UP and in the same direction as the added positives, which is
+# what makes this a repin rather than a finding. Nothing here changed model,
+# code or training set: `PRIOR` is unchanged and was re-verified the same day
+# (LOO -0.118 / -0.170 against the pinned -0.120 / -0.172).
 EXPECTED = {
-    "heldout_affinity_whole": 0.652,     # 0.660 pre-hoodie, restated 0.652 after
-    "heldout_affinity_rotation": 0.548,  # 0.555 pre-hoodie
-    "heldout_colour_whole": 0.360,
+    "heldout_affinity_whole": 0.682,     # 15 wears: 0.652 (0.660 pre-hoodie)
+    "heldout_affinity_rotation": 0.583,  # 15 wears: 0.548 (0.555 pre-hoodie)
+    # 15 wears: 0.360, whose CI EXCLUDED 0.5 — colour was called "not merely
+    # uninformative but inverted". At 18 the CI is [0.294, 0.506] and no longer
+    # excludes chance, so state the weaker claim from here: colour does not
+    # predict her wears. It is not established that it predicts them backwards.
+    # The standing rule is untouched either way — it rests on colour failing to
+    # beat chance, never on it losing to chance.
+    "heldout_colour_whole": 0.399,
+    # NOT wear-dependent (published looks vs the whole space), so it is not part
+    # of this repin. Reads 0.940 today against 0.939 pinned; left alone rather
+    # than churned for a rounding-level move on a figure that never drifted.
     "insample_published_whole": 0.939,
 }
 TOLERANCE = 0.03
@@ -66,12 +91,21 @@ TOLERANCE = 0.03
 EXPECTED_LOO_DELTA = {"whole": -0.120, "rotation": -0.172}
 LOO_TOLERANCE = 0.05
 
-# PAIRWISE, measured 07-29 on 15 wears / 82 verdicts / 18 published looks.
+# PAIRWISE. Repinned 07-31 on 18 wears / 140 verdicts (75 yes, 65 blamed no) /
+# 18 published looks; was 07-29 on 15 wears / 82 verdicts.
 # Unlike the block above these are NOT historic reproductions — they are this
-# model's first measurement, and they WILL move as she logs more. The durable
-# claim is the relational one below; these floats only say "the data state that
-# produced the write-up".
-EXPECTED_PAIRWISE = {"whole": 0.768, "rotation": 0.774}
+# model's measurement, and they WILL move as she logs more. The durable claim is
+# the relational one below; these floats only say "the data state that produced
+# the write-up".
+#
+# THESE MOVE ON TWO INPUTS, NOT ONE. Wears grow the test set (as above), but her
+# VERDICTS grow the training set, and judging a few cards shifts the third
+# decimal immediately: six verdicts landed mid-measurement on 07-31 and made two
+# consecutive runs disagree. **Repin pairwise only BETWEEN stylist sessions**,
+# and check the verdict count in the report header is the one recorded here —
+# otherwise the pin describes a data state that changed while it was being
+# written down.
+EXPECTED_PAIRWISE = {"whole": 0.803, "rotation": 0.802}  # 07-29: 0.768 / 0.774
 
 # THE FINDING, pinned as a relation because that is what has to survive more
 # data: against the in-rotation pool — the one that strips the model's ability
@@ -512,14 +546,14 @@ def by_occasion(d):
 
 
 def check(d, rows, sanity):
-    """Acceptance: do we still reproduce 07-27?"""
+    """Acceptance: do we still reproduce the pinned data state (18 wears, 07-31)?"""
     got = {
         "heldout_affinity_whole": rows[("learned affinity (published)", False)],
         "heldout_affinity_rotation": rows[("learned affinity (published)", True)],
         "heldout_colour_whole": rows[("colour + constraints", False)],
         "insample_published_whole": sanity,
     }
-    print("\nACCEPTANCE vs the 07-27 figures (tolerance ±%.2f)" % TOLERANCE)
+    print("\nACCEPTANCE vs the 18-wear pin, 07-31 (tolerance ±%.2f)" % TOLERANCE)
     bad = 0
     for k, want in EXPECTED.items():
         have = got[k]
@@ -539,8 +573,9 @@ def check(d, rows, sanity):
                  "ok" if ok else "*** THE FINDING NO LONGER HOLDS ***"))
         for k, want in EXPECTED_PAIRWISE.items():
             have = rows[("pairwise (published+verdicts)", k == "rotation")]
-            note = "ok" if abs(have - want) <= TOLERANCE else "moved (expected with new data — read it, do not just repin)"
-            print("  %-30s 07-29 %.3f  got %.3f   %s"
+            note = ("ok" if abs(have - want) <= TOLERANCE else
+                    "moved (new wears AND/OR new verdicts — read it, do not just repin)")
+            print("  %-30s pinned %.3f  got %.3f   %s"
                   % ("pairwise_" + k, want, have, note))
     return bad
 

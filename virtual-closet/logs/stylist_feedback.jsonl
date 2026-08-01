@@ -137,3 +137,9 @@
 {"ts": "2026-07-29T19:32:47.435524+00:00", "ids": ["59-el-hoodie", "42-sagittarius-trousers", "55-asics-sneakers"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
 {"ts": "2026-07-29T19:32:48.818649+00:00", "ids": ["08-bunnyhill-grey-top", "02-jeans", "50-yello-heels"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
 {"ts": "2026-07-29T19:32:50.051727+00:00", "ids": ["31-orseund-iris-top", "15-coucou-mini-skirt", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-08-01T01:28:35.311204+00:00", "ids": ["07-aritzia-suit-vest", "47-woodrose-deli-skirt", "49-jil-sander-boots"], "verdict": "no", "blame": "07-aritzia-suit-vest", "occasion": "", "wildcard": false}
+{"ts": "2026-08-01T01:28:41.960057+00:00", "ids": ["16-coucou-red-scoop-tank", "15-coucou-mini-skirt", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-08-01T01:28:47.189938+00:00", "ids": ["01-plain-tee", "02-jeans", "56-mizuno-sneakers"], "verdict": "no", "blame": "56-mizuno-sneakers", "occasion": "", "wildcard": false}
+{"ts": "2026-08-01T01:28:50.343927+00:00", "ids": ["43-subtle-mermaid-top", "27-liniss-pants", "50-yello-heels"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
+{"ts": "2026-08-01T01:28:52.192148+00:00", "ids": ["39-realisation-ivy-dress", "52-camper-flats"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": true}
+{"ts": "2026-08-01T01:29:30.709668+00:00", "ids": ["48-woodrose-deli-sweater", "27-liniss-pants", "50-yello-heels"], "verdict": "yes", "blame": null, "occasion": "", "wildcard": false}
