@@ -49,7 +49,7 @@ decided on 08-05 is complete:
 **Still explicitly not chosen:** a composed/flat-lay fallback in the mirror. A miss shows the
 base avatar plus the honest generation action, never a proxy presented as a try-on.
 
-Verified with no paid verification calls: 40 server + 88 engine tests green; pinned model report green;
+Verified with no paid verification calls: 45 server + 88 engine tests green; pinned model report green;
 JS parses; real browser Stylist click → cache miss equips the slots and exposes the generate
 action; an unsaved cached set (`43+44+52`) immediately stages its exact front render; the
 server returns a cached set while generation is disabled and refuses a miss; full static
@@ -812,9 +812,23 @@ read as a broken layout with 58 unreachable rack rows. It scrolls fine —
 **Check `el.scrollHeight > el.clientHeight` before believing a full-page shot.** Recorded in
 `cdp.py`'s docstring too.
 
-**Known and NOT fixed, because it is a design question not a bug:** building a multi-item
-outfit needs a drag onto a slot, which is awkward on a phone. Single try-on is a tap and
-works; slot assignment has no tap path. Raise it with her before inventing one.
+**MULTI-ITEM TAP PATH — DONE 2026-08-06, her call.** Each mobile garment row now has an
+explicit `+ outfit · <slot>` control. It changes to `replace` when that natural slot is
+occupied and `in outfit` for the selected item. This path edits local slots only: it never
+calls `tryOn()`, `fetch()` or either generation function. Billing remains behind the named
+`Generate try-on` button, after the existing exact-cache check. A fixed mobile summary reports
+the piece count and jumps back to the outfit rail; filled slots say `remove` instead of hiding
+that action behind desktop hover. Desktop keeps its original three-column layout, row tap and
+drag-to-dress; the new rack controls are `display:none` there.
+
+Verified in real Chrome at **390px with touch emulation**: coarse pointer + hover-none both
+match, add top + bottom, replace top, remove top, 44px controls, zero horizontal overflow,
+the internal `main` scroller remains reachable, the mirror is unchanged by slot-only taps,
+and the complete add/replace/remove sequence makes **zero network calls**. The existing toast
+needed one follow-up: it now sits above the persistent summary rather than overlapping it.
+At 1200px the add controls are hidden, the 240px / flexible / 344px grid is unchanged and row
+tap still opens the garment render. Regression contracts live in
+`server/tests/test_mobile_fitting_room.py` (5 tests; **45 server total**).
 
 ## PHONE LAYOUT — the first REAL 390px audit (2026-07-28, $0)
 

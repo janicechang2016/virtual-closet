@@ -127,17 +127,48 @@ function renderGrid() {
   const items = M.garments.filter((g) => filter === "all" || g.category === filter);
   $("#garment-grid").innerHTML = items.map((g) => {
     const num = /^\d+/.exec(g.id)?.[0] ?? "";
+    const slot = naturalSlot(g);
+    const selected = slot && outfit[slot] === g.id;
+    const action = outfitAction(g);
     return `<div class="row" data-id="${g.id}" title="click to try on · drag onto the mirror or a slot">
       <span class="row-num">${num}</span>
       <span class="row-name">${g.brand ? `<span class="row-brand">${g.brand}</span>` : ""}${g.name}</span>
       <span class="row-diff">${"◆".repeat(g.difficulty)}</span>
+      ${slot ? `<button type="button" class="row-add${selected ? " on" : ""}"
+        data-id="${g.id}" aria-label="${action}: ${g.name}">${action}</button>` : ""}
     </div>`;
   }).join("");
   document.querySelectorAll("#garment-grid .row").forEach((r) => {
     r.addEventListener("click", () => { if (dragJustEnded) return; tryOn(r.dataset.id); });
     r.addEventListener("mouseenter", () => previewGarment(r.dataset.id));
     // drag-to-dress: pointer-driven — the garment card follows the cursor
-    r.addEventListener("pointerdown", (e) => beginRowDrag(e, r));
+    r.addEventListener("pointerdown", (e) => {
+      if (!e.target.closest(".row-add")) beginRowDrag(e, r);
+    });
+  });
+  document.querySelectorAll("#garment-grid .row-add").forEach((b) =>
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleOutfitItem(b.dataset.id);
+    }));
+}
+
+function outfitAction(g) {
+  const slot = naturalSlot(g);
+  if (!slot) return "";
+  return outfit[slot] === g.id ? `in outfit · ${slot}` : outfit[slot]
+    ? `replace · ${slot}` : `+ outfit · ${slot}`;
+}
+
+function syncOutfitRows() {
+  document.querySelectorAll("#garment-grid .row-add").forEach((b) => {
+    const g = M.garments.find((x) => x.id === b.dataset.id);
+    if (!g) return;
+    const selected = outfit[naturalSlot(g)] === g.id;
+    const action = outfitAction(g);
+    b.classList.toggle("on", selected);
+    b.textContent = action;
+    b.setAttribute("aria-label", `${action}: ${g.name}`);
   });
 }
 
@@ -203,6 +234,23 @@ function naturalSlot(g) {
 function equip(g) {
   const slot = naturalSlot(g);
   if (slot) { outfit[slot] = g.id; localStorage.setItem("outfit", JSON.stringify(outfit)); renderSlots(); }
+}
+
+// The explicit mobile outfit control only edits slots. It never calls tryOn(),
+// so adding a garment cannot reach either single-item or outfit generation.
+// Billing remains behind the named Generate try-on action.
+function toggleOutfitItem(id) {
+  const g = M.garments.find((x) => x.id === id);
+  const slot = g && naturalSlot(g);
+  if (!g || !slot) return;
+  const removing = outfit[slot] === id;
+  if (removing) delete outfit[slot];
+  else outfit[slot] = id;
+  localStorage.setItem("outfit", JSON.stringify(outfit));
+  if (stagedLook || stagedOutfit) showAvatar();
+  renderSlots();
+  toast(removing ? `${g.name} removed from outfit`
+    : `${g.name} added to ${slot} · ${equippedItems().length} piece outfit`);
 }
 
 /* ── drag-to-dress: pointer-driven, after kaberikram/Interactive-Styling-Canvas.
@@ -345,8 +393,11 @@ function renderSlots() {
     const gid = outfit[s];
     const g = gid && M ? M.garments.find((x) => x.id === gid) : null;
     const val = g ? `${g.brand ? g.brand + " · " : ""}${g.name}` : (gid || "—");
-    return `<div class="slot ${gid ? "filled" : ""}" data-s="${s}">
-      <span class="slot-name">${s}</span><span class="slot-val">${val}</span></div>`;
+    const tag = gid ? "button" : "div";
+    const attrs = gid ? `type="button" aria-label="Remove ${val} from ${s}"` : "";
+    return `<${tag} class="slot ${gid ? "filled" : ""}" data-s="${s}" ${attrs}>
+      <span class="slot-name">${s}</span><span class="slot-val">${val}</span>
+      ${gid ? `<span class="slot-action">remove</span>` : ""}</${tag}>`;
   }).join("");
   document.querySelectorAll(".slot.filled").forEach((el) =>
     el.addEventListener("click", () => {
@@ -355,8 +406,15 @@ function renderSlots() {
       if (stagedLook || stagedOutfit) showAvatar();
       renderSlots();
     }));
+  const count = equippedItems().length;
+  $("#mobile-outfit-jump").hidden = count === 0;
+  $("#mobile-outfit-count").textContent = `${count} piece${count === 1 ? "" : "s"} · review`;
+  syncOutfitRows();
   syncOutfitAction();
 }
+
+$("#mobile-outfit-jump").addEventListener("click", () =>
+  $("#outfit-panel").scrollIntoView({ behavior: "smooth", block: "start" }));
 
 function equippedItems() {
   return [...new Set(Object.values(outfit))].filter(Boolean);

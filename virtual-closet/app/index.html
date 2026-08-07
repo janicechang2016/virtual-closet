@@ -26,6 +26,7 @@
 <main>
   <section id="outfit-panel">
     <h2>Outfit</h2>
+    <p id="outfit-mobile-note">Build it from the closet with + outfit. Tap a filled slot to remove it.</p>
     <div id="outfit-slots"></div>
     <button id="render-outfit" class="btn" hidden>Generate try-on · ~$0.06</button>
     <button id="save-outfit" class="btn btn-ghost">Save look</button>
@@ -57,6 +58,10 @@
     <div id="rack-preview"><img id="rack-preview-img" alt=""></div>
   </section>
 </main>
+
+<button id="mobile-outfit-jump" type="button" hidden>
+  <span>Outfit</span><span id="mobile-outfit-count"></span>
+</button>
 
 <dialog id="fb-modal">
   <h3>Feedback log</h3>

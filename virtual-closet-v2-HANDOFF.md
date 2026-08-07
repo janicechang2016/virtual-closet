@@ -104,7 +104,7 @@ checks the cache again before the generation gate, so a stale page cannot bill a
 Generated and cached whole outfits hide per-garment corrective feedback because there is no
 single garment to blame. The composed/flat-lay fallback remains deliberately out.
 
-Verified with no paid verification calls: 40 server + 88 engine tests green, pinned model report green, JS
+Verified with no paid verification calls: 45 server + 88 engine tests green, pinned model report green, JS
 parses, real-browser miss and unsaved-cache hit both pass, server cache hit/miss guard passes,
 static export succeeds (355 assets / 93.4 MB), privacy check passes.
 
@@ -129,9 +129,9 @@ matches; brand alone cannot unlock page provenance. Results are preserved under
 `server/pilots/identification-2026-08-06/`. **Paid ingest stays disabled; the UI still uses its
 $0 stub.**
 
-**NEXT:** one separately approved (~$0.059 max estimate) re-run of the distinctive control
-with the hardened prompt. Exact verification or honest refusal passes; another plausible
-wrong product rejects identification-then-search as the prefill path.
+The separately approved (~$0.059 estimate) hardened-prompt re-run is **paused by her 08-06**;
+do not spend on or resume identification until she asks. She chose the visitor-facing mobile
+Fitting Room work next and asked to save the remaining projects for another session.
 
 ### Future visual work — explicitly deferred 2026-08-05
 
@@ -272,9 +272,12 @@ Read the matching sections of `CLAUDE.md` before touching any of it.
   no sneakers for dinner. `occasion=None` cannot violate an occasion rule.
 - **Wear context is live** (migration 0006): occasion, weather, and the swap. **15/15 wears
   carry occasion and weather; the swap is still 0 and only accrues forward.**
-- **Mobile is done, layout and touch.** Sticky hover and 16–35px tap targets were the real
-  faults, both fixed in `nav.js` (the one file every page loads). `/galaxy` gained
-  `touch-action` and pinch-zoom.
+- **Mobile is done, layout and touch.** Sticky hover and 16–35px tap targets were fixed in
+  `nav.js`; `/galaxy` gained `touch-action` and pinch-zoom. **Multi-item Fitting Room is now
+  explicitly tap-buildable too (08-06):** mobile garment rows expose add/replace/selected
+  states, a persistent summary jumps to the slots, filled slots visibly remove, and the
+  slot-only path cannot call generation. Real 390px touch QA covered add, replace, remove,
+  44px targets, no overflow and zero requests; desktop drag and row tap remain unchanged.
 - **`/galaxy` is now a LIGHT ground** (her call). `?ground=dark` restores the old field.
 - **Find-a-better-photo -> grid pre-fill: $0 skeleton built, never run paid.** One approved
   batch of 3 garments (~18c) is the next step; see the CLAUDE.md section.
@@ -297,9 +300,10 @@ Read the matching sections of `CLAUDE.md` before touching any of it.
   conversation too: it is gated to the base-avatar state by design (`baseHover()` bails when
   `currentRender` is set) because `front-receive.png` is an edit of the BASE avatar and no
   render has a receiving twin. Per-render variants were rejected 07-17 for cost and face risk.
-- **Multi-item try-on ALREADY EXISTS** — the fitting room's outfit slots + **Render outfit**
-  ($0.059, ~1 min). She did not know; the open question is discoverability, not capability.
-  On a phone it needs a drag onto a slot, which has no tap path — a design question, not a bug.
+- **Multi-item mobile discoverability — DONE 08-06.** The fitting room's existing outfit
+  slots + explicit `Generate try-on` action now have a mobile add/replace/remove path and a
+  persistent outfit summary. It assembles slots without previewing or billing; cached or paid
+  try-on remains a separate explicit action.
 - **Find-a-better-photo search** — reverse image search is blocked (Lens has no API, Bing
   Visual Search retired, TinEye matches exact reuse). Workable route is
   identify-then-text-search, reusing `ingest_fetch.py` and the `/sourcing` grid.
