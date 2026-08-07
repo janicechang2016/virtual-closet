@@ -1,0 +1,44 @@
+{
+  "identification": {
+    "identified": false,
+    "confidence": "low",
+    "evidence": "No visible brand label, care tag, or logo in the image; only a plain black finely pleated sleeveless top with a mock neckline is visible.",
+    "brand": "",
+    "product_name": "",
+    "product_url": "",
+    "image_url": ""
+  },
+  "attributes": {
+    "category": "top",
+    "subcategory": "sleeveless mock-neck top",
+    "formality": 3,
+    "warmth": 2,
+    "volume": "fitted",
+    "pattern": "solid",
+    "fabric": "pleated synthetic knit",
+    "fit": "fitted through torso, flaring slightly at hem",
+    "seasons": [
+      "spring",
+      "summer",
+      "autumn"
+    ],
+    "provenance": {
+      "category": "image",
+      "subcategory": "image",
+      "formality": "inferred",
+      "warmth": "inferred",
+      "volume": "image",
+      "pattern": "image",
+      "fabric": "inferred",
+      "fit": "image",
+      "seasons": "inferred"
+    }
+  },
+  "_meta": {
+    "model": "claude-sonnet-5",
+    "spent_usd": 0.0265,
+    "web_searches": 0,
+    "input_tokens": 11841,
+    "output_tokens": 284
+  }
+}

@@ -104,7 +104,7 @@ checks the cache again before the generation gate, so a stale page cannot bill a
 Generated and cached whole outfits hide per-garment corrective feedback because there is no
 single garment to blame. The composed/flat-lay fallback remains deliberately out.
 
-Verified with no paid calls: 38 server + 88 engine tests green, pinned model report green, JS
+Verified with no paid verification calls: 40 server + 88 engine tests green, pinned model report green, JS
 parses, real-browser miss and unsaved-cache hit both pass, server cache hit/miss guard passes,
 static export succeeds (355 assets / 93.4 MB), privacy check passes.
 
@@ -118,9 +118,20 @@ rejections since `3de2a9c`. The full-verdict line in `wear_model_report.py` is a
 the production ranker. A new regression test pins that yes clicks never create runtime pair
 positives while published looks and blamed rejections keep their respective roles.
 
-**NEXT:** the three-garment identification/prefill pilot (~$0.18 Anthropic, not fal) is the
-next functional task that is both specified and unbuilt. It still requires explicit spending
-approval for one distinctive item, one plain/dark item, and one expected failure.
+**THREE-GARMENT IDENTIFICATION PILOT — RUN 2026-08-06; $0.1952 Anthropic.** Both ambiguous
+dark garments honestly refused with zero searches and returned image-only prefill candidates.
+The distinctive control failed the safety bar: it read Eckhaus Latta from the shoulder but
+matched the painted-band hoodie to the wrong “Sprayed Hoodie” reseller page, then imported
+fabric and fit from it. Three searches also cost $0.1468 alone. Search is now capped at one,
+the estimator uses the measured search-context size, the shared hard budget gate runs before
+the call, and the prompt requires an exact product/model code or two independent visual
+matches; brand alone cannot unlock page provenance. Results are preserved under
+`server/pilots/identification-2026-08-06/`. **Paid ingest stays disabled; the UI still uses its
+$0 stub.**
+
+**NEXT:** one separately approved (~$0.059 max estimate) re-run of the distinctive control
+with the hardened prompt. Exact verification or honest refusal passes; another plausible
+wrong product rejects identification-then-search as the prefill path.
 
 ### Future visual work — explicitly deferred 2026-08-05
 

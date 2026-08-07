@@ -49,7 +49,7 @@ decided on 08-05 is complete:
 **Still explicitly not chosen:** a composed/flat-lay fallback in the mirror. A miss shows the
 base avatar plus the honest generation action, never a proxy presented as a try-on.
 
-Verified with no paid calls: 38 server + 88 engine tests green; pinned model report green;
+Verified with no paid verification calls: 40 server + 88 engine tests green; pinned model report green;
 JS parses; real browser Stylist click → cache miss equips the slots and exposes the generate
 action; an unsaved cached set (`43+44+52`) immediately stages its exact front render; the
 server returns a cached set while generation is disabled and refuses a miss; full static
@@ -1568,7 +1568,7 @@ actually look at the PNG.
   `git checkout inline-nav-v1 -- virtual-closet/app/carousel.html`). In-page controls stay
   put — the carousel's Carousel/Index viewtabs are a lens toggle, not navigation.
 
-## Find-a-better-photo → grid pre-fill (2026-07-28) — $0 SKELETON BUILT, NOT YET RUN PAID
+## Find-a-better-photo → grid pre-fill — PAID PILOT RUN 2026-08-06, NOT LIVE
 
 **Her call 07-28, and it re-scopes Track A.** The queued note treated
 find-a-better-photo and vision tagging as two separate stretch items; she asked for the
@@ -1585,11 +1585,14 @@ badly at this — yours is better"). The better image is a bonus for the render 
   time; multi-garment detection was never the slow part. Track A's paid half is now
   Anthropic + local code only. **The fal top-up is off the critical path entirely** (the
   hero-video half was tabled the same day).
-- **COST, CHECKED NOT GUESSED: ~$0.059/garment.** Web search is **$10 per 1,000 searches**
-  ($0.01 each, capped at 3), plus tokens on **`claude-sonnet-5`** — classification, not
+- **COST, NOW MEASURED: $0.0219–$0.1468/garment in the first batch.** Web search is **$10
+  per 1,000 searches** ($0.01 each), plus tokens on **`claude-sonnet-5`** — classification, not
   reasoning, and on introductory pricing ($2/$10 per MTok) through 2026-08-31. `--generate`
-  bills; everything else is $0. Spend goes through genlog BEFORE the outcome checks
-  (standing rule #1, the D.1 lesson).
+  bills; everything else is $0. The first call's three searches pulled 52,503 input tokens
+  and cost $0.1468, disproving the original $0.059 max. Search is now capped at **one** and
+  the estimator budgets ~16k pulled-in tokens per search; the two zero-search refusals cost
+  $0.0265 and $0.0219. The shared genlog hard cap now runs before the request, and actual
+  spend is logged before outcome checks (standing rule #1, the D.1 lesson).
 - **`effort: "low"` is pinned, not left implicit. THINKING IS ON BY DEFAULT on Sonnet 5 AND
   Opus 5** — that default, more than "thinking bills as output", is why D.1 cost 20x its
   estimate. Correct the older note when re-reading it.
@@ -1602,7 +1605,11 @@ badly at this — yours is better"). The better image is a bonus for the render 
   from `attributes` and nothing touches the form until she confirms. A confident
   MISidentification is worse than a blank grid: every cell comes back plausible and wrong,
   and she is reviewing rather than composing, so it would pass. `evidence` must cite what is
-  IN THE IMAGE, never the search result as its own justification.
+  IN THE IMAGE, never the search result as its own justification. The pilot proved brand
+  recognition is insufficient: the model read Eckhaus Latta correctly but selected the wrong
+  hoodie and imported plausible page fields. The prompt now requires a matching product/model
+  code or two independent matching visual details; brand alone and unverifiable reseller pages
+  cannot unlock `identified: true` or page provenance.
 - **PER-FIELD PROVENANCE** (`page` / `image` / `inferred`), shown as tags in the UI — page in
   black, image in grey, inferred in the oxblood alert ink. A fabric read off a page is
   trustworthy; a formality inferred from a photo is a guess wearing the same typeface.
@@ -1613,10 +1620,16 @@ badly at this — yours is better"). The better image is a bonus for the render 
   exact API shape, which is what let the whole UI be built and reviewed for $0),
   `POST /api/ingest/identify` in `closet_server.py` (**$0 unless `generate` is explicitly
   true** — billing is never a button press), the identify card in `app/ingest.html`, and
-  `server/tests/test_identify_garment.py` (19 tests; **87 total**).
-- **NOT YET RUN PAID.** Next step is one approved batch of 3 garments (~18c): one branded and
-  distinctive, one plain and dark, one expected to fail — then judge the edit-count reduction
-  against that before building further.
+  `server/tests/test_identify_garment.py` (21 tests; **40 server total**), and the preserved
+  payloads/report in `server/pilots/identification-2026-08-06/`.
+- **PILOT RESULT: 2 SAFETY PASSES, 1 PLAUSIBLE-WRONG FAIL; $0.1952 total.** The Issey black
+  tank and Cou Cou black scoop tank honestly refused with zero searches and returned useful
+  image-only attributes. The distinctive Eckhaus Latta control got the brand right but called
+  the catalogued painted-band hoodie a “Sprayed Hoodie,” then sourced fabric and fit from that
+  wrong reseller page. **Do not enable paid identification in the ingest UI.** It remains on
+  the $0 stub. Next proof is one separately approved re-run of the distinctive control with the
+  hardened exact-match prompt and one-search cap; it passes only on the exact product or an
+  honest refusal.
 
 ## Pairwise training-policy audit (2026-08-06) — already deployed since 07-29
 

@@ -67,7 +67,10 @@ MODEL = "claude-sonnet-5"
 # Per-MTok, checked 2026-07-28 (introductory Sonnet 5 rates).
 PRICE_IN, PRICE_OUT = 2.00, 10.00
 SEARCH_PRICE = 0.010          # $10 per 1,000 searches
-MAX_SEARCHES = 3
+# One focused query is enough for this classification task. The first paid
+# pilot allowed three and pulled 52.5k input tokens, turning a projected $0.059
+# call into $0.1468. One is the cost boundary the original estimate assumed.
+MAX_SEARCHES = 1
 
 CATEGORIES = ("top", "bottom", "dress", "outerwear", "shoes")
 
@@ -143,8 +146,11 @@ Work in this order:
 label, a care tag, a logo, distinctive hardware, an unusual print or seam.
 2. If you found something identifying, search the web for that specific product \
 and open the product page.
-3. Fill the attributes, preferring the page's own words over your reading of \
-the photo.
+3. Compare the candidate page back to the input image. Set identified=true only \
+when a legible product name or model code matches, or at least two independent \
+distinctive visual details match. A brand match alone is not a product match.
+4. Only after that exact-product check may you fill attributes from the page. \
+Otherwise return an honest image-only result.
 
 Rules you must follow:
 - If the image contains nothing that identifies a specific product — a plain \
@@ -153,6 +159,10 @@ or product. Fill the attributes from the image alone and mark their provenance \
 "image" or "inferred". An honest blank beats a confident wrong answer, because \
 the owner is reviewing these fields rather than writing them and a plausible \
 error will pass unnoticed.
+- A reseller search result without a comparable product image does not verify \
+the product. If no candidate passes the exact-product check, set identified=false, \
+leave brand/product_name/product_url/image_url blank, and use no "page" provenance. \
+Never import fabric or fit merely because a page has the right brand.
 - `evidence` must say what IN THE IMAGE led you to the identification (e.g. "care \
 label reads ARITZIA; side-seam zip matches the product photo"). Never cite the \
 search result as its own evidence.
@@ -216,7 +226,8 @@ def estimate(image_path: Path):
     px = image_path.stat().st_size
     # Sonnet 5 is the high-res tier (2576px long edge, up to 4784 image tokens).
     img_tokens = 1600 if px < 900_000 else 4784
-    in_tokens = img_tokens + 700 + 6000      # prompt + pulled-in search results
+    # The first paid run averaged roughly 16k pulled-in tokens per search.
+    in_tokens = img_tokens + 700 + 16000 * MAX_SEARCHES
     out_tokens = 1200                        # JSON + low-effort thinking
     tokens = in_tokens / 1e6 * PRICE_IN + out_tokens / 1e6 * PRICE_OUT
     search = MAX_SEARCHES * SEARCH_PRICE
@@ -246,6 +257,13 @@ def record_spend(spent, usage, searches, outcome, gid=""):
         )
     except Exception as exc:                                   # noqa: BLE001
         print("WARNING: genlog write failed (%s)" % exc, file=sys.stderr)
+
+
+def check_spend_budget():
+    """Apply the shared hard cap before creating a billable request."""
+    sys.path.insert(0, str(CLOSET / "scripts"))
+    from genlog import check_budget
+    return check_budget(MODEL)
 
 
 # Canned results shaped exactly like the real payload, so the whole flow — the
@@ -305,6 +323,7 @@ def call(req, gid=""):
     except ImportError:
         raise SystemExit("anthropic SDK not installed — `pip install anthropic`")
 
+    check_spend_budget()
     client = anthropic.Anthropic()
     resp = client.messages.create(**req)
 

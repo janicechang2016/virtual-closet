@@ -1,0 +1,43 @@
+{
+  "identification": {
+    "identified": false,
+    "confidence": "low",
+    "evidence": "A small black tag with a faint logo is visible at the neckline but the brand text/graphic is illegible at this resolution, so no specific product can be confirmed.",
+    "brand": "",
+    "product_name": "",
+    "product_url": "",
+    "image_url": ""
+  },
+  "attributes": {
+    "category": "top",
+    "subcategory": "lace-trim tank top",
+    "formality": 2,
+    "warmth": 1,
+    "volume": "fitted",
+    "pattern": "solid with subtle pointelle/stripe knit texture",
+    "fabric": "ribbed knit, likely cotton or cotton-blend with lace trim",
+    "fit": "fitted/slim",
+    "seasons": [
+      "spring",
+      "summer"
+    ],
+    "provenance": {
+      "category": "image",
+      "subcategory": "image",
+      "formality": "inferred",
+      "warmth": "inferred",
+      "volume": "image",
+      "pattern": "image",
+      "fabric": "inferred",
+      "fit": "image",
+      "seasons": "inferred"
+    }
+  },
+  "_meta": {
+    "model": "claude-sonnet-5",
+    "spent_usd": 0.0219,
+    "web_searches": 0,
+    "input_tokens": 9459,
+    "output_tokens": 303
+  }
+}

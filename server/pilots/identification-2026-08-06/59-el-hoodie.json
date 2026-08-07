@@ -1,0 +1,44 @@
+{
+  "identification": {
+    "identified": true,
+    "confidence": "medium",
+    "evidence": "Shoulder features a bonded logo reading 'ECKHAUS LA...' (partially visible, consistent with Eckhaus Latta branding), and the garment has a sprayed/camo-like dye graphic pattern across the chest and sleeves matching the brand's 'Sprayed Hoodie' design.",
+    "brand": "Eckhaus Latta",
+    "product_name": "Sprayed Hoodie",
+    "product_url": "https://www.lyst.com/clothing/eckhaus-latta-sprayed-hoodie/",
+    "image_url": ""
+  },
+  "attributes": {
+    "category": "top",
+    "subcategory": "hoodie",
+    "formality": 1,
+    "warmth": 3,
+    "volume": "oversized",
+    "pattern": "camo/sprayed graphic",
+    "fabric": "cotton French terry",
+    "fit": "cropped, dropped shoulder",
+    "seasons": [
+      "autumn",
+      "winter",
+      "spring"
+    ],
+    "provenance": {
+      "category": "image",
+      "subcategory": "image",
+      "formality": "inferred",
+      "warmth": "inferred",
+      "volume": "image",
+      "pattern": "image",
+      "fabric": "page",
+      "fit": "page",
+      "seasons": "inferred"
+    }
+  },
+  "_meta": {
+    "model": "claude-sonnet-5",
+    "spent_usd": 0.1468,
+    "web_searches": 3,
+    "input_tokens": 52503,
+    "output_tokens": 1179
+  }
+}

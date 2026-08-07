@@ -9,6 +9,8 @@ import json
 import os
 import sys
 import unittest
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 "..", "scripts"))
@@ -106,6 +108,7 @@ class TestRequestShape(unittest.TestCase):
         tool = self.req["tools"][0]
         self.assertEqual(tool["name"], "web_search")
         self.assertEqual(tool["max_uses"], ig.MAX_SEARCHES)
+        self.assertEqual(ig.MAX_SEARCHES, 1)
 
     def test_model_is_not_opus(self):
         """Sonnet 5 on purpose: this is classification, not reasoning, and Opus
@@ -116,6 +119,14 @@ class TestRequestShape(unittest.TestCase):
         sys_prompt = self.req["system"].lower()
         self.assertIn("do not guess", sys_prompt)
         self.assertIn("identified=false", sys_prompt)
+
+    def test_brand_match_cannot_unlock_page_attributes(self):
+        """The first paid pilot found the brand but the wrong product, then
+        imported plausible fabric and fit from that mismatched reseller page."""
+        sys_prompt = self.req["system"].lower()
+        self.assertIn("a brand match alone is not a product match", sys_prompt)
+        self.assertIn("at least two independent", sys_prompt)
+        self.assertIn("use no \"page\" provenance", sys_prompt)
 
 
 class TestStubs(unittest.TestCase):
@@ -171,6 +182,12 @@ class TestStubs(unittest.TestCase):
 
 
 class TestCost(unittest.TestCase):
+    def test_paid_call_uses_shared_budget_gate(self):
+        gate = Mock(return_value=0.134)
+        with patch.dict(sys.modules, {"genlog": SimpleNamespace(check_budget=gate)}):
+            self.assertEqual(ig.check_spend_budget(), 0.134)
+        gate.assert_called_once_with(ig.MODEL)
+
     def test_estimate_is_bounded_and_declared(self):
         import pathlib
         import tempfile
