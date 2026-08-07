@@ -104,7 +104,7 @@ checks the cache again before the generation gate, so a stale page cannot bill a
 Generated and cached whole outfits hide per-garment corrective feedback because there is no
 single garment to blame. The composed/flat-lay fallback remains deliberately out.
 
-Verified with no paid calls: 35 server + 88 engine tests green, pinned model report green, JS
+Verified with no paid calls: 38 server + 88 engine tests green, pinned model report green, JS
 parses, real-browser miss and unsaved-cache hit both pass, server cache hit/miss guard passes,
 static export succeeds (355 assets / 93.4 MB), privacy check passes.
 
@@ -112,9 +112,15 @@ Live acceptance: all six pages 200; manifest carries 20 cached sets; unsaved cac
 `43+44+52` is 200; money remains sealed; all three style-profile paths 404; Railway health
 200 and protected `/wear` 401.
 
-**NEXT:** the separately measured removal of `yes` verdicts from pairwise training is the
-next functional/model candidate. Keep it a separate before/after review rather than folding
-it into unrelated UI work.
+**PAIRWISE YES-VERDICT AUDIT — CLOSED 2026-08-06, no model change.** The proposed removal was
+already the deployed policy: `stylist_compat()` has consumed only published looks + blamed
+rejections since `3de2a9c`. The full-verdict line in `wear_model_report.py` is an ablation, not
+the production ranker. A new regression test pins that yes clicks never create runtime pair
+positives while published looks and blamed rejections keep their respective roles.
+
+**NEXT:** the three-garment identification/prefill pilot (~$0.18 Anthropic, not fal) is the
+next functional task that is both specified and unbuilt. It still requires explicit spending
+approval for one distinctive item, one plain/dark item, and one expected failure.
 
 ### Future visual work — explicitly deferred 2026-08-05
 

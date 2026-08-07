@@ -49,7 +49,7 @@ decided on 08-05 is complete:
 **Still explicitly not chosen:** a composed/flat-lay fallback in the mirror. A miss shows the
 base avatar plus the honest generation action, never a proxy presented as a try-on.
 
-Verified with no paid calls: 35 server + 88 engine tests green; pinned model report green;
+Verified with no paid calls: 38 server + 88 engine tests green; pinned model report green;
 JS parses; real browser Stylist click → cache miss equips the slots and exposes the generate
 action; an unsaved cached set (`43+44+52`) immediately stages its exact front render; the
 server returns a cached set while generation is disabled and refuses a miss; full static
@@ -1618,21 +1618,22 @@ badly at this — yours is better"). The better image is a bonus for the render 
   distinctive, one plain and dark, one expected to fail — then judge the edit-count reduction
   against that before building further.
 
-## Queued next (do not build until asked)
+## Pairwise training-policy audit (2026-08-06) — already deployed since 07-29
 
-- **DROP HER "YES" VERDICTS FROM THE PAIRWISE TRAINING SET (measured 07-31, not built).**
-  Published looks + blamed rejections ONLY scores **0.839 / 0.827**; the shipped full-verdict
-  set scores **0.803 / 0.802**. That is **-0.036 in-rotation for including them**, and it is no
-  longer a one-off: the direction has held since 07-29 (0.809 vs 0.768) and now rests on **140
-  verdicts instead of 82**. The mechanism was identified then and is unchanged — the
-  yes-verdicts were given on outfits the AFFINITY model chose, so they import that model's
-  taste, and stated preference has already measured as a different target from lived behaviour.
-  **It is a one-line change in `stylist_compat()`.**
-  Why it is queued and not done: it is a MODEL change, so it wants its own before/after and her
-  review of the resulting cards, not a rider on a docs commit — and the last model change
-  (pairwise) was reviewed over 34 verdicts before deploying. **The blame data is the half that
-  earns its keep; this only ever proposed dropping the "yes" half.** Note the interaction with
-  the entry below: fewer training verdicts makes the type backoff MORE volatile, not less.
+**The queued “drop yes verdicts” task was stale; no model change was needed.** Git history and
+the runtime agree: `stylist_compat()` has passed `blamed_rejections()` — never the full current
+verdict set — since pairwise first deployed at `3de2a9c`. Published looks are its positive
+prior; blamed rejections are its negative evidence; “yes” cards still exist in the append-only
+log but do not train pairwise. The harness row labelled `pairwise (published+verdicts)` is an
+ABLATION for comparison, not the shipped model. At the 2026-08-06 data state it scores
+0.801 / 0.800 against the runtime policy's 0.860 / 0.837.
+
+Added `server/tests/test_stylist_training_policy.py` to pin all three parts: yes verdicts make
+no runtime pair positives, blamed rejections still make pair negatives, and published looks
+remain the positive prior. This closes the documentation/code contradiction that made already-
+deployed behaviour look like pending work.
+
+## Queued next (do not build until asked)
 
 - **RUNWAY MOTION IN THE CAROUSEL (her idea 07-28, NOT started, discuss cost/feasibility
   first).** As the carousel scrolls, each avatar should appear to MOVE IN REAL TIME — the
