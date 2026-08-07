@@ -1,6 +1,6 @@
 # Virtual Closet v2 — Handoff / Resume Point
 
-**Last updated 2026-08-05 · branch `main`.** Read `CLAUDE.md` first — it is the source of
+**Last updated 2026-08-06 · branch `main`.** Read `CLAUDE.md` first — it is the source of
 truth and is kept current. `virtual-closet/docs/decisions.md` carries the standing rules.
 This file is the five-minute orientation: what runs where, what to do next, what has already
 cost time.
@@ -46,7 +46,7 @@ started". All of that is obsolete — Phases 0–3 and Track A's $0 half are don
 
 | Thing | Where | State |
 |---|---|---|
-| Public site | virtual-closet-seven.vercel.app | builds from **`main`** · live at **`d5ea5ea`** (07-31) |
+| Public site | virtual-closet-seven.vercel.app | builds from **`main`** · live at **`80233b3`** (08-06) |
 | API | virtual-closet-api-production.up.railway.app | Railway, from **`main`**, root dir `server` |
 | Postgres | Railway `Postgres` service | 58 garments · 59 outfits (18 published · 17 worn · 24 stylist) · **18 wears** |
 | Local app | `localhost:8765` | `python3 scripts/closet_server.py` from `virtual-closet/` |
@@ -82,7 +82,7 @@ page fetches, and `asset_urls()` walking that payload or its images 404.
 
 ## 3. What to do next
 
-### Resume here — latest local work, not yet committed/deployed (2026-08-05)
+### Resume here — analytics loop + cached try-ons deployed (2026-08-06)
 
 **Analytics purpose and the cross-page loop are built.** Insights now leads with a wardrobe
 brief — get dressed, bring one back, teach the system — and keeps the financial dashboard as
@@ -94,8 +94,8 @@ and recommendations but never enter the curated Archive without deliberate publi
 No ranking changed. New payload fields are descriptive: `brief`, `rotation_share`, and
 rediscovery `partner_ids`.
 
-**STYLIST → FITTING-ROOM RENDER — DONE 2026-08-06, still local/uncommitted with this
-workset.** The manifest now carries an exact-set index of every cached FRONT outfit render,
+**STYLIST → FITTING-ROOM RENDER — DONE AND DEPLOYED 2026-08-06 at `80233b3`.** The manifest
+now carries an exact-set index of every cached FRONT outfit render,
 including renders never saved or published as looks. Stylist and Insights handoffs equip the
 pieces, then immediately stage the exact cache when one exists. A local miss keeps the pieces
 equipped and exposes `GENERATE TRY-ON · ~$0.06`; only that click can reach the billed route.
@@ -108,10 +108,13 @@ Verified with no paid calls: 35 server + 88 engine tests green, pinned model rep
 parses, real-browser miss and unsaved-cache hit both pass, server cache hit/miss guard passes,
 static export succeeds (355 assets / 93.4 MB), privacy check passes.
 
-**NEXT:** review this complete local workset, then commit and deploy together. The next
-functional/model candidate after that is the separately measured removal of `yes` verdicts
-from pairwise training; keep it a separate before/after review rather than folding it into
-this UI commit.
+Live acceptance: all six pages 200; manifest carries 20 cached sets; unsaved cache asset
+`43+44+52` is 200; money remains sealed; all three style-profile paths 404; Railway health
+200 and protected `/wear` 401.
+
+**NEXT:** the separately measured removal of `yes` verdicts from pairwise training is the
+next functional/model candidate. Keep it a separate before/after review rather than folding
+it into unrelated UI work.
 
 ### Future visual work — explicitly deferred 2026-08-05
 

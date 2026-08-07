@@ -7,9 +7,9 @@ carries the standing rules). Plans: `virtual-closet-execution-plan.md` (v1),
 `virtual-closet-plan-v2.md` (v2 spec), `virtual-closet-v2-foundation-plan.md` (Phases 0–2),
 `virtual-closet-v2-HANDOFF.md` (cold-resume).
 
-## Latest session — analytics purpose + cross-page loop (2026-08-05, local only)
+## Latest session — analytics purpose + cross-page loop (2026-08-05/06), DEPLOYED at `80233b3`
 
-**Built, tested, NOT YET COMMITTED OR DEPLOYED.** `/insights` now leads with a wardrobe
+**Built, tested and deployed.** `/insights` now leads with a wardrobe
 brief instead of money: **get dressed → bring one back → teach the system**. The brief uses
 the existing records to show rotation coverage, the largest recorded occasion, and the
 number of blamed rejections; the sustainability/cost dashboard remains below as supporting
@@ -27,8 +27,8 @@ The cross-page loop is now explicit:
 Backend additions are descriptive only: `insights_data().brief`, `rotation_share`, and raw
 `partner_ids` for the fitting-room handoff. No model or ranking changed.
 
-**STYLIST → FITTING-ROOM RENDERING — BUILT 2026-08-06, local only with the rest of this
-workset.** The two-tier path decided on 08-05 is complete:
+**STYLIST → FITTING-ROOM RENDERING — BUILT AND DEPLOYED 2026-08-06.** The two-tier path
+decided on 08-05 is complete:
 
 1. **Cache first, $0.** `manifest().outfit_renders` indexes every exact FRONT outfit render
    found on disk through the same sorted numeric-set convention as `outfit_slug()` and
@@ -54,6 +54,10 @@ JS parses; real browser Stylist click → cache miss equips the slots and expose
 action; an unsaved cached set (`43+44+52`) immediately stages its exact front render; the
 server returns a cached set while generation is disabled and refuses a miss; full static
 export copies 355 assets / 93.4 MB; privacy guard passes.
+
+**Live verification at `80233b3`:** all six pages 200; manifest carries 20 cached outfit
+sets; the unsaved `43+44+52` render is present and 200; money remains sealed; all three
+style-profile paths 404; Railway `/health` is 200 and protected `/wear` is 401.
 
 ## v2 state (2026-07-27) — foundation + engine + stylist + wear logging done, $0.00 API spend
 
