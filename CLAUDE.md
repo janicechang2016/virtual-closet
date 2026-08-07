@@ -7,6 +7,54 @@ carries the standing rules). Plans: `virtual-closet-execution-plan.md` (v1),
 `virtual-closet-plan-v2.md` (v2 spec), `virtual-closet-v2-foundation-plan.md` (Phases 0–2),
 `virtual-closet-v2-HANDOFF.md` (cold-resume).
 
+## Latest session — analytics purpose + cross-page loop (2026-08-05, local only)
+
+**Built, tested, NOT YET COMMITTED OR DEPLOYED.** `/insights` now leads with a wardrobe
+brief instead of money: **get dressed → bring one back → teach the system**. The brief uses
+the existing records to show rotation coverage, the largest recorded occasion, and the
+number of blamed rejections; the sustainability/cost dashboard remains below as supporting
+evidence. Rediscovery rows and the brief can hand an exact garment set to `/fitting-room`.
+
+The cross-page loop is now explicit:
+
+- `/insights` → occasion-filtered `/stylist`, decision history, or a rediscovery outfit in
+  `/fitting-room`;
+- `/stylist` cards separate **TRY IT ON** (loads the garment set in the fitting room),
+  **WOULD WEAR** (positive preference evidence), and **NOT THIS** (blamed negative evidence);
+- `/wear` now says plainly that a logged outfit is private evidence for rotation and
+  recommendations and **never enters the curated Archive** unless deliberately published.
+
+Backend additions are descriptive only: `insights_data().brief`, `rotation_share`, and raw
+`partner_ids` for the fitting-room handoff. No model or ranking changed.
+
+**STYLIST → FITTING-ROOM RENDERING — BUILT 2026-08-06, local only with the rest of this
+workset.** The two-tier path decided on 08-05 is complete:
+
+1. **Cache first, $0.** `manifest().outfit_renders` indexes every exact FRONT outfit render
+   found on disk through the same sorted numeric-set convention as `outfit_slug()` and
+   `stage_render()`. It scans renders, not `looks.json`: 20 exact sets exist and two are
+   genuinely cache-only/unsaved. Pose renders, `_raw`, hidden stems and unknown garment
+   families are excluded. The static export walks this map, so the public read-only fitting
+   room and the local app resolve the same cache.
+2. **Generate only on explicit request.** A local cache miss leaves every piece equipped and
+   shows `GENERATE TRY-ON · ~$0.06`; clicking it is the only client path to `/api/generate`.
+   The read-only static build says to generate locally and keeps writes hidden.
+   Generation-disabled mode refuses before making a request. The server independently checks
+   `stage_render()` before its generation gate, closing the stale-manifest race: a render that
+   landed after page load returns with `cached: true` at $0 rather than billing a duplicate.
+   A successful render refreshes the manifest and becomes the reusable exact cache.
+3. **Whole-outfit feedback stays hidden.** Corrective feedback requires one attributable
+   garment, so cached and generated outfit renders follow the same rule as published looks.
+
+**Still explicitly not chosen:** a composed/flat-lay fallback in the mirror. A miss shows the
+base avatar plus the honest generation action, never a proxy presented as a try-on.
+
+Verified with no paid calls: 35 server + 88 engine tests green; pinned model report green;
+JS parses; real browser Stylist click → cache miss equips the slots and exposes the generate
+action; an unsaved cached set (`43+44+52`) immediately stages its exact front render; the
+server returns a cached set while generation is disabled and refuses a miss; full static
+export copies 355 assets / 93.4 MB; privacy guard passes.
+
 ## v2 state (2026-07-27) — foundation + engine + stylist + wear logging done, $0.00 API spend
 
 **DEPLOY SOURCE: `main`** (Vercel → Settings → Git → Production Branch, switched 07-26).

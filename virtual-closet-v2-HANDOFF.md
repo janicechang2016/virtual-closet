@@ -1,6 +1,6 @@
 # Virtual Closet v2 — Handoff / Resume Point
 
-**Last updated 2026-07-31 · branch `main`.** Read `CLAUDE.md` first — it is the source of
+**Last updated 2026-08-05 · branch `main`.** Read `CLAUDE.md` first — it is the source of
 truth and is kept current. `virtual-closet/docs/decisions.md` carries the standing rules.
 This file is the five-minute orientation: what runs where, what to do next, what has already
 cost time.
@@ -81,6 +81,48 @@ rewrite, the file in `APP_FILES`, a static payload *plus its own rewrite* for ev
 page fetches, and `asset_urls()` walking that payload or its images 404.
 
 ## 3. What to do next
+
+### Resume here — latest local work, not yet committed/deployed (2026-08-05)
+
+**Analytics purpose and the cross-page loop are built.** Insights now leads with a wardrobe
+brief — get dressed, bring one back, teach the system — and keeps the financial dashboard as
+supporting evidence. It can open an occasion-filtered Stylist, decision history, or load a
+rediscovery combination into the fitting room. Stylist cards now separate **TRY IT ON** from
+**WOULD WEAR** and **NOT THIS**. Wear copy now accurately says logged outfits inform rotation
+and recommendations but never enter the curated Archive without deliberate publication.
+
+No ranking changed. New payload fields are descriptive: `brief`, `rotation_share`, and
+rediscovery `partner_ids`.
+
+**STYLIST → FITTING-ROOM RENDER — DONE 2026-08-06, still local/uncommitted with this
+workset.** The manifest now carries an exact-set index of every cached FRONT outfit render,
+including renders never saved or published as looks. Stylist and Insights handoffs equip the
+pieces, then immediately stage the exact cache when one exists. A local miss keeps the pieces
+equipped and exposes `GENERATE TRY-ON · ~$0.06`; only that click can reach the billed route.
+The read-only deploy says to generate locally and keeps write controls hidden. The server
+checks the cache again before the generation gate, so a stale page cannot bill a duplicate.
+Generated and cached whole outfits hide per-garment corrective feedback because there is no
+single garment to blame. The composed/flat-lay fallback remains deliberately out.
+
+Verified with no paid calls: 35 server + 88 engine tests green, pinned model report green, JS
+parses, real-browser miss and unsaved-cache hit both pass, server cache hit/miss guard passes,
+static export succeeds (355 assets / 93.4 MB), privacy check passes.
+
+**NEXT:** review this complete local workset, then commit and deploy together. The next
+functional/model candidate after that is the separately measured removal of `yes` verdicts
+from pairwise training; keep it a separate before/after review rather than folding it into
+this UI commit.
+
+### Future visual work — explicitly deferred 2026-08-05
+
+After the analytics and cross-page decision loop are strengthened:
+
+1. Pilot one fitting-room look as an 8-angle image sequence with drag-to-scrub,
+   canonical angle buttons, progressive loading, and reduced-motion support.
+2. Use Janice's reference to prototype the Archive as an animated runway with one or
+   two looks; evaluate Kling before quoting or using fal.
+3. Compare both pilots before choosing a production pipeline or expanding either
+   treatment across the catalog. Do not commit to catalog-wide generation first.
 
 **DECIDED 07-30, AND IT QUALIFIES A STANDING DOCTRINE. The Keen rule STAYS.** She wore
 `25-kotn-samira-tank + 32-personal-language-skirt + 53-keen-sandals` on 07-27 (`day_out`),

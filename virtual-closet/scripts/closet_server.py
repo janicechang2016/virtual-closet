@@ -172,6 +172,36 @@ def stage_render(items):
     return f"/assets/renders/{max(cands, key=suffix).name}"
 
 
+def outfit_render_index(garments=None):
+    """Exact garment-set -> newest cached FRONT outfit render.
+
+    This deliberately scans render files rather than looks.json. A try-on made
+    from the fitting room is reusable even when it was never saved or published
+    as a look, and poses remain archive-only just as they do in stage_render().
+    The numeric garment prefix is load-bearing throughout this app: it is also
+    the convention tryon_outfit() uses when it names an outfit render.
+    """
+    garments = garment_list() if garments is None else garments
+    by_number = {g["id"].split("-", 1)[0]: g["id"] for g in garments}
+    hidden = hidden_stems()
+    families = {}
+    for p in (ROOT / "renders").glob("outfit_*.png"):
+        if p.stem.endswith("_raw") or p.stem in hidden or is_posed(p.stem):
+            continue
+        match = re.fullmatch(r"outfit_(\d+(?:\+\d+)*)_(\d+)", p.stem)
+        if not match:
+            continue
+        ids = [by_number.get(n) for n in match.group(1).split("+")]
+        if any(gid is None for gid in ids):
+            continue
+        key = ",".join(sorted(ids))
+        suffix = int(match.group(2))
+        previous = families.get(key)
+        if previous is None or suffix > previous[0]:
+            families[key] = (suffix, f"/assets/renders/{p.name}")
+    return {key: value[1] for key, value in sorted(families.items())}
+
+
 def looks_list():
     """looks.json entries with render/cutout resolved to asset URLs (or None)."""
     out = []
@@ -187,6 +217,7 @@ def looks_list():
 
 
 def manifest():
+    garments = garment_list()
     locked = ROOT / "avatar" / "avatar-v3" / "front.png"
     if locked.exists():
         receive = ROOT / "avatar" / "avatar-v3" / "front-receive.png"
@@ -208,8 +239,12 @@ def manifest():
         }
     return {
         "avatar": avatar,
-        "garments": garment_list(),
+        "garments": garments,
         "looks": looks_list(),
+        # All exact cached outfit fronts, including renders that were never
+        # saved as looks. The static export walks this map and copies the files,
+        # so Stylist -> fitting-room cache lookup is identical locally and live.
+        "outfit_renders": outfit_render_index(garments),
         "spend": spend_summary(),
         "generation_enabled": GENERATION_ENABLED,
     }
@@ -1028,6 +1063,17 @@ def insights_data():
     cpws = sorted([r["cpw"] for r in worn if r["cpw"] is not None])
     median_cpw = (cpws[len(cpws) // 2] if cpws else None)
 
+    # Descriptive signals for the user-facing wardrobe brief. Occasion is
+    # collected context, not yet a ranking input; wear remains a recorded floor.
+    occasion_counts = {}
+    for wear in data.get("wears") or []:
+        occ = wear.get("occasion")
+        if occ:
+            occasion_counts[occ] = occasion_counts.get(occ, 0) + 1
+    current_feedback = list(stylist_current().values())
+    blamed = [e for e in current_feedback
+              if e.get("verdict") == "no" and e.get("blame")]
+
     return {
         "totals": {
             "garments": len(garments),
@@ -1040,6 +1086,15 @@ def insights_data():
             "looks": len(looks),
             "logged_wears": _logged_wears(data),
             "median_cpw": median_cpw,
+            "rotation_share": round(100.0 * len(worn) / len(garments)) if garments else 0,
+        },
+        "brief": {
+            "occasion_counts": [{"occasion": k, "count": v} for k, v in
+                                sorted(occasion_counts.items(), key=lambda kv: (-kv[1], kv[0]))],
+            "judgements": len(current_feedback),
+            "blamed_rejections": len(blamed),
+            "model": "pairwise",
+            "model_signal": "beats the older affinity model on held-out wears",
         },
         "idle_by_category": by_cat(idle),
         "spend_by_category": by_cat(priced),
@@ -1095,6 +1150,7 @@ def _gap_report(data, garments, looks, names):
         "rediscovery": [{
             "id": r["id"], "name": nm(r["id"]),
             "partners": [nm(p) for p in r["partners"]],
+            "partner_ids": list(r["partners"]),
             "score": r["score"],
         } for r in rediscover[:8]],
         "rediscovery_total": len(rediscover),
@@ -1577,17 +1633,30 @@ class Handler(SimpleHTTPRequestHandler):
             target.rename(dest)
             return self._json({"ok": True})
         if url.path == "/api/generate":
+            outfit_items = data.get("outfit")
+            if isinstance(outfit_items, list) and outfit_items:
+                # Cache is checked server-side too. The manifest normally keeps
+                # the client current, but a render can land on disk after page
+                # load; that race must return $0 rather than bill a duplicate.
+                known = {g["id"] for g in garment_list()}
+                if all(gid in known for gid in outfit_items):
+                    cached = stage_render(outfit_items)
+                    if cached:
+                        return self._json({"ok": True, "render": cached,
+                                           "cached": True})
             if not GENERATION_ENABLED:
                 return self._json({
                     "error": "generation disabled",
                     "detail": "Credit guard is on. Start the server with ENABLE_GENERATION=1 "
                               "to allow fal spending, or use Copy Prompt mode.",
                 }, 403)
-            if data.get("outfit"):
+            if outfit_items:
                 try:
                     from tryon import tryon_outfit
-                    out = tryon_outfit(data["outfit"])
-                    return self._json({"ok": True, "render": f"/assets/renders/{out.name}"})
+                    out = tryon_outfit(outfit_items)
+                    return self._json({"ok": True,
+                                       "render": f"/assets/renders/{out.name}",
+                                       "cached": False})
                 except Exception as e:
                     return self._json({"error": f"{type(e).__name__}: {e}"}, 500)
             gid = data.get("garment")

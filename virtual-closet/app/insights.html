@@ -51,6 +51,25 @@
      hairline already closes it */
   .mod .caveat { padding:10px 0 0; border-bottom:0; }
 
+  .brief { display:grid; grid-template-columns:minmax(280px,1.35fr) repeat(3,minmax(210px,1fr));
+    border-bottom:1px solid var(--line); }
+  .brief-intro,.brief-job { padding:24px; border-right:1px solid var(--line); min-height:210px; }
+  .brief-job:last-child { border-right:0; }
+  .brief-intro,.brief-job { display:flex; flex-direction:column; }
+  .brief-intro { justify-content:space-between; }
+  .brief-intro h1 { margin:12px 0 18px; font-size:34px; line-height:1.04;
+    font-weight:normal; letter-spacing:-.025em; max-width:12ch; }
+  .brief-intro p,.brief-job p { color:var(--dim); margin:0; max-width:38ch; }
+  .brief-job h2 { font-size:13px; font-weight:normal; margin:12px 0 8px;
+    text-transform:uppercase; letter-spacing:.12em; }
+  .brief-job .signal { font-size:24px; line-height:1.1; margin:12px 0 6px; }
+  .actions { display:flex; flex-wrap:wrap; gap:7px; margin-top:auto; padding-top:20px; }
+  .action { display:inline-block; border:1px solid var(--line); padding:9px 12px;
+    text-transform:uppercase; letter-spacing:.12em; font-size:9px; background:#fff; cursor:pointer; }
+  .action.primary { background:#000; color:#fff; }
+  .action:hover { opacity:.7; }
+  .r .action { margin-left:auto; flex:none; }
+
   /* rediscovery: a garment, then the outfit that would bring it back. The
      partners are the point, so they get the ink and the garment gets the label. */
   .redis { display:flex; flex-direction:column; }
@@ -188,6 +207,8 @@
 
   footer { padding:26px 24px 70px; color:var(--dim); font-size:11px; max-width:76ch; }
   @media (max-width:760px) {
+    .brief { grid-template-columns:1fr; }
+    .brief-intro,.brief-job { border-right:0; border-bottom:1px solid var(--line); min-height:0; }
     .row { grid-template-columns:110px 1fr 78px; gap:8px; }
     .kpi .v { font-size:30px; }
   }
@@ -211,18 +232,29 @@
   <button id="tabletoggle">table view</button>
 </header>
 
+<section class="brief" id="brief">
+  <div class="brief-intro">
+    <div><span class="up" style="color:var(--dim)">Your wardrobe brief</span>
+      <h1>Wear more of what you already own.</h1></div>
+    <p>What you publish, wear, and reject becomes the next useful action.</p>
+  </div>
+  <div class="brief-job" id="brief-dress"></div>
+  <div class="brief-job" id="brief-return"></div>
+  <div class="brief-job" id="brief-learn"></div>
+</section>
+
 <div class="kpis" id="kpis"></div>
 <div class="caveat up" id="caveat"></div>
 
 <div class="field">
 <div class="mod" data-span="8">
-  <div class="h"><span class="no">01</span><h2>How much of the closet is in play</h2>
+  <div class="h"><span class="no">01</span><h2>Rotation evidence</h2>
     <span class="sub">every garment, one mark — tap or hover any of them</span></div>
   <div class="units" id="units"></div>
   <div class="key up" id="unitkey"></div>
 </div>
 <div class="mod" data-span="4">
-  <div class="h"><span class="no">02</span><h2>The share standing still</h2>
+  <div class="h"><span class="no">02</span><h2>Value outside rotation</h2>
     <span class="sub">value with no recorded wear</span></div>
   <div class="meter">
     <div class="mtrack"><div class="mfill" id="mfill"></div></div>
@@ -258,7 +290,7 @@
 <!-- D.5 resolves the sustainability tension by leading with UNLOCK. On this
      closet that is also the only half with a true answer, so it comes first and
      the acquire half below is explicitly conditional. -->
-<div class="mod" data-span="12">
+<div class="mod" data-span="12" id="rediscovery">
   <div class="h"><span class="no">08</span><h2>Bring one back</h2>
     <span class="sub">the best outfit you already own for each garment you have never worn</span></div>
   <div class="redis" id="redis"></div>
@@ -408,9 +440,29 @@ fetch('/api/insights').then(r => r.json()).then(d => {
 
 function draw(d) {
   const t = d.totals;
+  const B = d.brief || {};
+  const topOcc = (B.occasion_counts || [])[0];
+  const occLabel = s => ({work_home:'work from home', work_out:'work out',
+    day_out:'day out'}[s] || (s || '').replaceAll('_', ' '));
+  $('#brief-dress').innerHTML = `<span class="up" style="color:var(--dim)">01 · get dressed</span>
+    <h2>Start with a suggestion</h2>
+    <div class="signal">${topOcc ? topOcc.count + ' ' + occLabel(topOcc.occasion) + ' wears' : 'choose a context'}</div>
+    <p>${topOcc ? 'Your largest recorded context. Use it to ask a sharper question.' : 'The stylist can narrow the closet by occasion.'}</p>
+    <div class="actions"><a class="action primary" href="/stylist${topOcc ? '?occasion=' + encodeURIComponent(occLabel(topOcc.occasion)) : ''}">ask the stylist</a></div>`;
+  const firstRedis = d.gaps && d.gaps.rediscovery && d.gaps.rediscovery[0];
+  $('#brief-return').innerHTML = `<span class="up" style="color:var(--dim)">02 · bring one back</span>
+    <h2>Expand the rotation</h2>
+    <div class="signal">${t.never_worn} pieces</div>
+    <p>have no recorded wear. Every one already has a viable partner in your closet.</p>
+    <div class="actions">${firstRedis ? '<button class="action primary" data-fit="' + [firstRedis.id].concat(firstRedis.partner_ids || []).join(',') + '" data-title="bring back ' + firstRedis.name.replaceAll('&','&amp;').replaceAll('"','&quot;') + '">try one now</button>' : ''}<a class="action" href="#rediscovery">see the list</a></div>`;
+  $('#brief-learn').innerHTML = `<span class="up" style="color:var(--dim)">03 · teach the system</span>
+    <h2>Judge, especially reject</h2>
+    <div class="signal">${B.blamed_rejections || 0} useful no's</div>
+    <p>Blaming the wrong piece gives the pairwise stylist its clearest negative signal.</p>
+    <div class="actions"><a class="action primary" href="/stylist">judge suggestions</a><a class="action" href="/stylist#decisions">review decisions</a></div>`;
 
   const kpis = [
-    {k: 'closet value', v: money(t.value), s: t.priced + ' garments priced'},
+    {k: 'closet in rotation', v: t.rotation_share + '%', s: t.worn + ' of ' + t.garments + ' garments'},
     {k: 'value never worn', v: money(t.idle_value), s: 'no recorded wear', alert: true},
     {k: 'never worn', v: t.never_worn + ' / ' + t.garments, s: 'no recorded wear',
      alert: true},
@@ -481,7 +533,11 @@ function draw(d) {
       const a = document.createElement('div'); a.className = 'rn'; a.textContent = r.name;
       const b = document.createElement('div'); b.className = 'rw';
       b.innerHTML = 'wear it with <b>' + r.partners.join('</b> + <b>') + '</b>';
-      row.append(a, b); rh.appendChild(row);
+      const go = document.createElement('button'); go.className = 'action';
+      go.textContent = 'try in fitting room';
+      go.dataset.fit = [r.id].concat(r.partner_ids || []).join(',');
+      go.dataset.title = 'bring back ' + r.name;
+      row.append(a, b, go); rh.appendChild(row);
     });
 
     const hmax = Math.max(...G.hypothetical.map(h => h.unlocked), 1);
@@ -547,7 +603,16 @@ $('#tabletoggle').addEventListener('click', () => {
   $('#tabletoggle').textContent = w.classList.contains('open') ? 'hide table' : 'table view';
   if (w.classList.contains('open')) w.scrollIntoView({behavior: 'smooth'});
 });
+
+document.addEventListener('click', e => {
+  const go = e.target.closest('[data-fit]');
+  if (!go) return;
+  localStorage.setItem('incomingLook', JSON.stringify({
+    title: go.dataset.title || 'insights recommendation',
+    items: go.dataset.fit.split(',').filter(Boolean), kind: 'outfit'
+  }));
+  location.href = '/fitting-room';
+});
 </script>
   <script src="/app/nav.js"></script>
 </body></html>
-

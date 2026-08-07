@@ -121,8 +121,9 @@
   .panel .items { text-transform:uppercase; letter-spacing:.1em; margin-top:3px; }
 
   .acts { display:flex; border-top:1px solid var(--line); }
-  .acts button { flex:1; border:0; border-right:1px solid var(--line); padding:13px 0; }
-  .acts button:last-child { border-right:0; }
+  .acts button, .acts a { flex:1; border:0; border-right:1px solid var(--line); padding:13px 0;
+    text-align:center; text-transform:uppercase; letter-spacing:.14em; font-size:10px; }
+  .acts button:last-child, .acts a:last-child { border-right:0; }
 
   .blame { border-top:1px solid var(--line); padding:14px; display:none; }
   .card.asking .blame { display:block; }
@@ -141,7 +142,7 @@
      there is nowhere to write a verdict to. Same rule the archive follows for
      SAVE LOOK / RENDER OUTFIT. Browsing, filtering by occasion and re-rolling
      all still work — those are reads. */
-  body.demo .acts, body.demo #hist, body.demo .localonly { display: none; }
+  body.demo .acts button, body.demo #hist, body.demo .localonly { display: none; }
   .demoonly { display: none; }
   body.demo .demoonly { display: inline; }
 
@@ -208,6 +209,13 @@ const occ = document.getElementById('occ');
 let DATA = null;
 let SHOWN = [];
 
+// Insights can hand the user a context, but the stylist remains the place that
+// owns and explains the filter.
+const initialOccasion = new URLSearchParams(location.search).get('occasion');
+if (initialOccasion && [...occ.options].some(o => o.value === initialOccasion)) {
+  occ.value = initialOccasion;
+}
+
 const nameOf = g => (g.name || g.subcategory || g.category || g.id);
 
 // THE WORDING LIVES HERE AND ONLY HERE. Both payloads ship the engine's
@@ -251,7 +259,8 @@ function cardHTML(o, i, wild) {
       </div>
     </div>
     <div class="acts">
-      <button data-yes="${i}">wear this</button>
+      <a href="/fitting-room" data-try="${i}">try it on</a>
+      <button data-yes="${i}">would wear</button>
       <button data-no="${i}">not this</button>
     </div>
     <div class="blame">
@@ -447,7 +456,7 @@ async function send(i, verdict, blame) {
   card.classList.add('gone');
   card.querySelector('.acts').outerHTML = `
     <div class="done up">
-      <span class="lab">${verdict === 'yes' ? 'saved as worn' : 'noted' + (blame ? ' · ' + blame : '')}</span>
+      <span class="lab">${verdict === 'yes' ? 'preference learned' : 'noted' + (blame ? ' · ' + blame : '')}</span>
       <button data-change="${i}">change</button>
       <button data-undo="${i}">undo</button>
     </div>`;
@@ -455,7 +464,8 @@ async function send(i, verdict, blame) {
 
 function actsHTML(i) {
   return `<div class="acts">
-      <button data-yes="${i}">wear this</button>
+      <a href="/fitting-room" data-try="${i}">try it on</a>
+      <button data-yes="${i}">would wear</button>
       <button data-no="${i}">not this</button>
     </div>`;
 }
@@ -479,6 +489,14 @@ function allItems() {
 }
 
 grid.addEventListener('click', e => {
+  const link = e.target.closest('[data-try]');
+  if (link) {
+    const o = SHOWN[+link.dataset.try];
+    localStorage.setItem('incomingLook', JSON.stringify({
+      title: 'stylist suggestion', items: o.garment_ids, kind: 'outfit'
+    }));
+    return;
+  }
   const b = e.target.closest('button');
   if (!b) return;
   if (b.dataset.yes !== undefined) return send(+b.dataset.yes, 'yes', null);

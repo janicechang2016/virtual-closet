@@ -2,6 +2,7 @@ let M = null;                 // manifest
 let currentGarment = null;    // garment shown on stage
 let currentRender = null;     // render path shown on stage
 let stagedLook = null;        // look shown on stage (mutually exclusive with currentGarment)
+let stagedOutfit = null;      // cached/generated unsaved outfit shown on stage
 let filter = "all";
 const POSES = ["front", "contrapposto", "hand-on-hip", "34turn"];
 const SLOTS = ["top", "bottom", "layer", "shoes"];
@@ -91,8 +92,10 @@ function consumeIncomingLook() {
       const l = (M.looks || []).find((x) => x.id === lookId)
         || (M.looks || []).find((x) => [...x.items].sort().join(",") === key);
       if (l) showLook(l);
+    } else if (kind === "outfit") {
+      showIncomingOutfit(items, title);
     }
-    toast(`from the archive: ${title}`);
+    toast(kind === "look" ? `from the archive: ${title}` : `loaded: ${title}`);
   } catch { /* stale handoff — ignore */ }
 }
 
@@ -100,6 +103,7 @@ function showAvatar() {
   currentRender = null;
   currentGarment = null;
   stagedLook = null;
+  stagedOutfit = null;
   if (M.avatar.draft) {
     $("#stage-img").src = M.avatar.draft;
     const v = M.avatar.locked_version || "draft";
@@ -146,6 +150,7 @@ function tryOn(id) {
   const g = M.garments.find((x) => x.id === id);
   currentGarment = g;
   stagedLook = null;     // a single garment replaces the look on the mirror
+  stagedOutfit = null;
   if (g.renders.length) {
     // newest render for this garment goes on stage
     currentRender = g.renders[g.renders.length - 1];
@@ -347,8 +352,37 @@ function renderSlots() {
     el.addEventListener("click", () => {
       delete outfit[el.dataset.s];
       localStorage.setItem("outfit", JSON.stringify(outfit));
+      if (stagedLook || stagedOutfit) showAvatar();
       renderSlots();
     }));
+  syncOutfitAction();
+}
+
+function equippedItems() {
+  return [...new Set(Object.values(outfit))].filter(Boolean);
+}
+
+function outfitKey(items) {
+  return [...new Set(items)].sort().join(",");
+}
+
+function cachedOutfitRender(items) {
+  return (M.outfit_renders || {})[outfitKey(items)] || null;
+}
+
+// The paid action is never the first lookup. If this exact set has already
+// been rendered, the only action offered is the $0 cache path.
+function syncOutfitAction() {
+  const button = $("#render-outfit");
+  const items = equippedItems();
+  if (items.length < 2) {
+    button.hidden = true;
+    return;
+  }
+  const cached = cachedOutfitRender(items);
+  button.hidden = false;
+  button.dataset.mode = cached ? "cached" : "generate";
+  button.textContent = cached ? "Show cached try-on · $0" : "Generate try-on · ~$0.06";
 }
 
 function renderSaved() {
@@ -390,6 +424,7 @@ function showLook(l) {
   if (!l.stage_render) { showAvatar(); return; }   // no front render yet
   currentGarment = null;
   stagedLook = l;
+  stagedOutfit = null;
   currentRender = l.stage_render;
   $("#stage-img").src = l.stage_render;
   const n = l.items.length;
@@ -399,6 +434,34 @@ function showLook(l) {
   // edit), so it stays hidden for a whole look rather than offering a control
   // that cannot be acted on.
   $("#feedback-bar").hidden = true;
+}
+
+function showOutfitRender(items, render, title) {
+  const exact = [...new Set(items)].sort();
+  currentGarment = null;
+  stagedLook = null;
+  stagedOutfit = { items: exact, title, render };
+  currentRender = render;
+  $("#stage-img").src = render;
+  $("#stage-caption").textContent =
+    `${title || "outfit"} — ${exact.length} pieces · exact cached try-on`;
+  // Corrective feedback needs one attributable garment. Whole-outfit renders
+  // have none, so they follow the same rule as published looks.
+  $("#feedback-bar").hidden = true;
+  syncOutfitAction();
+}
+
+function showIncomingOutfit(items, title) {
+  const cached = cachedOutfitRender(items);
+  if (cached) {
+    showOutfitRender(items, cached, title || "stylist suggestion");
+    return;
+  }
+  showAvatar();
+  $("#stage-caption").textContent = M.demo
+    ? `${title || "outfit"} — pieces equipped · no cached try-on; generate locally`
+    : `${title || "outfit"} — pieces equipped · no cached try-on yet`;
+  syncOutfitAction();
 }
 
 function loadLook(id) {
@@ -534,8 +597,20 @@ document.querySelectorAll(".fb").forEach((b) =>
   }));
 
 $("#render-outfit").addEventListener("click", async () => {
-  const ids = [...new Set(Object.values(outfit))].filter(Boolean);
+  const ids = equippedItems();
   if (ids.length < 2) { toast("equip at least 2 items first"); return; }
+  const cached = cachedOutfitRender(ids);
+  if (cached) {
+    showOutfitRender(ids, cached, "outfit");
+    toast("exact cached try-on — $0");
+    return;
+  }
+  if (!M.generation_enabled) {
+    toast("generation is gated off — restart with ENABLE_GENERATION=1");
+    return;
+  }
+  const button = $("#render-outfit");
+  button.disabled = true;
   $("#stage-caption").textContent = `rendering outfit (${ids.length} items)… (~1 min, billed)`;
   $("#feedback-bar").hidden = true;
   try {
@@ -545,17 +620,21 @@ $("#render-outfit").addEventListener("click", async () => {
       body: JSON.stringify({ outfit: ids }),
     });
     const j = await r.json();
-    if (!r.ok) { toast(j.error || "generation failed"); showAvatar(); return; }
-    M = await (await fetch("/api/manifest")).json();
-    $("#cost-meter").textContent = `$${M.spend.spent_usd.toFixed(2)} / $${M.spend.cap_usd.toFixed(0)}`;
-    currentRender = j.render;
-    currentGarment = null;
-    $("#stage-img").src = j.render;
-    $("#stage-caption").textContent = `outfit — ${ids.join(" + ")}`;
-    $("#feedback-bar").hidden = false;
+    if (!r.ok) {
+      toast(j.error || "generation failed");
+      showIncomingOutfit(ids, "outfit");
+      return;
+    }
+    await refreshManifest();
+    showOutfitRender(ids, j.render, j.cached ? "outfit" : "fresh try-on");
+    toast(j.cached ? "exact cached try-on — $0"
+      : "try-on generated — this exact outfit is now cached");
   } catch (e) {
     toast("generation failed: " + e.message);
-    showAvatar();
+    showIncomingOutfit(ids, "outfit");
+  } finally {
+    button.disabled = false;
+    syncOutfitAction();
   }
 });
 
